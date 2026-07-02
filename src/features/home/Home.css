@@ -239,6 +239,20 @@ button {
     width: 100%;
 }
 
+.membership-status,
+.section-status {
+    color: #d5d5d5;
+    font-size: 13px;
+    font-weight: 800;
+    text-align: center;
+    width: 100%;
+}
+
+.membership-status.error,
+.section-status.error {
+    color: #ff7088;
+}
+
 .plan-card {
     background: #222;
     border: 1px solid #373737;
@@ -496,6 +510,17 @@ button {
     margin-bottom: 0;
 }
 
+.schedule-status {
+    color: #d5d5d5;
+    font-size: 13px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.schedule-status.error {
+    color: #ff7088;
+}
+
 .schedule-heading {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -593,6 +618,14 @@ button {
 .class-grid {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
     gap: 22px;
+}
+
+.schedule-empty {
+    color: #bfbfbf;
+    font-size: 12px;
+    font-weight: 800;
+    margin: 20px 0 0;
+    text-align: center;
 }
 
 .class-card {
@@ -700,6 +733,34 @@ button {
     font-size: 12px;
     line-height: 1.45;
     margin: 0 0 10px;
+}
+
+.footer-link {
+    color: #d6d6d6;
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.45;
+    margin: 0 0 10px;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+    color: #e6002e;
+}
+
+.footer-status {
+    color: #d5d5d5;
+    font-size: 13px;
+    font-weight: 800;
+    grid-column: 1 / -1;
+    margin: 0;
+    text-align: center;
+}
+
+.footer-status.error {
+    color: #ff7088;
 }
 
 .socials {
