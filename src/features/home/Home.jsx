@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
+import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 import "./Home.css";
 import gymImg from "../../assets/images/gym 2.png";
 import { buildScheduleDays, filterClassesByType, filters, getScheduleDays, makeScheduleTrainerLabels } from "../../data/schedule";
-import { getClassSchedule, getMembershipPlans, getSiteSettings, getTrainers } from "../../lib/api";
-import { attachTrainerImage } from "../../lib/trainerImages";
+import { getClassSchedule, getMembershipPlans, getSiteSettings, getTrainers } from "../../shared/api";
+import { attachTrainerImage } from "../../shared/trainers";
 import TrainerDetail from "../trainer-detail/TrainerDetail";
 const navItems = [
   ["home", "Home"],
@@ -87,7 +88,7 @@ function ScheduleBlock({ title, description, heading, classes, days, activeDay, 
   );
 }
 
-function Home() {
+function Home({ clerkEnabled }) {
   const [activeSection, setActiveSection] = useState("home");
   const [selectedTrainer, setSelectedTrainer] = useState(null);
   const [plans, setPlans] = useState([]);
@@ -314,10 +315,31 @@ function Home() {
           ))}
         </div>
 
-        <div className="nav-actions">
-          <button className="outline-btn">Login</button>
-          <button className="red-btn">Join Now</button>
-        </div>
+        {clerkEnabled ? (
+          <div className="nav-actions">
+            <SignedOut>
+              <button className="outline-btn" onClick={() => { window.location.href = "/login"; }} type="button">Login</button>
+              <button className="red-btn" onClick={() => { window.location.href = "/signup"; }} type="button">Join Now</button>
+            </SignedOut>
+
+            <SignedIn>
+              <div className="home-signed-in-actions">
+                <button className="outline-btn dashboard-btn" onClick={() => { window.location.href = "/dashboard"; }} type="button">
+                  Dashboard
+                </button>
+                <div className="home-user-action">
+                  <UserButton afterSignOutUrl="/" />
+                  <span>Account</span>
+                </div>
+              </div>
+            </SignedIn>
+          </div>
+        ) : (
+          <div className="nav-actions">
+            <button className="outline-btn" onClick={() => { window.location.href = "/login"; }} type="button">Login</button>
+            <button className="red-btn" onClick={() => { window.location.href = "/signup"; }} type="button">Join Now</button>
+          </div>
+        )}
       </nav>
 
       <section
@@ -331,7 +353,7 @@ function Home() {
             Welcome to FitZone, where we are dedicated to helping you achieve your fitness goals.
             With expert trainers and modern equipment, we provide a strong fitness experience for all levels.
           </p>
-          <button className="red-btn hero-btn">Join Us Now!</button>
+          <button className="red-btn hero-btn" onClick={() => { window.location.href = "/signup"; }} type="button">Join Us Now!</button>
         </div>
       </section>
 
@@ -367,7 +389,7 @@ function Home() {
                   ))}
                 </ul>
 
-                <button className={plan.premium ? "gold-btn" : "red-btn"}>
+                <button className={plan.premium ? "gold-btn" : "red-btn"} onClick={() => { window.location.href = `/payment?plan=${encodeURIComponent(plan.slug)}`; }} type="button">
                   {plan.popular ? "Choose Standard" : "Get Started"}
                 </button>
               </div>

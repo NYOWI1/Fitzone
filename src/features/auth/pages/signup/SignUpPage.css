@@ -1,0 +1,446 @@
+.fitzone-signup-page {
+    background: #0d0d0d;
+    color: #fff;
+    font-family: Inter, Arial, sans-serif;
+    min-height: 100vh;
+    min-height: 100svh;
+    overflow: hidden;
+    padding: 38px clamp(28px, 5vw, 70px);
+    position: relative;
+}
+
+.fitzone-signup-bg {
+    border-radius: 999px;
+    pointer-events: none;
+    position: absolute;
+}
+
+.fitzone-signup-bg-left {
+    background: rgba(230, 0, 46, 0.16);
+    height: 470px;
+    left: -130px;
+    top: -94px;
+    width: 470px;
+}
+
+.fitzone-signup-bg-right {
+    background: rgba(230, 0, 46, 0.15);
+    height: 340px;
+    right: -90px;
+    top: -126px;
+    width: 340px;
+}
+
+.fitzone-signup-bg-gold {
+    background: rgba(255, 213, 79, 0.09);
+    bottom: -145px;
+    height: 430px;
+    right: -22px;
+    width: 430px;
+}
+
+.fitzone-signup-nav,
+.fitzone-signup-layout {
+    margin: 0 auto;
+    max-width: 1140px;
+    position: relative;
+    z-index: 1;
+}
+
+.fitzone-signup-nav {
+    align-items: center;
+    background: #181818;
+    border: 1px solid #3a3a3a;
+    border-radius: 22px;
+    display: flex;
+    justify-content: space-between;
+    min-height: 66px;
+    padding: 12px 28px 12px 24px;
+}
+
+.fitzone-signup-brand {
+    align-items: center;
+    color: #fff;
+    display: inline-flex;
+    gap: 14px;
+    text-decoration: none;
+}
+
+.fitzone-signup-brand span {
+    background: #e6002e;
+    border-radius: 14px;
+    display: grid;
+    font-size: 21px;
+    font-weight: 900;
+    height: 40px;
+    place-items: center;
+    width: 40px;
+}
+
+.fitzone-signup-brand strong {
+    font-size: 23px;
+    letter-spacing: 0;
+}
+
+.fitzone-signup-nav>div {
+    align-items: center;
+    display: flex;
+    gap: 30px;
+}
+
+.fitzone-signup-nav>div>span {
+    color: #bdbdbd;
+    font-size: 13px;
+}
+
+.fitzone-signup-nav>div>a {
+    align-items: center;
+    background: #252525;
+    border: 1px solid #3a3a3a;
+    border-radius: 15px;
+    color: #fff;
+    display: inline-flex;
+    font-size: 13px;
+    font-weight: 900;
+    justify-content: center;
+    min-height: 43px;
+    min-width: 170px;
+    text-decoration: none;
+}
+
+.fitzone-signup-layout {
+    align-items: center;
+    display: grid;
+    gap: clamp(48px, 6vw, 70px);
+    grid-template-columns: minmax(390px, 470px) minmax(520px, 600px);
+    justify-content: space-between;
+    padding-top: 30px;
+}
+
+.fitzone-signup-info-card,
+.fitzone-signup-form-card {
+    background: #242424;
+    border: 1px solid #3a3a3a;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
+}
+
+.fitzone-signup-info-card {
+    background: #181818;
+    border-radius: 30px;
+    min-height: 626px;
+    overflow: hidden;
+    padding: 46px 36px 28px;
+    position: relative;
+}
+
+.fitzone-signup-info-card::before {
+    background: #e6002e;
+    content: "";
+    height: 5px;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.fitzone-signup-info-card>span {
+    color: #e6002e;
+    display: block;
+    font-size: 13px;
+    font-weight: 900;
+    margin-bottom: 22px;
+    text-transform: uppercase;
+}
+
+.fitzone-signup-info-card h1 {
+    font-size: clamp(40px, 4.2vw, 44px);
+    letter-spacing: 0;
+    line-height: 1.16;
+    margin: 0 0 14px;
+}
+
+.fitzone-signup-info-card>p {
+    color: #bdbdbd;
+    font-size: 17px;
+    line-height: 1.18;
+    margin: 0;
+    max-width: 390px;
+}
+
+.fitzone-signup-benefits {
+    display: grid;
+    gap: 42px;
+    margin-top: 64px;
+}
+
+.fitzone-signup-benefits>div {
+    align-items: center;
+    display: flex;
+    gap: 16px;
+}
+
+.fitzone-signup-benefits>div>span {
+    background: #e6002e;
+    border-radius: 16px;
+    display: grid;
+    flex: 0 0 45px;
+    font-size: 20px;
+    font-weight: 900;
+    height: 45px;
+    place-items: center;
+}
+
+.fitzone-signup-benefits strong {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 7px;
+}
+
+.fitzone-signup-benefits p {
+    color: #bdbdbd;
+    font-size: 13px;
+    line-height: 1.25;
+    margin: 0;
+}
+
+.fitzone-signup-info-card blockquote {
+    font-size: 14px;
+    font-weight: 900;
+    margin: 38px 0 0;
+    text-align: center;
+}
+
+.fitzone-signup-auth {
+    min-width: 0;
+}
+
+.fitzone-signup-form-card {
+    border-radius: 30px;
+    display: grid;
+    gap: 18px;
+    padding: 38px 40px 22px;
+    width: 100%;
+}
+
+.fitzone-signup-heading h2 {
+    font-size: clamp(32px, 3.2vw, 38px);
+    letter-spacing: 0;
+    line-height: 1.06;
+    margin: 0 0 6px;
+}
+
+.fitzone-signup-heading p {
+    color: #bdbdbd;
+    font-size: 16px;
+    line-height: 1.18;
+    margin: 0;
+    max-width: 480px;
+}
+
+.fitzone-signup-grid {
+    display: grid;
+    gap: 30px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.fitzone-signup-field {
+    display: grid;
+    gap: 10px;
+}
+
+.fitzone-signup-field span {
+    color: #dedede;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.fitzone-signup-field input {
+    background: #2d2d2d;
+    border: 1px solid #414141;
+    border-radius: 16px;
+    color: #fff;
+    font: inherit;
+    min-height: 52px;
+    padding: 0 18px;
+    width: 100%;
+}
+
+.fitzone-signup-field input::placeholder {
+    color: #a8a8a8;
+}
+
+.fitzone-signup-field input:focus {
+    border-color: #e6002e;
+    box-shadow: 0 0 0 3px rgba(230, 0, 46, 0.12);
+    outline: none;
+}
+
+.fitzone-signup-terms {
+    align-items: center;
+    color: #bdbdbd;
+    display: flex;
+    font-size: 13px;
+    gap: 12px;
+}
+
+.fitzone-signup-terms input {
+    accent-color: #e6002e;
+    height: 18px;
+    width: 18px;
+}
+
+.fitzone-signup-message {
+    background: rgba(230, 0, 46, 0.12);
+    border: 1px solid rgba(230, 0, 46, 0.35);
+    border-radius: 14px;
+    color: #ff8ea2;
+    font-size: 13px;
+    line-height: 1.4;
+    margin: 0;
+    padding: 12px 14px;
+}
+
+.fitzone-signup-submit,
+.fitzone-signup-secondary {
+    border-radius: 16px;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 900;
+    min-height: 54px;
+    transition: background 160ms ease, transform 160ms ease;
+    width: 100%;
+}
+
+.fitzone-signup-submit {
+    background: #e6002e;
+    border: 0;
+    box-shadow: 0 18px 28px rgba(230, 0, 46, 0.2);
+    color: #fff;
+}
+
+.fitzone-signup-submit:hover:not(:disabled) {
+    background: #ff1744;
+    transform: translateY(-1px);
+}
+
+.fitzone-signup-secondary {
+    background: #2d2d2d;
+    border: 1px solid #414141;
+    color: #fff;
+}
+
+.fitzone-signup-submit:disabled,
+.fitzone-signup-secondary:disabled,
+.fitzone-signup-field input:disabled,
+.fitzone-signup-terms input:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.fitzone-signup-config-card code {
+    background: #171717;
+    border: 1px solid #414141;
+    border-radius: 14px;
+    color: #fff;
+    display: block;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+    padding: 14px;
+}
+
+.fitzone-signup-signed-in-card {
+    justify-items: start;
+}
+
+.fitzone-signup-signed-in-card a {
+    align-items: center;
+    background: #e6002e;
+    border-radius: 14px;
+    color: #fff;
+    display: inline-flex;
+    font-weight: 900;
+    min-height: 48px;
+    padding: 0 18px;
+    text-decoration: none;
+}
+
+@media (max-width: 1080px) {
+    .fitzone-signup-page {
+        overflow: auto;
+    }
+
+    .fitzone-signup-layout {
+        grid-template-columns: minmax(0, 680px);
+        justify-content: center;
+    }
+}
+
+@media (max-width: 640px) {
+    .fitzone-signup-page {
+        padding: 16px;
+    }
+
+    .fitzone-signup-nav {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 16px;
+        padding: 18px;
+    }
+
+    .fitzone-signup-nav>div {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .fitzone-signup-nav>div>a {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .fitzone-signup-layout {
+        gap: 22px;
+        padding-top: 22px;
+    }
+
+    .fitzone-signup-info-card,
+    .fitzone-signup-form-card {
+        border-radius: 22px;
+    }
+
+    .fitzone-signup-info-card {
+        min-height: 0;
+        padding: 34px 22px 26px;
+    }
+
+    .fitzone-signup-info-card h1 {
+        font-size: 36px;
+    }
+
+    .fitzone-signup-info-card>p {
+        font-size: 15px;
+    }
+
+    .fitzone-signup-benefits {
+        gap: 26px;
+        margin-top: 42px;
+    }
+
+    .fitzone-signup-info-card blockquote {
+        margin-top: 30px;
+    }
+
+    .fitzone-signup-form-card {
+        padding: 30px 20px 20px;
+    }
+
+    .fitzone-signup-grid {
+        gap: 18px;
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .fitzone-signup-heading h2 {
+        font-size: 30px;
+    }
+}
+

@@ -1,0 +1,161 @@
+.admin-payments-page {
+    gap: 0;
+}
+
+.admin-payment-kpi-grid {
+    flex: 0 0 auto;
+}
+
+.admin-payments-management-grid {
+    display: grid;
+    flex: 1;
+    gap: 24px 28px;
+    grid-template-columns: minmax(0, 1.78fr) minmax(280px, 0.68fr);
+    min-height: 0;
+    min-width: 0;
+}
+
+.admin-payment-directory-card {
+    min-height: 480px;
+}
+
+.admin-payment-table {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+}
+
+.admin-payment-table-head,
+.admin-payment-table-row {
+    align-items: center;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(136px, 1fr) minmax(104px, 0.78fr) minmax(70px, 0.52fr) minmax(74px, 0.5fr) minmax(92px, 0.7fr) minmax(70px, 0.52fr) minmax(58px, 0.44fr);
+    min-width: 0;
+}
+
+.admin-payment-table-head {
+    border-bottom: 1px solid var(--admin-border);
+    color: var(--admin-muted);
+    font-size: 11px;
+    font-weight: 800;
+    padding: 0 0 12px;
+    text-transform: uppercase;
+}
+
+.admin-payment-table-row {
+    background: rgba(43, 43, 43, 0.72);
+    border: 1px solid rgba(57, 57, 57, 0.82);
+    border-radius: 16px;
+    min-height: 68px;
+    padding: 10px 12px;
+}
+
+.admin-table-payment {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    min-width: 0;
+}
+
+.admin-payment-mark {
+    background: var(--admin-yellow);
+    border-radius: 14px;
+    flex: 0 0 38px;
+    height: 38px;
+    width: 38px;
+}
+
+.admin-payment-mark.paid {
+    background: var(--admin-green);
+}
+
+.admin-table-payment strong,
+.admin-table-payment small {
+    display: block;
+}
+
+.admin-table-payment strong {
+    color: #fff;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.admin-table-payment small,
+.admin-payment-table-row>span:not(.admin-status-pill) {
+    color: var(--admin-muted);
+    font-size: 12px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-payment-method {
+    display: grid;
+    gap: 4px;
+}
+
+.admin-payment-method small {
+    color: #8f8f8f;
+    font-size: 10px;
+    font-weight: 800;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-payment-table-row>b {
+    color: #fff;
+    font-size: 14px;
+}
+
+.admin-status-pill.paid {
+    background: rgba(57, 230, 0, 0.12);
+    color: var(--admin-green);
+}
+
+.admin-status-pill.failed {
+    background: rgba(217, 4, 41, 0.15);
+    color: #ff5f78;
+}
+
+.admin-payments-side {
+    display: grid;
+    gap: 24px;
+    grid-template-rows: minmax(220px, 0.8fr) minmax(260px, 1fr);
+    min-height: 0;
+}
+
+.admin-payment-summary-card,
+.admin-payment-method-card {
+    min-height: 0;
+}
+
+.admin-payment-total {
+    background: rgba(43, 43, 43, 0.72);
+    border: 1px solid rgba(57, 57, 57, 0.82);
+    border-radius: 18px;
+    display: grid;
+    gap: 10px;
+    margin-top: 22px;
+    padding: 18px;
+}
+
+.admin-payment-total span {
+    color: var(--admin-red);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.admin-payment-total strong {
+    color: #fff;
+    font-size: 30px;
+}
+
+.admin-payment-total p {
+    color: var(--admin-muted);
+    font-size: 12px;
+    line-height: 1.45;
+    margin: 0;
+}

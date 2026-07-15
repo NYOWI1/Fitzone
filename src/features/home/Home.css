@@ -106,6 +106,34 @@ body {
     justify-content: flex-end;
 }
 
+.home-user-action {
+    align-items: center;
+    background: #1d1d1d;
+    border: 1px solid #3f3f3f;
+    border-radius: 12px;
+    display: inline-flex;
+    gap: 10px;
+    min-height: 42px;
+    padding: 0 13px 0 8px;
+}
+
+.home-signed-in-actions {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+}
+
+.dashboard-btn {
+    min-height: 42px;
+    padding: 0 18px;
+}
+
+.home-user-action span {
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+}
+
 button {
     cursor: pointer;
     border: none;

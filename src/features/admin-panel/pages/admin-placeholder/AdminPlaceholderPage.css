@@ -1,0 +1,17 @@
+.admin-placeholder-page {
+    gap: 0;
+}
+
+.admin-placeholder-card {
+    display: grid;
+    gap: 12px;
+    max-width: 720px;
+    min-height: 180px;
+}
+
+.admin-placeholder-card p {
+    color: var(--admin-muted);
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+}

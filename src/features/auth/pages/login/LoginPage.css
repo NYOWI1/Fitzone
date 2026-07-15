@@ -1,0 +1,517 @@
+.fitzone-login-page {
+    background: #0d0d0d;
+    color: #fff;
+    font-family: Inter, Arial, sans-serif;
+    min-height: 100vh;
+    min-height: 100svh;
+    overflow: hidden;
+    position: relative;
+}
+
+.fitzone-bg-shape {
+    background: rgba(230, 0, 46, 0.15);
+    border-radius: 999px;
+    pointer-events: none;
+    position: absolute;
+}
+
+.fitzone-bg-left {
+    height: 480px;
+    left: -210px;
+    top: 70px;
+    width: 560px;
+}
+
+.fitzone-bg-right {
+    bottom: -150px;
+    height: 430px;
+    right: -110px;
+    width: 430px;
+}
+
+.fitzone-login-layout {
+    align-items: center;
+    display: grid;
+    gap: clamp(46px, 6vw, 86px);
+    grid-template-columns: minmax(430px, 520px) minmax(430px, 532px);
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding: clamp(28px, 5vw, 70px);
+    position: relative;
+    z-index: 1;
+}
+
+.fitzone-welcome-card,
+.fitzone-login-card {
+    background: #242424;
+    border: 1px solid #3a3a3a;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
+}
+
+.fitzone-welcome-card {
+    background: #181818;
+    border-radius: 30px;
+    display: flex;
+    flex-direction: column;
+    min-height: 692px;
+    overflow: hidden;
+    padding: 46px 42px 56px;
+    position: relative;
+}
+
+.fitzone-welcome-card::before {
+    background: #e6002e;
+    content: "";
+    height: 5px;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.fitzone-login-brand {
+    align-items: center;
+    color: #fff;
+    display: inline-flex;
+    gap: 16px;
+    text-decoration: none;
+    width: fit-content;
+}
+
+.fitzone-login-brand>span {
+    background: #e6002e;
+    border-radius: 18px;
+    display: grid;
+    font-size: 26px;
+    font-weight: 900;
+    height: 55px;
+    place-items: center;
+    width: 55px;
+}
+
+.fitzone-login-brand strong,
+.fitzone-login-brand small {
+    display: block;
+}
+
+.fitzone-login-brand strong {
+    font-size: 29px;
+    line-height: 1;
+}
+
+.fitzone-login-brand small {
+    color: #e6002e;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0;
+    margin-top: 6px;
+}
+
+.fitzone-welcome-copy {
+    margin-top: 84px;
+}
+
+.fitzone-welcome-copy h1 {
+    font-size: clamp(44px, 4vw, 50px);
+    letter-spacing: 0;
+    line-height: 1.18;
+    margin: 0 0 20px;
+    max-width: 410px;
+}
+
+.fitzone-welcome-copy p {
+    color: #bababa;
+    font-size: 18px;
+    line-height: 1.22;
+    margin: 0;
+    max-width: 410px;
+}
+
+.fitzone-stat-grid {
+    display: grid;
+    gap: 22px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: auto;
+}
+
+.fitzone-stat-grid div {
+    align-items: center;
+    background: #252525;
+    border: 1px solid #3a3a3a;
+    border-radius: 20px;
+    display: grid;
+    justify-items: center;
+    min-height: 93px;
+    padding: 18px 10px;
+}
+
+.fitzone-stat-grid strong {
+    color: #e6002e;
+    font-size: 27px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.fitzone-stat-grid span {
+    color: #bdbdbd;
+    font-size: 11px;
+    margin-top: 8px;
+    text-align: center;
+}
+
+.fitzone-welcome-card blockquote {
+    font-size: 15px;
+    font-weight: 900;
+    margin: 52px 0 0;
+    text-align: center;
+}
+
+.fitzone-auth-area {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    min-width: 0;
+}
+
+.fitzone-login-card {
+    border-radius: 30px;
+    display: grid;
+    gap: 18px;
+    padding: 44px 35px 18px;
+    width: min(100%, 532px);
+}
+
+.fitzone-login-heading h2 {
+    font-size: clamp(32px, 3.2vw, 37px);
+    letter-spacing: 0;
+    line-height: 1.05;
+    margin: 0 0 8px;
+}
+
+.fitzone-login-heading p {
+    color: #bdbdbd;
+    font-size: 16px;
+    line-height: 1.18;
+    margin: 0;
+    max-width: 420px;
+}
+
+.fitzone-field {
+    display: grid;
+    gap: 10px;
+}
+
+.fitzone-field>span {
+    color: #dedede;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.fitzone-field input,
+.fitzone-password-field {
+    background: #2d2d2d;
+    border: 1px solid #414141;
+    border-radius: 16px;
+    color: #fff;
+    font: inherit;
+    min-height: 57px;
+    width: 100%;
+}
+
+.fitzone-field input {
+    padding: 0 19px;
+}
+
+.fitzone-field input::placeholder {
+    color: #a8a8a8;
+}
+
+.fitzone-field input:focus,
+.fitzone-password-field:focus-within {
+    border-color: #e6002e;
+    box-shadow: 0 0 0 3px rgba(230, 0, 46, 0.12);
+    outline: none;
+}
+
+.fitzone-password-field {
+    align-items: center;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    overflow: hidden;
+}
+
+.fitzone-password-field input {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    min-height: 55px;
+}
+
+.fitzone-password-field input:focus {
+    box-shadow: none;
+}
+
+.fitzone-password-field button,
+.fitzone-login-options button {
+    background: transparent;
+    color: #e6002e;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.fitzone-password-field button {
+    padding: 0 18px;
+}
+
+.fitzone-login-options {
+    align-items: center;
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    margin: 6px 0 12px;
+}
+
+.fitzone-login-options label {
+    align-items: center;
+    color: #bdbdbd;
+    display: inline-flex;
+    font-size: 13px;
+    gap: 12px;
+}
+
+.fitzone-login-options input {
+    accent-color: #e6002e;
+    height: 18px;
+    width: 18px;
+}
+
+.fitzone-login-message {
+    background: rgba(230, 0, 46, 0.12);
+    border: 1px solid rgba(230, 0, 46, 0.35);
+    border-radius: 14px;
+    color: #ff8ea2;
+    font-size: 13px;
+    line-height: 1.4;
+    margin: -4px 0 0;
+    padding: 12px 14px;
+}
+
+.fitzone-payment-required-link {
+    align-items: center;
+    background: #2d2d2d;
+    border: 1px solid #414141;
+    border-radius: 13px;
+    color: #fff;
+    display: inline-flex;
+    font-size: 13px;
+    font-weight: 900;
+    justify-content: center;
+    min-height: 44px;
+    text-decoration: none;
+}
+
+.fitzone-login-submit {
+    background: #e6002e;
+    border: 0;
+    border-radius: 16px;
+    box-shadow: 0 18px 28px rgba(230, 0, 46, 0.2);
+    color: #fff;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 900;
+    min-height: 56px;
+    transition: background 160ms ease, transform 160ms ease;
+    width: 100%;
+}
+
+.fitzone-login-submit:hover:not(:disabled) {
+    background: #ff1744;
+    transform: translateY(-1px);
+}
+
+.fitzone-login-submit:disabled,
+.fitzone-social-grid button:disabled,
+.fitzone-field input:disabled,
+.fitzone-password-field button:disabled,
+.fitzone-login-options button:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.fitzone-divider {
+    align-items: center;
+    color: #bdbdbd;
+    display: grid;
+    gap: 18px;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    margin: 13px 0 6px;
+}
+
+.fitzone-divider span {
+    background: #424242;
+    height: 1px;
+}
+
+.fitzone-divider p {
+    font-size: 14px;
+    margin: 0;
+}
+
+.fitzone-social-grid {
+    display: grid;
+    gap: 28px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.fitzone-social-grid button {
+    background: #2d2d2d;
+    border: 1px solid #414141;
+    border-radius: 14px;
+    color: #f0f0f0;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 900;
+    min-height: 49px;
+    transition: border-color 160ms ease, background 160ms ease;
+}
+
+.fitzone-social-grid button:hover:not(:disabled) {
+    background: #32151b;
+    border-color: #e6002e;
+}
+
+.fitzone-join-text {
+    color: #bdbdbd;
+    font-size: 13px;
+    margin: 0;
+    text-align: center;
+}
+
+.fitzone-join-text a,
+.fitzone-signed-in-card a {
+    color: #e6002e;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.fitzone-config-card code {
+    background: #171717;
+    border: 1px solid #414141;
+    border-radius: 14px;
+    color: #fff;
+    display: block;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+    padding: 14px;
+}
+
+.fitzone-signed-in-card {
+    justify-items: start;
+}
+
+.fitzone-signed-in-card a {
+    align-items: center;
+    background: #e6002e;
+    border-radius: 14px;
+    color: #fff;
+    display: inline-flex;
+    min-height: 48px;
+    padding: 0 18px;
+}
+
+@media (max-width: 1060px) {
+    .fitzone-login-page {
+        overflow: auto;
+    }
+
+    .fitzone-login-layout {
+        grid-template-columns: minmax(0, 620px);
+    }
+
+    .fitzone-welcome-card {
+        min-height: 560px;
+    }
+}
+
+@media (max-width: 640px) {
+    .fitzone-login-layout {
+        gap: 22px;
+        padding: 16px;
+    }
+
+    .fitzone-welcome-card,
+    .fitzone-login-card {
+        border-radius: 22px;
+    }
+
+    .fitzone-welcome-card {
+        min-height: 0;
+        padding: 30px 22px;
+    }
+
+    .fitzone-login-brand>span {
+        border-radius: 14px;
+        height: 48px;
+        width: 48px;
+    }
+
+    .fitzone-login-brand strong {
+        font-size: 24px;
+    }
+
+    .fitzone-welcome-copy {
+        margin-top: 54px;
+    }
+
+    .fitzone-welcome-copy h1 {
+        font-size: 38px;
+    }
+
+    .fitzone-welcome-copy p {
+        font-size: 15px;
+    }
+
+    .fitzone-stat-grid,
+    .fitzone-social-grid {
+        gap: 12px;
+    }
+
+    .fitzone-stat-grid {
+        margin-top: 42px;
+    }
+
+    .fitzone-stat-grid div {
+        min-height: 78px;
+        padding: 14px 8px;
+    }
+
+    .fitzone-stat-grid strong {
+        font-size: 21px;
+    }
+
+    .fitzone-welcome-card blockquote {
+        font-size: 13px;
+        margin-top: 34px;
+    }
+
+    .fitzone-login-card {
+        padding: 30px 20px 18px;
+    }
+
+    .fitzone-login-heading h2 {
+        font-size: 30px;
+    }
+
+    .fitzone-login-heading p {
+        font-size: 14px;
+    }
+
+    .fitzone-login-options {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+

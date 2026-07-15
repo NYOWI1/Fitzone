@@ -1,7 +1,7 @@
-import trainer1Img from "../assets/images/trainer1.png";
-import trainer2Img from "../assets/images/trainer2.png";
-import trainer3Img from "../assets/images/trainer3.png";
-import trainer4Img from "../assets/images/trainer4.png";
+import trainer1Img from "../../assets/images/trainer1.png";
+import trainer2Img from "../../assets/images/trainer2.png";
+import trainer3Img from "../../assets/images/trainer3.png";
+import trainer4Img from "../../assets/images/trainer4.png";
 
 const trainerImages = {
   trainer1: trainer1Img,
