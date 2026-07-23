@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { ClerkProvider } from "@clerk/clerk-react";
 import App from "./App.jsx";
 import { clerkProviderProps, isClerkEnabled } from "./config/clerk";
+import "../styles.css";
 
 const app = <App clerkEnabled={isClerkEnabled} />;
 

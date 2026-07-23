@@ -3,9 +3,18 @@ import { useUser } from "@clerk/clerk-react";
 import { isStripeEnabled, stripePublishableKey } from "../../../../app/config/stripe";
 import { createStripePaymentIntent, getMembershipPlans } from "../../../../shared/api";
 import { getPlanFromSelection, getPlanMonthlyLabel, getPlanPriceValue, saveSelectedPlan } from "../../shared/planSelection";
-import "./PaymentPage.css";
 
 const stripeScriptUrl = "https://js.stripe.com/v3/";
+const pageContent = "relative z-[1] mx-auto max-w-[1120px]";
+const flowNav = `${pageContent} flex min-h-[66px] items-center justify-between rounded-[22px] border border-[#3a3a3a] bg-[#181818] py-3 pl-6 pr-7 max-[640px]:items-start max-[640px]:flex-col max-[640px]:gap-3.5 max-[640px]:p-[18px]`;
+const flowBrand = "inline-flex items-center gap-3.5 text-white no-underline";
+const panelCard = "rounded-[30px] border border-[#3a3a3a] bg-[#252525] shadow-[0_24px_70px_rgba(0,0,0,0.48)] max-[640px]:rounded-[22px] max-[640px]:px-[22px]";
+const fieldLabel = "grid gap-2.5";
+const fieldLabelText = "text-xs font-black text-[#dedede]";
+const inputClass = "min-h-[50px] w-full rounded-[14px] border border-[#414141] bg-[#2d2d2d] px-[18px] font-[inherit] text-white placeholder:text-[#a8a8a8] focus:border-[#e6002e] focus:outline-none focus:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] disabled:cursor-not-allowed disabled:opacity-65";
+const stripeCardClass = "flex min-h-[50px] w-full flex-col justify-center rounded-[14px] border border-[#414141] bg-[#2d2d2d] px-[18px] focus-within:border-[#e6002e] focus-within:outline-none focus-within:shadow-[0_0_0_3px_rgba(230,0,46,0.12)]";
+const paymentMessageClass = "mb-3.5 mt-0 rounded-[14px] border border-[rgba(230,0,46,0.35)] bg-[rgba(230,0,46,0.12)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#ff8ea2]";
+const successMessageClass = "mb-3.5 mt-0 rounded-[14px] border border-[rgba(57,230,0,0.28)] bg-[rgba(57,230,0,0.1)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#a6ff8f]";
 
 function isPaymentSuccessful(paymentIntent) {
   return String(paymentIntent?.status || "").toLowerCase() === "succeeded";
@@ -386,36 +395,36 @@ function PaymentPageContent({ clerkEmail = "" }) {
   }, [checkPromptPayStatus, paymentStatus, promptPayClientSecret, stripeClient]);
 
   return (
-    <main className="payment-page">
-      <div className="payment-bg payment-bg-left"></div>
-      <div className="payment-bg payment-bg-right"></div>
-      <div className="payment-bg payment-bg-gold"></div>
+    <main className="relative min-h-screen overflow-x-hidden bg-[#0d0d0d] px-[clamp(28px,5vw,70px)] py-9 font-[Inter,Arial,sans-serif] text-white max-[1040px]:overflow-auto max-[640px]:p-4">
+      <div className="pointer-events-none absolute -left-[130px] -top-[92px] h-[470px] w-[470px] rounded-full bg-[rgba(230,0,46,0.16)]"></div>
+      <div className="pointer-events-none absolute -right-[90px] -top-[126px] h-[340px] w-[340px] rounded-full bg-[rgba(230,0,46,0.15)]"></div>
+      <div className="pointer-events-none absolute -bottom-[145px] -right-[22px] h-[430px] w-[430px] rounded-full bg-[rgba(255,213,79,0.09)]"></div>
 
-      <header className="flow-nav payment-nav">
-        <a className="flow-brand" href="/">
-          <span>F</span>
-          <strong>FITZONE</strong>
+      <header className={flowNav}>
+        <a className={flowBrand} href="/">
+          <span className="grid h-10 w-10 place-items-center rounded-[14px] bg-[#e6002e] text-[21px] font-black">F</span>
+          <strong className="text-[23px] tracking-normal">FITZONE</strong>
         </a>
-        <p>Step 3: Complete your payment with Stripe sandbox</p>
+        <p className="m-0 text-[13px] font-black text-[#bdbdbd]">Step 3: Complete your payment with Stripe sandbox</p>
       </header>
 
-      <section className="payment-heading">
-        <span>Secure Stripe Sandbox Checkout</span>
-        <h1>Payment Details</h1>
-        <p>Finish your membership setup through Stripe sandbox. Card details stay inside Stripe Elements before the payment is confirmed.</p>
+      <section className={`${pageContent} py-6 pb-7 max-[640px]:py-7`}>
+        <span className="mb-3.5 block text-xs font-black uppercase text-[#e6002e]">Secure Stripe Sandbox Checkout</span>
+        <h1 className="mb-2 mt-0 text-[clamp(38px,4vw,46px)] leading-[1.05] tracking-normal">Payment Details</h1>
+        <p className="m-0 text-[15px] leading-[1.45] text-[#bdbdbd]">Finish your membership setup through Stripe sandbox. Card details stay inside Stripe Elements before the payment is confirmed.</p>
       </section>
 
-      {status === "loading" && <p className="payment-state">Loading selected plan...</p>}
-      {status === "error" && <p className="payment-state error">Payment setup is unavailable right now.</p>}
+      {status === "loading" && <p className={`${pageContent} py-[90px] text-center text-[15px] leading-[1.45] text-[#bdbdbd]`}>Loading selected plan...</p>}
+      {status === "error" && <p className={`${pageContent} py-[90px] text-center text-[15px] leading-[1.45] text-[#ff8ea2]`}>Payment setup is unavailable right now.</p>}
 
       {status === "ready" && selectedPlan && (
-        <form className="payment-layout" onSubmit={submitPayment}>
-          <section className="payment-method-card">
-            <h2>Payment Method</h2>
+        <form className={`${pageContent} grid grid-cols-[minmax(0,1.45fr)_minmax(330px,0.82fr)] items-start gap-8 max-[1040px]:grid-cols-1`} onSubmit={submitPayment}>
+          <section className={`${panelCard} min-h-[430px] px-[38px] py-[34px]`}>
+            <h2 className="mb-[22px] mt-0 text-[25px] tracking-normal">Payment Method</h2>
 
-            <div className="payment-method-tabs" aria-label="Payment method">
+            <div className="mb-7 grid max-w-[410px] grid-cols-2 gap-2.5 max-[640px]:grid-cols-1 max-[640px]:gap-3.5" aria-label="Payment method">
               <button
-                className={paymentMethod === "card" ? "active" : ""}
+                className={`inline-flex min-h-[54px] cursor-pointer items-center justify-center gap-2.5 rounded-[14px] border bg-[#2d2d2d] text-[15px] font-black transition disabled:cursor-not-allowed disabled:opacity-65 ${paymentMethod === "card" ? "border-[#e6002e] bg-[#242424] text-white shadow-[inset_0_0_0_1px_rgba(230,0,46,0.38)]" : "border-[#414141] text-[#bdbdbd]"}`}
                 disabled={isBusy || isPromptPayPending}
                 onClick={() => {
                   setPaymentMethod("card");
@@ -428,7 +437,7 @@ function PaymentPageContent({ clerkEmail = "" }) {
                 Credit Card
               </button>
               <button
-                className={paymentMethod === "promptpay" ? "active" : ""}
+                className={`inline-flex min-h-[54px] cursor-pointer items-center justify-center gap-2.5 rounded-[14px] border bg-[#2d2d2d] text-[15px] font-black transition disabled:cursor-not-allowed disabled:opacity-65 ${paymentMethod === "promptpay" ? "border-[#e6002e] bg-[#242424] text-white shadow-[inset_0_0_0_1px_rgba(230,0,46,0.38)]" : "border-[#414141] text-[#bdbdbd]"}`}
                 disabled={isBusy || isPromptPayPending}
                 onClick={() => {
                   setPaymentMethod("promptpay");
@@ -442,10 +451,11 @@ function PaymentPageContent({ clerkEmail = "" }) {
               </button>
             </div>
 
-            <div className="payment-fields">
-              <label>
-                <span>Cardholder Name</span>
+            <div className="grid gap-[18px]">
+              <label className={fieldLabel}>
+                <span className={fieldLabelText}>Cardholder Name</span>
                 <input
+                  className={inputClass}
                   disabled={isBusy}
                   onChange={(event) => updateCardValue("cardholderName", event.target.value)}
                   required
@@ -453,9 +463,10 @@ function PaymentPageContent({ clerkEmail = "" }) {
                 />
               </label>
 
-              <label>
-                <span>Clerk Account Email</span>
+              <label className={fieldLabel}>
+                <span className={fieldLabelText}>Clerk Account Email</span>
                 <input
+                  className={inputClass}
                   disabled={isBusy || Boolean(clerkEmail)}
                   onChange={(event) => updateCardValue("email", event.target.value)}
                   placeholder="yourname@email.com"
@@ -465,27 +476,28 @@ function PaymentPageContent({ clerkEmail = "" }) {
                 />
               </label>
 
-              <label className={isPromptPaySelected ? "hidden-stripe-card-field" : ""}>
-                <span>Card Details</span>
-                <div className="stripe-card-element" ref={cardMountRef}></div>
+              <label className={isPromptPaySelected ? "pointer-events-none m-0 h-0 overflow-hidden opacity-0" : fieldLabel}>
+                <span className={fieldLabelText}>Card Details</span>
+                <div className={stripeCardClass} ref={cardMountRef}></div>
               </label>
             </div>
 
             {isPromptPaySelected && (
-              <div className="payment-promptpay">
-                <div className="payment-qr-box">
+              <div className="grid gap-[18px]">
+                <div className="grid min-h-[208px] place-items-center rounded-[18px] border border-dashed border-[#e6002e] bg-[#181818] p-6 text-center">
                   {promptPayQrCode ? (
                     <>
                       <img
+                        className="block h-auto w-full max-w-[min(260px,100%)] rounded-[14px] bg-white p-3"
                         alt="PromptPay QR code"
                         src={promptPayQrCode.image_url_svg || promptPayQrCode.image_url_png}
                       />
-                      <p>Scan this QR code with your banking app to complete payment.</p>
+                      <p className="mb-0 mt-2 text-[#bdbdbd]">Scan this QR code with your banking app to complete payment.</p>
                     </>
                   ) : (
                     <>
-                      <strong>PromptPay QR</strong>
-                      <p>Generate a secure PromptPay QR code, then scan it with your banking app.</p>
+                      <strong className="text-2xl">PromptPay QR</strong>
+                      <p className="mb-0 mt-2 text-[#bdbdbd]">Generate a secure PromptPay QR code, then scan it with your banking app.</p>
                     </>
                   )}
                 </div>
@@ -493,52 +505,56 @@ function PaymentPageContent({ clerkEmail = "" }) {
             )}
 
             {!isStripeEnabled && (
-              <p className="payment-message">
+              <p className={paymentMessageClass}>
                 Add VITE_STRIPE_PUBLISHABLE_KEY to `.env`.
               </p>
             )}
 
             {stripeStatus === "error" && (
-              <p className="payment-message">
+              <p className={paymentMessageClass}>
                 Stripe.js could not load. Check your internet connection and publishable key.
               </p>
             )}
 
-            {!isPromptPaySelected && cardError && <p className="payment-message">{cardError}</p>}
+            {!isPromptPaySelected && cardError && <p className={paymentMessageClass}>{cardError}</p>}
 
           </section>
 
-          <aside className="payment-summary-card">
-            <h2>Order Summary</h2>
-            <div className="payment-selected-plan">
-              <span>Selected Plan</span>
-              <strong>{selectedPlan.name} Membership</strong>
-              <b>{getPlanMonthlyLabel(selectedPlan)}/month</b>
+          <aside className={`${panelCard} relative overflow-hidden px-8 py-[34px] before:absolute before:left-0 before:right-0 before:top-0 before:h-[5px] before:bg-[#e6002e]`}>
+            <h2 className="mb-[22px] mt-0 text-[25px] tracking-normal">Order Summary</h2>
+            <div className="grid gap-2 rounded-[18px] border border-[#e6002e] px-6 py-[22px]">
+              <span className="text-xs font-black text-[#e6002e]">Selected Plan</span>
+              <strong className="text-[22px]">{selectedPlan.name} Membership</strong>
+              <b className="text-[15px] text-[#ffd54f]">{getPlanMonthlyLabel(selectedPlan)}/month</b>
             </div>
 
-            <div className="payment-summary-lines">
-              <div>
-                <span>Monthly plan</span>
-                <strong>{getPlanMonthlyLabel(selectedPlan)}</strong>
+            <div className="grid gap-[18px] border-b border-[#3a3a3a] py-[26px] pb-[42px]">
+              <div className="flex items-center justify-between">
+                <span className="text-[#bdbdbd]">Monthly plan</span>
+                <strong className="font-medium text-white">{getPlanMonthlyLabel(selectedPlan)}</strong>
               </div>
-              <div>
-                <span>Registration fee</span>
-                <strong>฿0</strong>
+              <div className="flex items-center justify-between">
+                <span className="text-[#bdbdbd]">Registration fee</span>
+                <strong className="font-medium text-white">฿0</strong>
               </div>
             </div>
 
-            <div className="payment-total-line">
-              <span>Total Today</span>
-              <strong>฿{monthlyAmount.toLocaleString("en-US")}</strong>
+            <div className="flex items-center justify-between py-6">
+              <span className="text-sm font-black">Total Today</span>
+              <strong className="text-[#ffd54f]">฿{monthlyAmount.toLocaleString("en-US")}</strong>
             </div>
 
             {paymentMessage && (
-              <p className={paymentStatus === "success" ? "payment-message success" : "payment-message"}>
+              <p className={paymentStatus === "success" ? successMessageClass : paymentMessageClass}>
                 {paymentMessage}
               </p>
             )}
 
-            <button disabled={isBusy || stripeStatus === "loading"} type="submit">
+            <button
+              className="mt-1 inline-flex min-h-[54px] w-full cursor-pointer items-center justify-center rounded-[13px] border-0 bg-[#e6002e] text-[15px] font-black text-white no-underline disabled:cursor-not-allowed disabled:opacity-65"
+              disabled={isBusy || stripeStatus === "loading"}
+              type="submit"
+            >
               {isBusy ? "Processing..." : isPromptPayPending ? "Check PromptPay Status" : isPromptPaySelected ? "Generate PromptPay QR" : "Pay with Stripe"}
             </button>
           </aside>

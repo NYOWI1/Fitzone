@@ -146,7 +146,7 @@ function AdminPanel() {
       {activePage === "payments" && <PaymentsPage />}
       {activePage === "members" && <MembersPage />}
       {activePage === "reports" && <ReportsPage />}
-      {activePage === "crowd-detection" && <CrowdDetectionPage />}
+      <CrowdDetectionPage isActive={activePage === "crowd-detection"} />
       {activePage === "settings" && <SettingsPage />}
       {activePage === "overview" && <OverviewPage />}
     </main>

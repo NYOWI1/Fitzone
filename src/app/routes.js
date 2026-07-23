@@ -5,6 +5,7 @@ export const appRoutes = {
   login: "/login",
   payment: "/payment",
   signup: "/signup",
+  trainers: "/trainers",
 };
 
 export function isAdminRoute(pathname, hash) {

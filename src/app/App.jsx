@@ -3,6 +3,7 @@ import AdminPanel from "../features/admin-panel";
 import { LoginPage, SignUpPage } from "../features/auth";
 import UserDashboard from "../features/user-dashboard";
 import { ChoosePlanPage, PaymentPage } from "../features/membership-flow";
+import { TrainerDetailRoute } from "../features/trainer-detail/TrainerDetail";
 import { appRoutes, isAdminRoute } from "./routes";
 
 function App({ clerkEnabled }) {
@@ -26,6 +27,12 @@ function App({ clerkEnabled }) {
 
   if (pathname.startsWith(appRoutes.dashboard)) {
     return <UserDashboard clerkEnabled={clerkEnabled} />;
+  }
+
+  if (pathname.startsWith(`${appRoutes.trainers}/`)) {
+    const trainerSlug = decodeURIComponent(pathname.split("/").filter(Boolean)[1] || "");
+
+    return <TrainerDetailRoute trainerSlug={trainerSlug} />;
   }
 
   if (isAdminRoute(pathname, window.location.hash)) {

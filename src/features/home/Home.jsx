@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
-import "./Home.css";
 import gymImg from "../../assets/images/gym 2.png";
 import { buildScheduleDays, filterClassesByType, filters, getScheduleDays, makeScheduleTrainerLabels } from "../../data/schedule";
 import { getClassSchedule, getMembershipPlans, getSiteSettings, getTrainers } from "../../shared/api";
 import { attachTrainerImage } from "../../shared/trainers";
 import TrainerDetail from "../trainer-detail/TrainerDetail";
+
 const navItems = [
   ["home", "Home"],
   ["membership", "Membership"],
@@ -19,6 +19,38 @@ const sectionIdByLabel = navItems.reduce((sections, [sectionId, label]) => ({
   [label.toLowerCase()]: sectionId,
 }), {});
 
+const buttonBase = "cursor-pointer rounded-[10px] border-0 px-6 py-[11px] font-sans text-[11px] font-extrabold max-[560px]:px-4";
+const outlineButton = `${buttonBase} border border-[#454545] bg-[rgba(255,255,255,0.03)] text-white transition hover:border-[#e6002e] hover:bg-[#1d1114]`;
+const redButton = `${buttonBase} bg-[#e6002e] text-white shadow-[0_12px_26px_rgba(230,0,46,0.2)] transition hover:bg-[#ff123e]`;
+const goldButton = `${buttonBase} bg-[#ffd34d] text-[#111] shadow-[0_12px_26px_rgba(255,211,77,0.16)] transition hover:bg-[#ffe17c]`;
+const sectionClass = "flex min-h-screen w-full flex-col justify-center bg-[linear-gradient(180deg,#171717,#111)] px-[max(36px,5vw)] py-[90px] max-[980px]:min-h-0 max-[980px]:justify-start max-[980px]:px-[22px] max-[980px]:py-[72px] max-[560px]:px-4 max-[560px]:py-14 min-[1200px]:px-[6vw]";
+const sectionTitle = "m-0 text-center text-[clamp(36px,5vw,52px)] leading-[1.1] max-[980px]:text-[clamp(31px,9vw,42px)] max-[560px]:text-[clamp(28px,9vw,36px)]";
+const redLine = "mx-auto mb-12 mt-4 h-[5px] w-[180px] rounded-[10px] bg-[#e6002e] max-[980px]:mb-[34px] max-[980px]:w-[132px] max-[560px]:mb-7 max-[560px]:mt-3 max-[560px]:h-1 max-[560px]:w-24";
+const statusText = "w-full text-center text-[13px] font-extrabold text-[#d5d5d5]";
+
+const classColorStyles = {
+  green: {
+    card: "border-t-[#39e600]",
+    label: "bg-[#39e600] text-[#111]",
+  },
+  red: {
+    card: "border-t-[#ff1e1e]",
+    label: "bg-[#ff1e1e] text-white",
+  },
+  gray: {
+    card: "border-t-[#cfcfcf]",
+    label: "bg-[#bfbfbf] text-white",
+  },
+  teal: {
+    card: "border-t-[#05735e]",
+    label: "bg-[#05735e] text-white",
+  },
+  yellow: {
+    card: "border-t-[#ffd34d]",
+    label: "bg-[#ffd34d] text-[#111]",
+  },
+};
+
 function getTodayIndex() {
   return new Date().getDay();
 }
@@ -31,33 +63,40 @@ function ScheduleBlock({ title, description, heading, classes, days, activeDay, 
   const visibleClasses = filterClassesByType(classes, activeFilter);
 
   return (
-    <section id={title === "Class Schedule" ? "schedule" : undefined} className="schedule-panel">
-      <div className="schedule-heading">
+    <section
+      id={title === "Class Schedule" ? "schedule" : undefined}
+      className="mx-auto mb-[72px] w-[calc(100%-72px)] rounded-lg border border-[#343434] border-t-[6px] border-t-[#e6002e] bg-[#1c1c1c] px-6 pb-[34px] pt-9 shadow-[0_22px_44px_rgba(0,0,0,0.32)] last:mb-0 max-[980px]:mb-[42px] max-[980px]:w-[calc(100%-28px)] max-[980px]:px-4 max-[980px]:pb-[26px] max-[980px]:pt-7 max-[560px]:mb-8 max-[560px]:w-[calc(100%-20px)] max-[560px]:rounded-lg max-[560px]:px-3.5 max-[560px]:pb-5 max-[560px]:pt-5"
+    >
+      <div className="mb-12 grid grid-cols-2 items-end gap-[60px] max-[980px]:mb-[30px] max-[980px]:grid-cols-1 max-[980px]:gap-3.5 max-[560px]:mb-5">
         <div>
-          <h5>FITZONE CLASSES</h5>
-          <h2>{title}</h2>
+          <h5 className="mb-2.5 mt-0 text-[10px] font-black text-[#e6002e]">FITZONE CLASSES</h5>
+          <h2 className="m-0 text-[39px] leading-none max-[980px]:text-[clamp(29px,8vw,38px)] max-[560px]:text-[28px]">{title}</h2>
         </div>
-        <p>{description}</p>
+        <p className="m-0 text-[13px] font-bold leading-[1.35] text-[#a8a8a8] max-[560px]:text-xs">{description}</p>
       </div>
 
-      <div className="days">
-        {days.map((day, index) => (
-          <button
-            className={index === activeDay ? "day active-day" : "day"}
-            key={day[0]}
-            onClick={() => onDayChange(index)}
-            type="button"
-          >
-            {day[0]}<br />
-            <span>{day[1]}</span>
-          </button>
-        ))}
+      <div className="mb-[22px] grid grid-cols-[repeat(auto-fit,minmax(88px,1fr))] gap-6 max-[980px]:gap-2.5 max-[560px]:grid-flow-col max-[560px]:grid-cols-none max-[560px]:auto-cols-[76px] max-[560px]:overflow-x-auto max-[560px]:pb-1">
+        {days.map((day, index) => {
+          const isActive = index === activeDay;
+
+          return (
+            <button
+              className={`min-h-[54px] cursor-pointer rounded-[14px] border p-2.5 text-[11px] font-black text-white transition max-[560px]:min-h-[50px] max-[560px]:rounded-xl max-[560px]:text-[10px] ${isActive ? "border-[#e6002e] bg-[#e6002e] shadow-[0_10px_20px_rgba(230,0,46,0.18)]" : "border-[#3b3b3b] bg-[#202020] hover:border-[#666]"}`}
+              key={day[0]}
+              onClick={() => onDayChange(index)}
+              type="button"
+            >
+              {day[0]}<br />
+              <span className={`mt-1 inline-block ${isActive ? "text-white" : "text-[#bdbdbd]"}`}>{day[1]}</span>
+            </button>
+          );
+        })}
       </div>
 
-      <div className="filters">
+      <div className="mb-[26px] flex flex-wrap gap-3 max-[560px]:gap-2">
         {filters.map((filter) => (
           <button
-            className={filter === activeFilter ? "filter active-filter" : "filter"}
+            className={`min-h-7 min-w-[78px] cursor-pointer rounded-[18px] border px-3 text-[9px] font-black transition max-[560px]:flex-1 ${filter === activeFilter ? "border-[#e6002e] bg-[#e6002e] text-white" : "border-[#373737] bg-[#202020] text-[#c9c9c9] hover:border-[#666]"}`}
             key={filter}
             onClick={() => onFilterChange(filter)}
             type="button"
@@ -67,22 +106,31 @@ function ScheduleBlock({ title, description, heading, classes, days, activeDay, 
         ))}
       </div>
 
-      <h3 className="schedule-label">{heading}</h3>
+      <h3 className="mb-[22px] mt-0 inline-block border-b-4 border-[#e6002e] pb-[9px] text-[15px]">{heading}</h3>
 
-      <div className="class-grid">
-        {visibleClasses.map((item) => (
-          <div className={`class-card ${item[5]}`} key={`${title}-${item[0]}-${item[1]}`}>
-            <h3>{item[0]}</h3>
-            <h4>{item[1]}</h4>
-            <p>{item[2]}</p>
-            <strong>{item[3]}</strong>
-            <span>{item[4]}</span>
-          </div>
-        ))}
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,240px),1fr))] gap-[22px]">
+        {visibleClasses.map((item) => {
+          const colors = classColorStyles[item[5]] || classColorStyles.green;
+
+          return (
+            <div
+              className={`relative min-h-[118px] rounded-xl border border-[#3c3c3c] border-t-[5px] bg-[#262626] px-[15px] py-3.5 shadow-[0_12px_24px_rgba(0,0,0,0.18)] max-[560px]:min-h-[124px] max-[560px]:pb-[42px] ${colors.card}`}
+              key={`${title}-${item[0]}-${item[1]}`}
+            >
+              <h3 className="mb-2 mt-0 text-xs">{item[0]}</h3>
+              <h4 className="mb-1.5 mt-0 text-[13px] text-[#efefef]">{item[1]}</h4>
+              <p className="m-0 block text-[9px] leading-[1.45] text-[#b8b8b8]">{item[2]}</p>
+              <strong className="block text-[9px] leading-[1.45] text-[#b8b8b8]">{item[3]}</strong>
+              <span className={`absolute bottom-3 right-3 rounded-[20px] px-3 py-[5px] text-[8px] font-black ${colors.label}`}>
+                {item[4]}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
       {visibleClasses.length === 0 && (
-        <p className="schedule-empty">No classes match this filter.</p>
+        <p className="mb-0 mt-5 text-center text-xs font-extrabold text-[#bfbfbf]">No classes match this filter.</p>
       )}
     </section>
   );
@@ -90,6 +138,7 @@ function ScheduleBlock({ title, description, heading, classes, days, activeDay, 
 
 function Home({ clerkEnabled }) {
   const [activeSection, setActiveSection] = useState("home");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedTrainer, setSelectedTrainer] = useState(null);
   const [plans, setPlans] = useState([]);
   const [plansStatus, setPlansStatus] = useState("loading");
@@ -275,11 +324,13 @@ function Home({ clerkEnabled }) {
   }, []);
 
   const openTrainerProfile = (trainer) => {
+    window.history.pushState(null, "", `/trainers/${encodeURIComponent(trainer.slug)}`);
     setSelectedTrainer(trainer);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const closeTrainerProfile = () => {
+    window.history.pushState(null, "", "/#trainers");
     setSelectedTrainer(null);
     setActiveSection("trainers");
     setTimeout(() => {
@@ -287,27 +338,117 @@ function Home({ clerkEnabled }) {
     }, 0);
   };
 
+  const handleNavClick = (sectionId) => {
+    setActiveSection(sectionId);
+    setIsMobileMenuOpen(false);
+  };
+
   if (selectedTrainer) {
     return <TrainerDetail trainer={selectedTrainer} onBack={closeTrainerProfile} />;
   }
 
   return (
-    <div className="home-page">
-      <nav className="navbar">
-        <div className="brand">
-          <div className="logo">F</div>
-          <div>
-            <h2>FITZONE</h2>
-            <span>GYM & FITNESS</span>
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#0f0f0f] font-sans text-white">
+      <nav className="fixed left-1/2 top-5 z-10 flex h-16 w-[min(1240px,calc(100%-56px))] -translate-x-1/2 items-center justify-between rounded-[18px] border border-[#303030] border-b-4 border-b-[#e6002e] bg-[rgba(13,13,13,0.92)] px-[18px] shadow-[0_12px_30px_rgba(0,0,0,0.45)] backdrop-blur-md max-[980px]:sticky max-[980px]:left-0 max-[980px]:top-0 max-[980px]:h-auto max-[980px]:w-full max-[980px]:translate-x-0 max-[980px]:flex-col max-[980px]:gap-3 max-[980px]:rounded-none max-[980px]:p-3 max-[640px]:items-stretch max-[640px]:gap-0 max-[640px]:border-b-2 max-[640px]:bg-[rgba(13,13,13,0.98)] max-[640px]:p-0">
+        <div className="hidden min-h-[58px] grid-cols-[48px_1fr_auto] items-center border-b border-[#272727] px-3 max-[640px]:grid">
+          <button
+            aria-controls="home-mobile-menu"
+            aria-expanded={isMobileMenuOpen}
+            aria-label="Toggle navigation menu"
+            className="grid h-11 w-11 cursor-pointer place-items-center rounded-lg bg-transparent text-white"
+            onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
+            type="button"
+          >
+            <span className="grid gap-[5px]">
+              <span className="block h-0.5 w-5 rounded-full bg-white"></span>
+              <span className="block h-0.5 w-5 rounded-full bg-white"></span>
+              <span className="block h-0.5 w-5 rounded-full bg-white"></span>
+            </span>
+          </button>
+
+          <a className="justify-self-center text-center no-underline" href="#home" onClick={() => handleNavClick("home")}>
+            <div className="flex items-center justify-center gap-2">
+              <div className="grid h-8 w-8 place-items-center rounded-[9px] bg-[#e6002e] text-sm font-extrabold text-white">F</div>
+              <div className="text-left">
+                <strong className="block text-[15px] leading-none text-white">FITZONE</strong>
+                <span className="mt-0.5 block text-[7px] font-extrabold text-[#e6002e]">GYM & FITNESS</span>
+              </div>
+            </div>
+          </a>
+
+          <div className="flex min-w-[86px] items-center justify-end gap-2">
+            {clerkEnabled ? (
+              <>
+                <SignedOut>
+                  <button className="min-h-9 cursor-pointer rounded-lg border border-[#3f3f3f] bg-transparent px-3 text-[10px] font-black text-white" onClick={() => { window.location.href = "/login"; }} type="button">
+                    Login
+                  </button>
+                </SignedOut>
+                <SignedIn>
+                  <button className="min-h-9 cursor-pointer rounded-lg border border-[#3f3f3f] bg-transparent px-2.5 text-[10px] font-black text-white" onClick={() => { window.location.href = "/dashboard"; }} type="button">
+                    Dashboard
+                  </button>
+                  <UserButton afterSignOutUrl="/" />
+                </SignedIn>
+              </>
+            ) : (
+              <button className="min-h-9 cursor-pointer rounded-lg border border-[#3f3f3f] bg-transparent px-3 text-[10px] font-black text-white" onClick={() => { window.location.href = "/login"; }} type="button">
+                Login
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="nav-links">
+        <div
+          className={`${isMobileMenuOpen ? "grid" : "hidden"} border-b border-[#272727] bg-[#111] px-3 py-3 max-[640px]:grid-cols-1 min-[641px]:hidden`}
+          id="home-mobile-menu"
+        >
+          <div className="grid gap-2">
+            {navItems.map(([sectionId, label]) => (
+              <a
+                className={`rounded-lg px-3 py-3 text-sm font-extrabold no-underline ${activeSection === sectionId ? "bg-[#e6002e] text-white" : "bg-[#1b1b1b] text-[#d0d0d0]"}`}
+                href={`#${sectionId}`}
+                key={sectionId}
+                onClick={() => handleNavClick(sectionId)}
+              >
+                {label}
+              </a>
+            ))}
+          </div>
+          {clerkEnabled ? (
+            <>
+              <SignedOut>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <button className={`${outlineButton} min-h-10 w-full`} onClick={() => { window.location.href = "/login"; }} type="button">Login</button>
+                  <button className={`${redButton} min-h-10 w-full`} onClick={() => { window.location.href = "/signup"; }} type="button">Join Now</button>
+                </div>
+              </SignedOut>
+              <SignedIn>
+                <button className={`${outlineButton} mt-3 min-h-10 w-full`} onClick={() => { window.location.href = "/dashboard"; }} type="button">Dashboard</button>
+              </SignedIn>
+            </>
+          ) : (
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button className={`${outlineButton} min-h-10 w-full`} onClick={() => { window.location.href = "/login"; }} type="button">Login</button>
+              <button className={`${redButton} min-h-10 w-full`} onClick={() => { window.location.href = "/signup"; }} type="button">Join Now</button>
+            </div>
+          )}
+        </div>
+
+        <div className="flex min-w-[170px] items-center gap-2.5 max-[980px]:min-w-0 max-[640px]:hidden">
+          <div className="grid h-9 w-9 place-items-center rounded-[11px] bg-[#e6002e] text-base font-extrabold">F</div>
+          <div>
+            <h2 className="m-0 text-lg leading-none">FITZONE</h2>
+            <span className="mt-[3px] block text-[8px] font-extrabold text-[#e6002e]">GYM & FITNESS</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-5 max-[980px]:w-full max-[980px]:justify-center max-[980px]:overflow-x-auto max-[980px]:pb-1 max-[640px]:hidden">
           {navItems.map(([sectionId, label]) => (
             <a
               href={`#${sectionId}`}
-              className={activeSection === sectionId ? "active" : ""}
-              onClick={() => setActiveSection(sectionId)}
+              className={`shrink-0 cursor-pointer rounded-[18px] px-3.5 py-[7px] text-[10px] font-bold no-underline transition-colors ${activeSection === sectionId ? "border border-[#e6002e] bg-[#1e1114] text-white" : "text-[#a3a3a3] hover:text-white"}`}
+              onClick={() => handleNavClick(sectionId)}
               key={sectionId}
             >
               {label}
@@ -316,80 +457,103 @@ function Home({ clerkEnabled }) {
         </div>
 
         {clerkEnabled ? (
-          <div className="nav-actions">
+          <div className="flex min-w-[170px] justify-end gap-2.5 max-[980px]:min-w-0 max-[980px]:flex-wrap max-[980px]:justify-center max-[640px]:hidden">
             <SignedOut>
-              <button className="outline-btn" onClick={() => { window.location.href = "/login"; }} type="button">Login</button>
-              <button className="red-btn" onClick={() => { window.location.href = "/signup"; }} type="button">Join Now</button>
+              <button className={`${outlineButton} max-[560px]:w-full`} onClick={() => { window.location.href = "/login"; }} type="button">Login</button>
+              <button className={`${redButton} max-[560px]:w-full`} onClick={() => { window.location.href = "/signup"; }} type="button">Join Now</button>
             </SignedOut>
 
             <SignedIn>
-              <div className="home-signed-in-actions">
-                <button className="outline-btn dashboard-btn" onClick={() => { window.location.href = "/dashboard"; }} type="button">
+              <div className="flex items-center gap-2.5 max-[560px]:col-span-2 max-[560px]:justify-center">
+                <button className={`${outlineButton} min-h-[42px] px-[18px] max-[560px]:w-full`} onClick={() => { window.location.href = "/dashboard"; }} type="button">
                   Dashboard
                 </button>
-                <div className="home-user-action">
+                <div className="inline-flex min-h-[42px] items-center gap-2.5 rounded-xl border border-[#3f3f3f] bg-[#1d1d1d] py-0 pl-2 pr-[13px]">
                   <UserButton afterSignOutUrl="/" />
-                  <span>Account</span>
+                  <span className="text-[11px] font-extrabold text-white">Account</span>
                 </div>
               </div>
             </SignedIn>
           </div>
         ) : (
-          <div className="nav-actions">
-            <button className="outline-btn" onClick={() => { window.location.href = "/login"; }} type="button">Login</button>
-            <button className="red-btn" onClick={() => { window.location.href = "/signup"; }} type="button">Join Now</button>
+          <div className="flex min-w-[170px] justify-end gap-2.5 max-[980px]:min-w-0 max-[980px]:flex-wrap max-[980px]:justify-center max-[640px]:hidden">
+            <button className={`${outlineButton} max-[560px]:w-full`} onClick={() => { window.location.href = "/login"; }} type="button">Login</button>
+            <button className={`${redButton} max-[560px]:w-full`} onClick={() => { window.location.href = "/signup"; }} type="button">Join Now</button>
           </div>
         )}
       </nav>
 
       <section
         id="home"
-        className="hero"
-        style={{ backgroundImage: `linear-gradient(90deg, rgba(0,0,0,.86) 0%, rgba(0,0,0,.62) 34%, rgba(0,0,0,.16) 58%, rgba(0,0,0,.08) 100%), url(${gymImg})` }}
+        className="relative flex min-h-screen w-full items-center bg-cover bg-[position:18%_center] px-[max(48px,6vw)] pb-[55px] pt-[110px] after:pointer-events-none after:absolute after:inset-0 after:bg-[linear-gradient(90deg,rgba(0,0,0,0.24),transparent_60%)] max-[980px]:min-h-[calc(100svh-132px)] max-[980px]:bg-[position:44%_center] max-[980px]:px-[6%] max-[980px]:pb-12 max-[980px]:pt-[72px] max-[640px]:min-h-[calc(100svh-58px)] max-[560px]:items-end max-[560px]:bg-[position:50%_center] max-[560px]:px-4 max-[560px]:pb-10 max-[560px]:pt-12 max-[560px]:after:bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.84)_68%)]"
+        style={{ backgroundImage: `linear-gradient(90deg, rgba(0,0,0,.9) 0%, rgba(0,0,0,.68) 36%, rgba(0,0,0,.24) 64%, rgba(0,0,0,.08) 100%), url(${gymImg})` }}
       >
-        <div className="hero-content">
-          <h1>Sweat, Strengthen, and Transform Your Body at Our Gym</h1>
-          <p>
+        <div className="relative z-[1] max-w-[640px]">
+          <div className="mb-5 inline-flex min-h-8 items-center rounded-full border border-[rgba(230,0,46,0.55)] bg-[rgba(230,0,46,0.13)] px-4 text-[10px] font-black uppercase text-white max-[560px]:mb-4">
+            Training built around your goals
+          </div>
+          <h1 className="mb-6 mt-0 text-[clamp(43px,6vw,62px)] leading-[1.04] tracking-normal max-[560px]:mb-4 max-[560px]:text-[clamp(34px,11vw,44px)]">Sweat, Strengthen, and Transform Your Body at Our Gym</h1>
+          <p className="m-0 max-w-[610px] text-sm font-bold leading-[1.35] text-[#f0f0f0] max-[560px]:text-[13px] max-[560px]:leading-[1.5]">
             Welcome to FitZone, where we are dedicated to helping you achieve your fitness goals.
             With expert trainers and modern equipment, we provide a strong fitness experience for all levels.
           </p>
-          <button className="red-btn hero-btn" onClick={() => { window.location.href = "/signup"; }} type="button">Join Us Now!</button>
+          <div className="mt-[38px] flex flex-wrap gap-3 max-[560px]:mt-6">
+            <button className={`${redButton} min-h-12 min-w-[180px] text-sm max-[560px]:w-full`} onClick={() => { window.location.href = "/signup"; }} type="button">Join Us Now!</button>
+            <a className={`${outlineButton} inline-flex min-h-12 min-w-[150px] items-center justify-center text-sm no-underline max-[560px]:w-full`} href="#schedule" onClick={() => handleNavClick("schedule")}>View Schedule</a>
+          </div>
+          <div className="mt-8 grid max-w-[520px] grid-cols-3 gap-3 max-[560px]:mt-6">
+            {["Expert Coaches", "Daily Classes", "Crowd Aware"].map((label) => (
+              <span className="rounded-lg border border-[rgba(255,255,255,0.14)] bg-[rgba(18,18,18,0.72)] px-3 py-2 text-center text-[10px] font-black text-[#e5e5e5] backdrop-blur-sm" key={label}>{label}</span>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section id="membership" className="section">
-        <h2 className="section-title">Membership Plans</h2>
-        <div className="red-line"></div>
+      <section id="membership" className={sectionClass}>
+        <h2 className={sectionTitle}>Membership Plans</h2>
+        <div className={redLine}></div>
 
         {plansStatus === "loading" && (
-          <p className="membership-status">Loading membership plans...</p>
+          <p className={statusText}>Loading membership plans...</p>
         )}
 
         {plansStatus === "error" && (
-          <p className="membership-status error">Membership plans are unavailable right now.</p>
+          <p className={`${statusText} text-[#ff7088]`}>Membership plans are unavailable right now.</p>
         )}
 
         {plansStatus === "ready" && plans.length === 0 && (
-          <p className="membership-status">No membership plans are available right now.</p>
+          <p className={statusText}>No membership plans are available right now.</p>
         )}
 
         {plansStatus === "ready" && plans.length > 0 && (
-          <div className="plan-grid">
+          <div className="grid w-full grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] items-center gap-[clamp(24px,3vw,42px)]">
             {plans.map((plan) => (
-              <div className={`plan-card ${plan.premium ? "premium" : ""}`} key={plan.slug || plan.name}>
-                {plan.badge && <span className="badge">{plan.badge}</span>}
-                <h3>{plan.name}</h3>
-                <p>{plan.desc}</p>
-                <h4>{plan.price}<small>/month</small></h4>
+              <div
+                className={`min-h-0 rounded-[14px] border border-[#373737] bg-[#202020] px-[22px] pb-[22px] pt-7 shadow-[0_18px_42px_rgba(0,0,0,0.34)] transition hover:-translate-y-1.5 hover:shadow-[0_24px_50px_rgba(0,0,0,0.44)] min-[1200px]:px-7 min-[1200px]:pb-[26px] min-[1200px]:pt-8 max-[980px]:hover:translate-y-0 max-[560px]:rounded-xl max-[560px]:px-4 max-[560px]:pb-5 max-[560px]:pt-6 ${plan.premium ? "border-t-[7px] border-t-[#ffd34d] hover:border-[#ffd34d]" : "border-t-[7px] border-t-[#e6002e] hover:border-[#e6002e] hover:bg-[linear-gradient(180deg,#211014,#161616)]"}`}
+                key={plan.slug || plan.name}
+              >
+                {plan.badge && (
+                  <span className={`mx-auto mb-3.5 mt-[-14px] table rounded-[20px] px-[22px] py-1.5 text-[9px] font-black ${plan.premium ? "bg-[#ffd34d] text-[#111]" : "bg-[#e6002e] text-white"}`}>
+                    {plan.badge}
+                  </span>
+                )}
+                <h3 className="mb-2.5 mt-0 text-center text-2xl leading-[1.1] min-[1200px]:text-[28px] max-[560px]:text-[22px]">{plan.name}</h3>
+                <p className="mb-3.5 mt-0 text-center text-[11px] font-bold leading-[1.35] text-[#aaa] min-[1200px]:text-xs max-[560px]:text-[12px]">{plan.desc}</p>
+                <h4 className={`mb-[22px] mt-0 text-[38px] leading-none min-[1200px]:mb-6 min-[1200px]:text-[46px] max-[560px]:mb-5 max-[560px]:text-[34px] ${plan.premium ? "text-[#ffd34d]" : ""}`}>
+                  {plan.price}<small className="ml-3.5 text-xs text-[#a8a8a8]">/month</small>
+                </h4>
 
-                <h5>{plan.title}</h5>
-                <ul>
+                <h5 className="mb-3 mt-0 text-[11px] min-[1200px]:text-xs">{plan.title}</h5>
+                <ul className="mb-[22px] grid list-none gap-[9px] p-0 min-[1200px]:mb-6 min-[1200px]:gap-[11px] max-[560px]:gap-2.5">
                   {(plan.features || []).map((feature) => (
-                    <li key={feature}><span>✓</span>{feature}</li>
+                    <li className="flex items-center gap-[9px] text-[11px] font-bold text-[#d3d3d3] min-[1200px]:text-xs max-[560px]:text-xs" key={feature}>
+                      <span className={`grid h-4 w-4 flex-[0_0_16px] place-items-center rounded-full text-[9px] min-[1200px]:h-[19px] min-[1200px]:w-[19px] min-[1200px]:flex-[0_0_19px] min-[1200px]:text-[10px] ${plan.premium ? "bg-[#ffd34d] text-[#111]" : "bg-[#e6002e] text-white"}`}>✓</span>
+                      {feature}
+                    </li>
                   ))}
                 </ul>
 
-                <button className={plan.premium ? "gold-btn" : "red-btn"} onClick={() => { window.location.href = `/payment?plan=${encodeURIComponent(plan.slug)}`; }} type="button">
+                <button className={`${plan.premium ? goldButton : redButton} min-h-10 w-full min-[1200px]:min-h-11 min-[1200px]:text-xs max-[560px]:min-h-11`} onClick={() => { window.location.href = `/payment?plan=${encodeURIComponent(plan.slug)}`; }} type="button">
                   {plan.popular ? "Choose Standard" : "Get Started"}
                 </button>
               </div>
@@ -398,28 +562,28 @@ function Home({ clerkEnabled }) {
         )}
       </section>
 
-      <section id="trainers" className="section dark">
-        <h2 className="section-title">MEET THE TEAMS...</h2>
-        <div className="red-line"></div>
-        <p className="section-subtitle">Professional coaches ready to guide your fitness journey</p>
+      <section id="trainers" className={`${sectionClass} bg-[linear-gradient(180deg,#0d0d0d,#151515)]`}>
+        <h2 className={sectionTitle}>MEET THE TEAMS...</h2>
+        <div className={redLine}></div>
+        <p className="-mt-[30px] mb-[58px] text-center text-sm font-bold text-[#a9a9a9] max-[980px]:-mt-[18px] max-[980px]:mb-9 max-[560px]:mx-auto max-[560px]:max-w-[280px] max-[560px]:text-xs">Professional coaches ready to guide your fitness journey</p>
 
         {trainersStatus === "loading" && (
-          <p className="section-status">Loading trainers...</p>
+          <p className={statusText}>Loading trainers...</p>
         )}
 
         {trainersStatus === "error" && (
-          <p className="section-status error">Trainers are unavailable right now.</p>
+          <p className={`${statusText} text-[#ff7088]`}>Trainers are unavailable right now.</p>
         )}
 
         {trainersStatus === "ready" && trainers.length === 0 && (
-          <p className="section-status">No trainers are available right now.</p>
+          <p className={statusText}>No trainers are available right now.</p>
         )}
 
         {trainersStatus === "ready" && trainers.length > 0 && (
-          <div className="trainer-grid">
+          <div className="grid w-full grid-cols-[repeat(auto-fit,minmax(min(100%,240px),1fr))] gap-[clamp(26px,3vw,46px)] max-[560px]:gap-5">
             {trainers.map((trainer, index) => (
               <div
-                className="trainer-card"
+                className="group relative h-[clamp(385px,38vw,500px)] cursor-pointer overflow-hidden rounded-[17px] border border-[#282828] bg-[#111] shadow-[0_14px_34px_rgba(0,0,0,0.35)] transition hover:-translate-y-1 hover:border-[#e6002e] hover:shadow-[0_24px_52px_rgba(0,0,0,0.5)] max-[980px]:h-[430px] max-[980px]:w-full max-[560px]:h-[360px] max-[560px]:rounded-xl"
                 key={trainer.slug || trainer.name}
                 role="button"
                 tabIndex="0"
@@ -431,22 +595,28 @@ function Home({ clerkEnabled }) {
                   }
                 }}
               >
-                <div className="trainer-badges">
-                  <span>{trainer.category}</span>
-                  {trainer.badge && <span>{trainer.badge}</span>}
+                <div className="absolute left-3.5 right-3.5 top-3 z-[2] flex justify-between gap-2 max-[560px]:flex-wrap">
+                  <span className="rounded-[14px] bg-[#242424] px-[13px] py-1.5 text-[8px] font-black text-white min-[1200px]:px-[15px] min-[1200px]:py-[7px] min-[1200px]:text-[9px]">{trainer.category}</span>
+                  {trainer.badge && <span className="rounded-[14px] bg-[#e6002e] px-[13px] py-1.5 text-[8px] font-black text-white min-[1200px]:px-[15px] min-[1200px]:py-[7px] min-[1200px]:text-[9px]">{trainer.badge}</span>}
                 </div>
-                <div className="trainer-photo-wrap">
-                  <img className={`trainer-photo trainer-photo-${index + 1}`} src={trainer.image} alt={trainer.name} />
+                <div className="flex h-[70%] items-end justify-center bg-[linear-gradient(180deg,#f8f8f8,#dedede)]">
+                  <img
+                    className={`block h-full w-full object-cover ${index === 1 ? "object-[center_-45px]" : "object-top"}`}
+                    src={trainer.image}
+                    alt={trainer.name}
+                  />
                 </div>
-                <div className="trainer-info">
-                  <div className="trainer-mark"></div>
-                  <h3>{trainer.name}</h3>
-                  <p>{trainer.role}</p>
+                <div className="absolute bottom-0 min-h-[31%] w-full bg-[linear-gradient(180deg,rgba(18,18,18,0.9),rgba(8,8,8,0.98))] px-[18px] pb-[17px] pt-4 min-[1200px]:px-[22px] min-[1200px]:pb-[22px] min-[1200px]:pt-5 max-[560px]:px-4 max-[560px]:pb-4 max-[560px]:pt-3.5">
+                  <div className="mb-2.5 h-1.5 w-[52px] rounded-lg bg-[#e6002e]"></div>
+                  <h3 className="mb-1.5 mt-0 text-[15px] min-[1200px]:text-lg">{trainer.name}</h3>
+                  <p className="mb-4 mt-0 text-[11px] font-bold text-[#b8b8b8] min-[1200px]:mb-5 min-[1200px]:text-[13px] max-[560px]:mb-3">{trainer.role}</p>
                   <button
+                    className="w-full cursor-pointer rounded-[10px] border border-[#e6002e] bg-transparent p-[9px] text-[10px] font-black text-white transition group-hover:bg-[#e6002e] min-[1200px]:p-[11px] min-[1200px]:text-[11px]"
                     onClick={(event) => {
                       event.stopPropagation();
                       openTrainerProfile(trainer);
                     }}
+                    type="button"
                   >
                     View Profile
                   </button>
@@ -457,17 +627,17 @@ function Home({ clerkEnabled }) {
         )}
       </section>
 
-      <div className="schedule-section">
+      <div className="flex min-h-screen w-full flex-col justify-center bg-[radial-gradient(circle_at_-8%_16%,rgba(230,0,46,0.13),transparent_18%),radial-gradient(circle_at_102%_72%,rgba(255,211,77,0.08),transparent_22%),#111] py-[90px] max-[980px]:min-h-0 max-[980px]:py-[70px] max-[560px]:py-12">
         {scheduleStatus === "loading" && (
-          <p className="schedule-status">Loading class schedule...</p>
+          <p className="text-center text-[13px] font-extrabold text-[#d5d5d5]">Loading class schedule...</p>
         )}
 
         {scheduleStatus === "error" && (
-          <p className="schedule-status error">Class schedule is unavailable right now.</p>
+          <p className="text-center text-[13px] font-extrabold text-[#ff7088]">Class schedule is unavailable right now.</p>
         )}
 
         {scheduleStatus === "ready" && weeklySchedule.length === 0 && (
-          <p className="schedule-status">No class schedule is available right now.</p>
+          <p className="text-center text-[13px] font-extrabold text-[#d5d5d5]">No class schedule is available right now.</p>
         )}
 
         {scheduleStatus === "ready" && weeklySchedule.length > 0 && (
@@ -498,34 +668,34 @@ function Home({ clerkEnabled }) {
         )}
       </div>
 
-      <footer id="contact" className="footer">
+      <footer id="contact" className="grid w-full grid-cols-[repeat(auto-fit,minmax(min(100%,190px),1fr))] gap-[54px] border-t-[5px] border-[#e6002e] bg-[linear-gradient(180deg,#101010,#080808)] px-[max(36px,5vw)] pb-[38px] pt-12 max-[980px]:gap-7 max-[980px]:px-[22px] max-[980px]:pb-8 max-[980px]:pt-[38px] max-[560px]:gap-6 max-[560px]:px-4 max-[560px]:pb-7 max-[560px]:pt-8">
         {siteSettingsStatus === "loading" && (
-          <p className="footer-status">Loading contact information...</p>
+          <p className="col-span-full m-0 text-center text-[13px] font-extrabold text-[#d5d5d5]">Loading contact information...</p>
         )}
 
         {siteSettingsStatus === "error" && (
-          <p className="footer-status error">Contact information is unavailable right now.</p>
+          <p className="col-span-full m-0 text-center text-[13px] font-extrabold text-[#ff7088]">Contact information is unavailable right now.</p>
         )}
 
         {siteSettingsStatus === "ready" && siteSettings && (
           <>
             <div>
-              <h2>{siteSettings.brand?.name}</h2>
-              <p>{siteSettings.brand?.description}</p>
+              <h2 className="mb-4 mt-0 text-[34px] max-[560px]:text-[28px]">{siteSettings.brand?.name}</h2>
+              <p className="mb-2.5 mt-0 text-xs leading-[1.45] text-[#d6d6d6] max-[560px]:text-[13px]">{siteSettings.brand?.description}</p>
             </div>
 
             <div>
-              <h3>Quick Links</h3>
+              <h3 className="mb-[18px] mt-0 text-sm text-[#e6002e] max-[560px]:mb-3">Quick Links</h3>
               {(siteSettings.quickLinks || []).map((link) => {
                 const sectionId = getSectionIdFromLabel(link);
 
                 if (!sectionId) {
-                  return <p key={link}>{link}</p>;
+                  return <p className="mb-2.5 mt-0 text-xs leading-[1.45] text-[#d6d6d6] max-[560px]:text-[13px]" key={link}>{link}</p>;
                 }
 
                 return (
                   <a
-                    className="footer-link"
+                    className="mb-2.5 block text-xs font-bold leading-[1.45] text-[#d6d6d6] no-underline transition-colors hover:text-[#e6002e] max-[560px]:text-[13px]"
                     href={`#${sectionId}`}
                     key={link}
                     onClick={() => setActiveSection(sectionId)}
@@ -537,28 +707,28 @@ function Home({ clerkEnabled }) {
             </div>
 
             <div>
-              <h3>Contact</h3>
-              <p>{siteSettings.contact?.location}</p>
-              <p>{siteSettings.contact?.phone}</p>
-              <p>{siteSettings.contact?.email}</p>
+              <h3 className="mb-[18px] mt-0 text-sm text-[#e6002e] max-[560px]:mb-3">Contact</h3>
+              <p className="mb-2.5 mt-0 text-xs leading-[1.45] text-[#d6d6d6] max-[560px]:text-[13px]">{siteSettings.contact?.location}</p>
+              <p className="mb-2.5 mt-0 text-xs leading-[1.45] text-[#d6d6d6] max-[560px]:text-[13px]">{siteSettings.contact?.phone}</p>
+              <p className="mb-2.5 mt-0 text-xs leading-[1.45] text-[#d6d6d6] max-[560px]:text-[13px]">{siteSettings.contact?.email}</p>
             </div>
 
             <div>
-              <h3>Opening Hours</h3>
+              <h3 className="mb-[18px] mt-0 text-sm text-[#e6002e] max-[560px]:mb-3">Opening Hours</h3>
               {(siteSettings.openingHours || []).map((hours) => (
-                <p key={hours}>{hours}</p>
+                <p className="mb-2.5 mt-0 text-xs leading-[1.45] text-[#d6d6d6] max-[560px]:text-[13px]" key={hours}>{hours}</p>
               ))}
-              <h3>Follow Us</h3>
-              <div className="socials">
+              <h3 className="mb-[18px] mt-0 text-sm text-[#e6002e] max-[560px]:mb-3">Follow Us</h3>
+              <div className="flex gap-2.5">
                 {(siteSettings.socials || []).map((social) => (
-                  <span key={social}>{social}</span>
+                  <span className="grid h-7 w-7 place-items-center rounded-full border border-[#e6002e] text-[9px] font-black text-[#b8b8b8]" key={social}>{social}</span>
                 ))}
               </div>
             </div>
           </>
         )}
       </footer>
-      <div className="copyright">{siteSettings?.copyright || "© 2026 FITZONE. All Rights Reserved."}</div>
+      <div className="border-t border-[#252525] bg-[#0f0f0f] p-[18px] text-center text-[11px] text-[#9f9f9f] max-[560px]:px-4 max-[560px]:text-[10px]">{siteSettings?.copyright || "© 2026 FITZONE. All Rights Reserved."}</div>
     </div>
   );
 }
