@@ -8,7 +8,6 @@ React + Vite frontend with a small Node API backed by MongoDB Atlas. Authenticat
 src/
   app/                  App shell, route helpers, provider config, and Vite entry point
   assets/               Static images and media
-  data/                 Frontend schedule date/filter helpers
   features/             Feature modules and page-level React components
     admin-panel/        Admin dashboard shell, shared admin helpers, and page folders
       pages/            One folder per admin page, with matching JSX and CSS
@@ -19,6 +18,7 @@ src/
     user-dashboard/     Member dashboard
   shared/               Cross-feature helpers
     api/                Frontend API client functions
+    schedule/           Frontend schedule date/filter helpers
     trainers/           Shared trainer presentation helpers
 
 server/
@@ -78,6 +78,7 @@ npm run dev
 npm run client:dev
 npm run server:dev
 npm run build
+npm run format
 npm run seed:membership-plans
 npm run seed:trainers
 npm run seed:class-schedule
@@ -154,14 +155,3 @@ Members are intentionally not seeded because Clerk is the source of truth for us
 
 Payments are intentionally not seeded because Stripe is the source of truth for payment status, card details, PromptPay QR status, and revenue reporting.
 
-## Cleanup Notes
-
-The current structure removes older duplicate paths:
-
-```txt
-src/lib/api.js              replaced by src/shared/api/client.js
-src/lib/trainerImages.js    replaced by src/shared/trainers/trainerImages.js
-Mongo payment seed files    removed; Stripe PaymentIntents are used instead
-```
-
-Admin page JSX and CSS files are grouped together by page to keep review scope small.

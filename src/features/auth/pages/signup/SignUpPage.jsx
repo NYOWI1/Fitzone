@@ -1,18 +1,28 @@
 import { useState } from "react";
 import { SignedIn, SignedOut, useSignUp } from "@clerk/clerk-react";
 import RedirectSignedInUser from "../../components/RedirectSignedInUser";
-import { AUTH_REDIRECT_AFTER_SIGNUP, getAuthErrorMessage } from "../../authConfig";
+import {
+  AUTH_REDIRECT_AFTER_SIGNUP,
+  getAuthErrorMessage,
+} from "../../authConfig";
 
 const pageContent = "relative z-[1] mx-auto max-w-[1140px]";
-const authCard = "rounded-[30px] border border-[#3a3a3a] bg-[#242424] shadow-[0_24px_70px_rgba(0,0,0,0.48)] max-[640px]:rounded-[18px]";
-const headingClass = "mb-1.5 mt-0 text-[clamp(32px,3.2vw,38px)] leading-[1.06] tracking-normal max-[640px]:mb-1 max-[640px]:text-[23px]";
-const headingText = "m-0 max-w-[480px] text-base leading-[1.18] text-[#bdbdbd] max-[640px]:text-[11px] max-[640px]:leading-[1.3]";
+const authCard =
+  "rounded-[30px] border border-[#3a3a3a] bg-[#242424] shadow-[0_24px_70px_rgba(0,0,0,0.48)] max-[640px]:rounded-[18px]";
+const headingClass =
+  "mb-1.5 mt-0 text-[clamp(32px,3.2vw,38px)] leading-[1.06] tracking-normal max-[640px]:mb-1 max-[640px]:text-[23px]";
+const headingText =
+  "m-0 max-w-[480px] text-base leading-[1.18] text-[#bdbdbd] max-[640px]:text-[11px] max-[640px]:leading-[1.3]";
 const fieldClass = "grid gap-2.5 max-[640px]:gap-1";
 const labelClass = "text-xs font-black text-[#dedede] max-[640px]:text-[11px]";
-const inputClass = "min-h-[52px] w-full rounded-2xl border border-[#414141] bg-[#2d2d2d] px-[18px] font-[inherit] text-white placeholder:text-[#a8a8a8] focus:border-[#e6002e] focus:outline-none focus:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] disabled:cursor-not-allowed disabled:opacity-65 max-[640px]:min-h-10 max-[640px]:rounded-xl max-[640px]:px-3 max-[640px]:text-sm";
-const messageClass = "m-0 rounded-[14px] border border-[rgba(230,0,46,0.35)] bg-[rgba(230,0,46,0.12)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#ff8ea2] max-[640px]:px-3 max-[640px]:py-2 max-[640px]:text-xs";
-const primaryButton = "min-h-[54px] w-full cursor-pointer rounded-2xl border-0 bg-[#e6002e] text-[15px] font-black text-white shadow-[0_18px_28px_rgba(230,0,46,0.2)] transition hover:-translate-y-px hover:bg-[#ff1744] disabled:cursor-not-allowed disabled:opacity-65 disabled:hover:translate-y-0 max-[640px]:min-h-10 max-[640px]:rounded-xl max-[640px]:text-sm";
-const secondaryButton = "min-h-[54px] w-full cursor-pointer rounded-2xl border border-[#414141] bg-[#2d2d2d] text-[15px] font-black text-white transition hover:border-[#e6002e] hover:bg-[#32151b] disabled:cursor-not-allowed disabled:opacity-65 max-[640px]:min-h-10 max-[640px]:rounded-xl max-[640px]:text-sm";
+const inputClass =
+  "min-h-[52px] w-full rounded-2xl border border-[#414141] bg-[#2d2d2d] px-[18px] font-[inherit] text-white placeholder:text-[#a8a8a8] focus:border-[#e6002e] focus:outline-none focus:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] disabled:cursor-not-allowed disabled:opacity-65 max-[640px]:min-h-10 max-[640px]:rounded-xl max-[640px]:px-3 max-[640px]:text-sm";
+const messageClass =
+  "m-0 rounded-[14px] border border-[rgba(230,0,46,0.35)] bg-[rgba(230,0,46,0.12)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#ff8ea2] max-[640px]:px-3 max-[640px]:py-2 max-[640px]:text-xs";
+const primaryButton =
+  "min-h-[54px] w-full cursor-pointer rounded-2xl border-0 bg-[#e6002e] text-[15px] font-black text-white shadow-[0_18px_28px_rgba(230,0,46,0.2)] transition hover:-translate-y-px hover:bg-[#ff1744] disabled:cursor-not-allowed disabled:opacity-65 disabled:hover:translate-y-0 max-[640px]:min-h-10 max-[640px]:rounded-xl max-[640px]:text-sm";
+const secondaryButton =
+  "min-h-[54px] w-full cursor-pointer rounded-2xl border border-[#414141] bg-[#2d2d2d] text-[15px] font-black text-white transition hover:border-[#e6002e] hover:bg-[#32151b] disabled:cursor-not-allowed disabled:opacity-65 max-[640px]:min-h-10 max-[640px]:rounded-xl max-[640px]:text-sm";
 
 function SignUpForm({ clerkEnabled }) {
   const { isLoaded, signUp, setActive } = useSignUp();
@@ -43,7 +53,9 @@ function SignUpForm({ clerkEnabled }) {
     event.preventDefault();
 
     if (!clerkEnabled) {
-      setFormMessage("Add VITE_CLERK_PUBLISHABLE_KEY to .env and restart the dev server.");
+      setFormMessage(
+        "Add VITE_CLERK_PUBLISHABLE_KEY to .env and restart the dev server.",
+      );
       return;
     }
 
@@ -113,7 +125,9 @@ function SignUpForm({ clerkEnabled }) {
         return;
       }
 
-      setFormMessage("Verification is not complete yet. Check the code and try again.");
+      setFormMessage(
+        "Verification is not complete yet. Check the code and try again.",
+      );
     } catch (error) {
       console.error(error);
       setFormMessage(getAuthErrorMessage(error));
@@ -124,10 +138,16 @@ function SignUpForm({ clerkEnabled }) {
 
   if (formMode === "verify") {
     return (
-      <form className={`${authCard} grid w-full gap-[18px] px-10 pb-[22px] pt-[38px] max-[640px]:gap-2.5 max-[640px]:px-3 max-[640px]:pb-3 max-[640px]:pt-4`} onSubmit={verifyEmail}>
+      <form
+        className={`${authCard} grid w-full gap-[18px] px-10 pb-[22px] pt-[38px] max-[640px]:gap-2.5 max-[640px]:px-3 max-[640px]:pb-3 max-[640px]:pt-4`}
+        onSubmit={verifyEmail}
+      >
         <div>
           <h2 className={headingClass}>Verify your email</h2>
-          <p className={headingText}>Enter the code sent to {formValues.email} to finish creating your account.</p>
+          <p className={headingText}>
+            Enter the code sent to {formValues.email} to finish creating your
+            account.
+          </p>
         </div>
 
         <label className={fieldClass}>
@@ -162,10 +182,16 @@ function SignUpForm({ clerkEnabled }) {
   }
 
   return (
-    <form className={`${authCard} grid w-full gap-[18px] px-10 pb-[22px] pt-[38px] max-[640px]:gap-2 max-[640px]:px-3 max-[640px]:pb-3 max-[640px]:pt-3.5`} onSubmit={createAccount}>
+    <form
+      className={`${authCard} grid w-full gap-[18px] px-10 pb-[22px] pt-[38px] max-[640px]:gap-2 max-[640px]:px-3 max-[640px]:pb-3 max-[640px]:pt-3.5`}
+      onSubmit={createAccount}
+    >
       <div>
         <h2 className={headingClass}>Create your account</h2>
-        <p className={headingText}>First create your account. Then choose the membership plan that fits you best.</p>
+        <p className={headingText}>
+          First create your account. Then choose the membership plan that fits
+          you best.
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-[30px] max-[640px]:grid-cols-2 max-[640px]:gap-2.5">
@@ -175,7 +201,9 @@ function SignUpForm({ clerkEnabled }) {
             className={inputClass}
             autoComplete="given-name"
             disabled={isBusy}
-            onChange={(event) => updateFormValue("firstName", event.target.value)}
+            onChange={(event) =>
+              updateFormValue("firstName", event.target.value)
+            }
             required
             value={formValues.firstName}
           />
@@ -187,7 +215,9 @@ function SignUpForm({ clerkEnabled }) {
             className={inputClass}
             autoComplete="family-name"
             disabled={isBusy}
-            onChange={(event) => updateFormValue("lastName", event.target.value)}
+            onChange={(event) =>
+              updateFormValue("lastName", event.target.value)
+            }
             required
             value={formValues.lastName}
           />
@@ -214,7 +244,9 @@ function SignUpForm({ clerkEnabled }) {
           className={inputClass}
           autoComplete="tel"
           disabled={isBusy}
-          onChange={(event) => updateFormValue("phoneNumber", event.target.value)}
+          onChange={(event) =>
+            updateFormValue("phoneNumber", event.target.value)
+          }
           placeholder="+66 00 000 0000"
           required
           type="tel"
@@ -229,7 +261,9 @@ function SignUpForm({ clerkEnabled }) {
             className={inputClass}
             autoComplete="new-password"
             disabled={isBusy}
-            onChange={(event) => updateFormValue("password", event.target.value)}
+            onChange={(event) =>
+              updateFormValue("password", event.target.value)
+            }
             placeholder="••••••••"
             required
             type="password"
@@ -243,7 +277,9 @@ function SignUpForm({ clerkEnabled }) {
             className={inputClass}
             autoComplete="new-password"
             disabled={isBusy}
-            onChange={(event) => updateFormValue("confirmPassword", event.target.value)}
+            onChange={(event) =>
+              updateFormValue("confirmPassword", event.target.value)
+            }
             placeholder="••••••••"
             required
             type="password"
@@ -279,58 +315,111 @@ function SignUpPage({ clerkEnabled }) {
       <div className="pointer-events-none absolute -right-[90px] -top-[126px] h-[340px] w-[340px] rounded-full bg-[rgba(230,0,46,0.15)]"></div>
       <div className="pointer-events-none absolute -bottom-[145px] -right-[22px] h-[430px] w-[430px] rounded-full bg-[rgba(255,213,79,0.09)]"></div>
 
-      <header className={`${pageContent} flex min-h-[66px] items-center justify-between rounded-[22px] border border-[#3a3a3a] bg-[#181818] py-3 pl-6 pr-7 max-[640px]:min-h-12 max-[640px]:rounded-[16px] max-[640px]:px-3 max-[640px]:py-1.5`}>
-        <a className="inline-flex items-center gap-3.5 text-white no-underline" href="/">
-          <span className="grid h-10 w-10 place-items-center rounded-[14px] bg-[#e6002e] text-[21px] font-black max-[640px]:h-8 max-[640px]:w-8 max-[640px]:rounded-[10px] max-[640px]:text-base">F</span>
-          <strong className="text-[23px] tracking-normal max-[640px]:text-base">FITZONE</strong>
+      <header
+        className={`${pageContent} flex min-h-[66px] items-center justify-between rounded-[22px] border border-[#3a3a3a] bg-[#181818] py-3 pl-6 pr-7 max-[640px]:min-h-12 max-[640px]:rounded-[16px] max-[640px]:px-3 max-[640px]:py-1.5`}
+      >
+        <a
+          className="inline-flex items-center gap-3.5 text-white no-underline"
+          href="/"
+        >
+          <span className="grid h-10 w-10 place-items-center rounded-[14px] bg-[#e6002e] text-[21px] font-black max-[640px]:h-8 max-[640px]:w-8 max-[640px]:rounded-[10px] max-[640px]:text-base">
+            F
+          </span>
+          <strong className="text-[23px] tracking-normal max-[640px]:text-base">
+            FITZONE
+          </strong>
         </a>
         <div className="flex items-center gap-[30px] max-[640px]:gap-2">
-          <span className="text-[13px] text-[#bdbdbd] max-[640px]:hidden">Already a member?</span>
-          <a className="inline-flex min-h-[43px] min-w-[170px] items-center justify-center rounded-[15px] border border-[#3a3a3a] bg-[#252525] text-[13px] font-black text-white no-underline max-[640px]:min-h-9 max-[640px]:min-w-0 max-[640px]:px-4 max-[640px]:text-xs" href="/login">Login</a>
+          <span className="text-[13px] text-[#bdbdbd] max-[640px]:hidden">
+            Already a member?
+          </span>
+          <a
+            className="inline-flex min-h-[43px] min-w-[170px] items-center justify-center rounded-[15px] border border-[#3a3a3a] bg-[#252525] text-[13px] font-black text-white no-underline max-[640px]:min-h-9 max-[640px]:min-w-0 max-[640px]:px-4 max-[640px]:text-xs"
+            href="/login"
+          >
+            Login
+          </a>
         </div>
       </header>
 
-      <section className={`${pageContent} grid grid-cols-[minmax(390px,470px)_minmax(520px,600px)] items-center justify-between gap-[clamp(48px,6vw,70px)] pt-[30px] max-[1080px]:grid-cols-[minmax(0,680px)] max-[1080px]:justify-center max-[640px]:h-[calc(100svh-64px)] max-[640px]:content-center max-[640px]:gap-0 max-[640px]:pt-2`}>
-        <aside className={`${authCard} relative min-h-[626px] overflow-hidden rounded-[30px] bg-[#181818] px-9 pb-7 pt-[46px] before:absolute before:left-0 before:right-0 before:top-0 before:h-[5px] before:bg-[#e6002e] max-[640px]:hidden`}>
-          <span className="mb-[22px] block text-[13px] font-black uppercase text-[#e6002e] max-[640px]:mb-2 max-[640px]:text-[10px]">Start your fitness journey</span>
-          <h1 className="mb-3.5 mt-0 text-[clamp(40px,4.2vw,44px)] leading-[1.16] tracking-normal max-[640px]:mb-2 max-[640px]:text-2xl">Join FitZone and train smarter.</h1>
-          <p className="m-0 max-w-[390px] text-[17px] leading-[1.18] text-[#bdbdbd] max-[640px]:text-xs max-[640px]:leading-[1.45]">Create your account to book classes, choose membership plans, and track your progress from one place.</p>
+      <section
+        className={`${pageContent} grid grid-cols-[minmax(390px,470px)_minmax(520px,600px)] items-center justify-between gap-[clamp(48px,6vw,70px)] pt-[30px] max-[1080px]:grid-cols-[minmax(0,680px)] max-[1080px]:justify-center max-[640px]:h-[calc(100svh-64px)] max-[640px]:content-center max-[640px]:gap-0 max-[640px]:pt-2`}
+      >
+        <aside
+          className={`${authCard} relative min-h-[626px] overflow-hidden rounded-[30px] bg-[#181818] px-9 pb-7 pt-[46px] before:absolute before:left-0 before:right-0 before:top-0 before:h-[5px] before:bg-[#e6002e] max-[640px]:hidden`}
+        >
+          <span className="mb-[22px] block text-[13px] font-black uppercase text-[#e6002e] max-[640px]:mb-2 max-[640px]:text-[10px]">
+            Start your fitness journey
+          </span>
+          <h1 className="mb-3.5 mt-0 text-[clamp(40px,4.2vw,44px)] leading-[1.16] tracking-normal max-[640px]:mb-2 max-[640px]:text-2xl">
+            Join FitZone and train smarter.
+          </h1>
+          <p className="m-0 max-w-[390px] text-[17px] leading-[1.18] text-[#bdbdbd] max-[640px]:text-xs max-[640px]:leading-[1.45]">
+            Create your account to book classes, choose membership plans, and
+            track your progress from one place.
+          </p>
 
           <div className="mt-16 grid gap-[42px] max-[640px]:mt-4 max-[640px]:gap-3">
             <div className="flex items-center gap-4">
-              <span className="grid h-[45px] flex-[0_0_45px] place-items-center rounded-2xl bg-[#e6002e] text-xl font-black max-[640px]:h-8 max-[640px]:flex-[0_0_32px] max-[640px]:rounded-xl max-[640px]:text-sm">✓</span>
+              <span className="grid h-[45px] flex-[0_0_45px] place-items-center rounded-2xl bg-[#e6002e] text-xl font-black max-[640px]:h-8 max-[640px]:flex-[0_0_32px] max-[640px]:rounded-xl max-[640px]:text-sm">
+                ✓
+              </span>
               <div>
-                <strong className="mb-[7px] block text-base">Choose your plan</strong>
-                <p className="m-0 text-[13px] leading-[1.25] text-[#bdbdbd]">Basic, Standard, or Premium membership options.</p>
+                <strong className="mb-[7px] block text-base">
+                  Choose your plan
+                </strong>
+                <p className="m-0 text-[13px] leading-[1.25] text-[#bdbdbd]">
+                  Basic, Standard, or Premium membership options.
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <span className="grid h-[45px] flex-[0_0_45px] place-items-center rounded-2xl bg-[#e6002e] text-xl font-black max-[640px]:h-8 max-[640px]:flex-[0_0_32px] max-[640px]:rounded-xl max-[640px]:text-sm">✓</span>
+              <span className="grid h-[45px] flex-[0_0_45px] place-items-center rounded-2xl bg-[#e6002e] text-xl font-black max-[640px]:h-8 max-[640px]:flex-[0_0_32px] max-[640px]:rounded-xl max-[640px]:text-sm">
+                ✓
+              </span>
               <div>
-                <strong className="mb-[7px] block text-base">Book classes faster</strong>
-                <p className="m-0 text-[13px] leading-[1.25] text-[#bdbdbd]">Reserve HIIT, yoga, strength, and cycling classes.</p>
+                <strong className="mb-[7px] block text-base">
+                  Book classes faster
+                </strong>
+                <p className="m-0 text-[13px] leading-[1.25] text-[#bdbdbd]">
+                  Reserve HIIT, yoga, strength, and cycling classes.
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <span className="grid h-[45px] flex-[0_0_45px] place-items-center rounded-2xl bg-[#e6002e] text-xl font-black max-[640px]:h-8 max-[640px]:flex-[0_0_32px] max-[640px]:rounded-xl max-[640px]:text-sm">✓</span>
+              <span className="grid h-[45px] flex-[0_0_45px] place-items-center rounded-2xl bg-[#e6002e] text-xl font-black max-[640px]:h-8 max-[640px]:flex-[0_0_32px] max-[640px]:rounded-xl max-[640px]:text-sm">
+                ✓
+              </span>
               <div>
-                <strong className="mb-[7px] block text-base">Track progress</strong>
-                <p className="m-0 text-[13px] leading-[1.25] text-[#bdbdbd]">Follow your workout journey and goals.</p>
+                <strong className="mb-[7px] block text-base">
+                  Track progress
+                </strong>
+                <p className="m-0 text-[13px] leading-[1.25] text-[#bdbdbd]">
+                  Follow your workout journey and goals.
+                </p>
               </div>
             </div>
           </div>
 
-          <blockquote className="mb-0 mt-[38px] text-center text-sm font-black max-[640px]:mt-4 max-[640px]:text-xs">No pressure. Start simple, improve every week.</blockquote>
+          <blockquote className="mb-0 mt-[38px] text-center text-sm font-black max-[640px]:mt-4 max-[640px]:text-xs">
+            No pressure. Start simple, improve every week.
+          </blockquote>
         </aside>
 
         <section className="min-w-0 max-[640px]:order-1">
           {!clerkEnabled && (
-            <div className={`${authCard} grid w-full gap-[18px] px-10 pb-[22px] pt-[38px]`}>
+            <div
+              className={`${authCard} grid w-full gap-[18px] px-10 pb-[22px] pt-[38px]`}
+            >
               <div>
                 <h2 className={headingClass}>Connect Clerk</h2>
-                <p className={headingText}>Add your Clerk publishable key to enable sign up.</p>
+                <p className={headingText}>
+                  Add your Clerk publishable key to enable sign up.
+                </p>
               </div>
-              <code className="block overflow-wrap-anywhere rounded-[14px] border border-[#414141] bg-[#171717] p-3.5 text-[13px] text-white">VITE_CLERK_PUBLISHABLE_KEY=pk_test_...</code>
+              <code className="block overflow-wrap-anywhere rounded-[14px] border border-[#414141] bg-[#171717] p-3.5 text-[13px] text-white">
+                VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
+              </code>
             </div>
           )}
 

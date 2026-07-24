@@ -1,20 +1,36 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUser } from "@clerk/clerk-react";
-import { isStripeEnabled, stripePublishableKey } from "../../../../app/config/stripe";
-import { createStripePaymentIntent, getMembershipPlans } from "../../../../shared/api";
-import { getPlanFromSelection, getPlanMonthlyLabel, getPlanPriceValue, saveSelectedPlan } from "../../shared/planSelection";
+import {
+  isStripeEnabled,
+  stripePublishableKey,
+} from "../../../../app/config/stripe";
+import {
+  createStripePaymentIntent,
+  getMembershipPlans,
+} from "../../../../shared/api";
+import {
+  getPlanFromSelection,
+  getPlanMonthlyLabel,
+  getPlanPriceValue,
+  saveSelectedPlan,
+} from "../../shared/planSelection";
 
 const stripeScriptUrl = "https://js.stripe.com/v3/";
 const pageContent = "relative z-[1] mx-auto max-w-[1120px]";
 const flowNav = `${pageContent} flex min-h-[66px] items-center justify-between rounded-[22px] border border-[#3a3a3a] bg-[#181818] py-3 pl-6 pr-7 max-[640px]:items-start max-[640px]:flex-col max-[640px]:gap-3.5 max-[640px]:p-[18px]`;
 const flowBrand = "inline-flex items-center gap-3.5 text-white no-underline";
-const panelCard = "rounded-[30px] border border-[#3a3a3a] bg-[#252525] shadow-[0_24px_70px_rgba(0,0,0,0.48)] max-[640px]:rounded-[22px] max-[640px]:px-[22px]";
+const panelCard =
+  "rounded-[30px] border border-[#3a3a3a] bg-[#252525] shadow-[0_24px_70px_rgba(0,0,0,0.48)] max-[640px]:rounded-[22px] max-[640px]:px-[22px]";
 const fieldLabel = "grid gap-2.5";
 const fieldLabelText = "text-xs font-black text-[#dedede]";
-const inputClass = "min-h-[50px] w-full rounded-[14px] border border-[#414141] bg-[#2d2d2d] px-[18px] font-[inherit] text-white placeholder:text-[#a8a8a8] focus:border-[#e6002e] focus:outline-none focus:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] disabled:cursor-not-allowed disabled:opacity-65";
-const stripeCardClass = "flex min-h-[50px] w-full flex-col justify-center rounded-[14px] border border-[#414141] bg-[#2d2d2d] px-[18px] focus-within:border-[#e6002e] focus-within:outline-none focus-within:shadow-[0_0_0_3px_rgba(230,0,46,0.12)]";
-const paymentMessageClass = "mb-3.5 mt-0 rounded-[14px] border border-[rgba(230,0,46,0.35)] bg-[rgba(230,0,46,0.12)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#ff8ea2]";
-const successMessageClass = "mb-3.5 mt-0 rounded-[14px] border border-[rgba(57,230,0,0.28)] bg-[rgba(57,230,0,0.1)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#a6ff8f]";
+const inputClass =
+  "min-h-[50px] w-full rounded-[14px] border border-[#414141] bg-[#2d2d2d] px-[18px] font-[inherit] text-white placeholder:text-[#a8a8a8] focus:border-[#e6002e] focus:outline-none focus:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] disabled:cursor-not-allowed disabled:opacity-65";
+const stripeCardClass =
+  "flex min-h-[50px] w-full flex-col justify-center rounded-[14px] border border-[#414141] bg-[#2d2d2d] px-[18px] focus-within:border-[#e6002e] focus-within:outline-none focus-within:shadow-[0_0_0_3px_rgba(230,0,46,0.12)]";
+const paymentMessageClass =
+  "mb-3.5 mt-0 rounded-[14px] border border-[rgba(230,0,46,0.35)] bg-[rgba(230,0,46,0.12)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#ff8ea2]";
+const successMessageClass =
+  "mb-3.5 mt-0 rounded-[14px] border border-[rgba(57,230,0,0.28)] bg-[rgba(57,230,0,0.1)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#a6ff8f]";
 
 function isPaymentSuccessful(paymentIntent) {
   return String(paymentIntent?.status || "").toLowerCase() === "succeeded";
@@ -31,7 +47,9 @@ function loadStripeScript() {
       return;
     }
 
-    const existingScript = document.querySelector(`script[src="${stripeScriptUrl}"]`);
+    const existingScript = document.querySelector(
+      `script[src="${stripeScriptUrl}"]`,
+    );
 
     if (existingScript) {
       existingScript.addEventListener("load", () => resolve(window.Stripe));
@@ -49,7 +67,11 @@ function loadStripeScript() {
 }
 
 function getUserEmail(user) {
-  return user?.primaryEmailAddress?.emailAddress || user?.emailAddresses?.[0]?.emailAddress || "";
+  return (
+    user?.primaryEmailAddress?.emailAddress ||
+    user?.emailAddresses?.[0]?.emailAddress ||
+    ""
+  );
 }
 
 function PaymentPageContent({ clerkEmail = "" }) {
@@ -72,11 +94,15 @@ function PaymentPageContent({ clerkEmail = "" }) {
   const cardElementRef = useRef(null);
 
   const selectedSlug = new URLSearchParams(window.location.search).get("plan");
-  const selectedPlan = useMemo(() => getPlanFromSelection(plans, selectedSlug), [plans, selectedSlug]);
+  const selectedPlan = useMemo(
+    () => getPlanFromSelection(plans, selectedSlug),
+    [plans, selectedSlug],
+  );
   const monthlyAmount = getPlanPriceValue(selectedPlan);
   const amountInSatang = monthlyAmount * 100;
   const isBusy = paymentStatus === "saving";
-  const isPromptPayPending = paymentStatus === "pending" && Boolean(promptPayClientSecret);
+  const isPromptPayPending =
+    paymentStatus === "pending" && Boolean(promptPayClientSecret);
   const isPromptPaySelected = paymentMethod === "promptpay";
 
   useEffect(() => {
@@ -204,39 +230,50 @@ function PaymentPageContent({ clerkEmail = "" }) {
     }, 900);
   }, []);
 
-  const checkPromptPayStatus = useCallback(async ({ showPendingMessage = false } = {}) => {
-    if (!stripeClient || !promptPayClientSecret) {
-      return false;
-    }
-
-    const result = await stripeClient.retrievePaymentIntent(promptPayClientSecret);
-
-    if (result.error) {
-      if (showPendingMessage) {
-        setPaymentMessage(result.error.message || "Unable to check PromptPay status.");
+  const checkPromptPayStatus = useCallback(
+    async ({ showPendingMessage = false } = {}) => {
+      if (!stripeClient || !promptPayClientSecret) {
+        return false;
       }
+
+      const result = await stripeClient.retrievePaymentIntent(
+        promptPayClientSecret,
+      );
+
+      if (result.error) {
+        if (showPendingMessage) {
+          setPaymentMessage(
+            result.error.message || "Unable to check PromptPay status.",
+          );
+        }
+        return false;
+      }
+
+      const nextStatus = result.paymentIntent?.status || "pending";
+
+      if (isPaymentSuccessful(result.paymentIntent)) {
+        redirectAfterPayment(
+          "PromptPay payment succeeded. Redirecting to login...",
+        );
+        return true;
+      }
+
+      if (["requires_payment_method", "canceled"].includes(nextStatus)) {
+        setPaymentStatus("idle");
+        setPaymentMessage(`PromptPay payment status: ${nextStatus}.`);
+        return true;
+      }
+
+      if (showPendingMessage) {
+        setPaymentMessage(
+          `PromptPay payment status: ${nextStatus}. Waiting for confirmation.`,
+        );
+      }
+
       return false;
-    }
-
-    const nextStatus = result.paymentIntent?.status || "pending";
-
-    if (isPaymentSuccessful(result.paymentIntent)) {
-      redirectAfterPayment("PromptPay payment succeeded. Redirecting to login...");
-      return true;
-    }
-
-    if (["requires_payment_method", "canceled"].includes(nextStatus)) {
-      setPaymentStatus("idle");
-      setPaymentMessage(`PromptPay payment status: ${nextStatus}.`);
-      return true;
-    }
-
-    if (showPendingMessage) {
-      setPaymentMessage(`PromptPay payment status: ${nextStatus}. Waiting for confirmation.`);
-    }
-
-    return false;
-  }, [promptPayClientSecret, redirectAfterPayment, stripeClient]);
+    },
+    [promptPayClientSecret, redirectAfterPayment, stripeClient],
+  );
 
   const submitPayment = async (event) => {
     event.preventDefault();
@@ -247,7 +284,9 @@ function PaymentPageContent({ clerkEmail = "" }) {
     }
 
     if (!isStripeEnabled) {
-      setPaymentMessage("Add VITE_STRIPE_PUBLISHABLE_KEY to .env and restart Vite.");
+      setPaymentMessage(
+        "Add VITE_STRIPE_PUBLISHABLE_KEY to .env and restart Vite.",
+      );
       return;
     }
 
@@ -257,7 +296,9 @@ function PaymentPageContent({ clerkEmail = "" }) {
     }
 
     if (!isPromptPaySelected && (!cardComplete || !cardElementRef.current)) {
-      setPaymentMessage(cardError || "Enter a complete sandbox card number before paying.");
+      setPaymentMessage(
+        cardError || "Enter a complete sandbox card number before paying.",
+      );
       return;
     }
 
@@ -290,24 +331,34 @@ function PaymentPageContent({ clerkEmail = "" }) {
 
       if (isPromptPaySelected) {
         if (typeof stripeClient.confirmPromptPayPayment !== "function") {
-          throw new Error("PromptPay is not available in this Stripe.js version.");
+          throw new Error(
+            "PromptPay is not available in this Stripe.js version.",
+          );
         }
 
-        const confirmation = await stripeClient.confirmPromptPayPayment(paymentIntent.clientSecret, {
-          payment_method: {
-            billing_details: {
-              email: cardValues.email,
-              name: cardValues.cardholderName || "FitZone Member",
+        const confirmation = await stripeClient.confirmPromptPayPayment(
+          paymentIntent.clientSecret,
+          {
+            payment_method: {
+              billing_details: {
+                email: cardValues.email,
+                name: cardValues.cardholderName || "FitZone Member",
+              },
             },
           },
-        });
+        );
 
         if (confirmation.error) {
-          throw new Error(confirmation.error.message || "Stripe could not create a PromptPay QR code.");
+          throw new Error(
+            confirmation.error.message ||
+              "Stripe could not create a PromptPay QR code.",
+          );
         }
 
         if (isPaymentSuccessful(confirmation.paymentIntent)) {
-          redirectAfterPayment("PromptPay payment succeeded. Redirecting to login...");
+          redirectAfterPayment(
+            "PromptPay payment succeeded. Redirecting to login...",
+          );
           return;
         }
 
@@ -320,43 +371,60 @@ function PaymentPageContent({ clerkEmail = "" }) {
         setPromptPayQrCode(qrCode);
         setPromptPayClientSecret(paymentIntent.clientSecret);
         setPaymentStatus("pending");
-        setPaymentMessage("Scan the PromptPay QR code in your banking app, then wait for confirmation.");
+        setPaymentMessage(
+          "Scan the PromptPay QR code in your banking app, then wait for confirmation.",
+        );
         return;
       }
 
-      const confirmation = await stripeClient.confirmCardPayment(paymentIntent.clientSecret, {
-        payment_method: {
-          card: cardElementRef.current,
-          billing_details: {
-            email: cardValues.email,
-            name: cardValues.cardholderName || "FitZone Member",
+      const confirmation = await stripeClient.confirmCardPayment(
+        paymentIntent.clientSecret,
+        {
+          payment_method: {
+            card: cardElementRef.current,
+            billing_details: {
+              email: cardValues.email,
+              name: cardValues.cardholderName || "FitZone Member",
+            },
           },
         },
-      });
+      );
 
       if (confirmation.error) {
-        throw new Error(confirmation.error.message || "Stripe could not confirm the payment.");
+        throw new Error(
+          confirmation.error.message || "Stripe could not confirm the payment.",
+        );
       }
 
       const paymentSucceeded = isPaymentSuccessful(confirmation.paymentIntent);
 
       setPaymentStatus("success");
-      setPaymentMessage(paymentSucceeded
-        ? "Stripe sandbox payment succeeded. Redirecting to login..."
-        : `Stripe payment status: ${confirmation.paymentIntent?.status || "pending"}.`);
+      setPaymentMessage(
+        paymentSucceeded
+          ? "Stripe sandbox payment succeeded. Redirecting to login..."
+          : `Stripe payment status: ${confirmation.paymentIntent?.status || "pending"}.`,
+      );
 
       if (paymentSucceeded) {
-        redirectAfterPayment("Stripe sandbox payment succeeded. Redirecting to login...");
+        redirectAfterPayment(
+          "Stripe sandbox payment succeeded. Redirecting to login...",
+        );
       }
     } catch (error) {
       console.error(error);
       setPaymentStatus("idle");
-      setPaymentMessage(error.message || "Unable to complete Stripe sandbox payment.");
+      setPaymentMessage(
+        error.message || "Unable to complete Stripe sandbox payment.",
+      );
     }
   };
 
   useEffect(() => {
-    if (paymentStatus !== "pending" || !promptPayClientSecret || !stripeClient) {
+    if (
+      paymentStatus !== "pending" ||
+      !promptPayClientSecret ||
+      !stripeClient
+    ) {
       return undefined;
     }
 
@@ -371,7 +439,9 @@ function PaymentPageContent({ clerkEmail = "" }) {
           window.clearInterval(intervalId);
         } else if (attempts >= 60) {
           window.clearInterval(intervalId);
-          setPaymentMessage("PromptPay payment is still pending. Click Check PromptPay Status after paying.");
+          setPaymentMessage(
+            "PromptPay payment is still pending. Click Check PromptPay Status after paying.",
+          );
         }
       } catch (error) {
         console.error(error);
@@ -392,7 +462,12 @@ function PaymentPageContent({ clerkEmail = "" }) {
       window.removeEventListener("focus", checkOnFocus);
       document.removeEventListener("visibilitychange", checkOnFocus);
     };
-  }, [checkPromptPayStatus, paymentStatus, promptPayClientSecret, stripeClient]);
+  }, [
+    checkPromptPayStatus,
+    paymentStatus,
+    promptPayClientSecret,
+    stripeClient,
+  ]);
 
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[#0d0d0d] px-[clamp(28px,5vw,70px)] py-9 font-[Inter,Arial,sans-serif] text-white max-[1040px]:overflow-auto max-[640px]:p-4">
@@ -402,27 +477,58 @@ function PaymentPageContent({ clerkEmail = "" }) {
 
       <header className={flowNav}>
         <a className={flowBrand} href="/">
-          <span className="grid h-10 w-10 place-items-center rounded-[14px] bg-[#e6002e] text-[21px] font-black">F</span>
+          <span className="grid h-10 w-10 place-items-center rounded-[14px] bg-[#e6002e] text-[21px] font-black">
+            F
+          </span>
           <strong className="text-[23px] tracking-normal">FITZONE</strong>
         </a>
-        <p className="m-0 text-[13px] font-black text-[#bdbdbd]">Step 3: Complete your payment with Stripe sandbox</p>
+        <p className="m-0 text-[13px] font-black text-[#bdbdbd]">
+          Step 3: Complete your payment with Stripe sandbox
+        </p>
       </header>
 
       <section className={`${pageContent} py-6 pb-7 max-[640px]:py-7`}>
-        <span className="mb-3.5 block text-xs font-black uppercase text-[#e6002e]">Secure Stripe Sandbox Checkout</span>
-        <h1 className="mb-2 mt-0 text-[clamp(38px,4vw,46px)] leading-[1.05] tracking-normal">Payment Details</h1>
-        <p className="m-0 text-[15px] leading-[1.45] text-[#bdbdbd]">Finish your membership setup through Stripe sandbox. Card details stay inside Stripe Elements before the payment is confirmed.</p>
+        <span className="mb-3.5 block text-xs font-black uppercase text-[#e6002e]">
+          Secure Stripe Sandbox Checkout
+        </span>
+        <h1 className="mb-2 mt-0 text-[clamp(38px,4vw,46px)] leading-[1.05] tracking-normal">
+          Payment Details
+        </h1>
+        <p className="m-0 text-[15px] leading-[1.45] text-[#bdbdbd]">
+          Finish your membership setup through Stripe sandbox. Card details stay
+          inside Stripe Elements before the payment is confirmed.
+        </p>
       </section>
 
-      {status === "loading" && <p className={`${pageContent} py-[90px] text-center text-[15px] leading-[1.45] text-[#bdbdbd]`}>Loading selected plan...</p>}
-      {status === "error" && <p className={`${pageContent} py-[90px] text-center text-[15px] leading-[1.45] text-[#ff8ea2]`}>Payment setup is unavailable right now.</p>}
+      {status === "loading" && (
+        <p
+          className={`${pageContent} py-[90px] text-center text-[15px] leading-[1.45] text-[#bdbdbd]`}
+        >
+          Loading selected plan...
+        </p>
+      )}
+      {status === "error" && (
+        <p
+          className={`${pageContent} py-[90px] text-center text-[15px] leading-[1.45] text-[#ff8ea2]`}
+        >
+          Payment setup is unavailable right now.
+        </p>
+      )}
 
       {status === "ready" && selectedPlan && (
-        <form className={`${pageContent} grid grid-cols-[minmax(0,1.45fr)_minmax(330px,0.82fr)] items-start gap-8 max-[1040px]:grid-cols-1`} onSubmit={submitPayment}>
+        <form
+          className={`${pageContent} grid grid-cols-[minmax(0,1.45fr)_minmax(330px,0.82fr)] items-start gap-8 max-[1040px]:grid-cols-1`}
+          onSubmit={submitPayment}
+        >
           <section className={`${panelCard} min-h-[430px] px-[38px] py-[34px]`}>
-            <h2 className="mb-[22px] mt-0 text-[25px] tracking-normal">Payment Method</h2>
+            <h2 className="mb-[22px] mt-0 text-[25px] tracking-normal">
+              Payment Method
+            </h2>
 
-            <div className="mb-7 grid max-w-[410px] grid-cols-2 gap-2.5 max-[640px]:grid-cols-1 max-[640px]:gap-3.5" aria-label="Payment method">
+            <div
+              className="mb-7 grid max-w-[410px] grid-cols-2 gap-2.5 max-[640px]:grid-cols-1 max-[640px]:gap-3.5"
+              aria-label="Payment method"
+            >
               <button
                 className={`inline-flex min-h-[54px] cursor-pointer items-center justify-center gap-2.5 rounded-[14px] border bg-[#2d2d2d] text-[15px] font-black transition disabled:cursor-not-allowed disabled:opacity-65 ${paymentMethod === "card" ? "border-[#e6002e] bg-[#242424] text-white shadow-[inset_0_0_0_1px_rgba(230,0,46,0.38)]" : "border-[#414141] text-[#bdbdbd]"}`}
                 disabled={isBusy || isPromptPayPending}
@@ -452,23 +558,29 @@ function PaymentPageContent({ clerkEmail = "" }) {
             </div>
 
             <div className="grid gap-[18px]">
-              <label className={fieldLabel}>
-                <span className={fieldLabelText}>Cardholder Name</span>
-                <input
-                  className={inputClass}
-                  disabled={isBusy}
-                  onChange={(event) => updateCardValue("cardholderName", event.target.value)}
-                  required
-                  value={cardValues.cardholderName}
-                />
-              </label>
+              {!isPromptPaySelected && (
+                <label className={fieldLabel}>
+                  <span className={fieldLabelText}>Cardholder Name</span>
+                  <input
+                    className={inputClass}
+                    disabled={isBusy}
+                    onChange={(event) =>
+                      updateCardValue("cardholderName", event.target.value)
+                    }
+                    required
+                    value={cardValues.cardholderName}
+                  />
+                </label>
+              )}
 
               <label className={fieldLabel}>
                 <span className={fieldLabelText}>Clerk Account Email</span>
                 <input
                   className={inputClass}
                   disabled={isBusy || Boolean(clerkEmail)}
-                  onChange={(event) => updateCardValue("email", event.target.value)}
+                  onChange={(event) =>
+                    updateCardValue("email", event.target.value)
+                  }
                   placeholder="yourname@email.com"
                   required
                   type="email"
@@ -476,7 +588,13 @@ function PaymentPageContent({ clerkEmail = "" }) {
                 />
               </label>
 
-              <label className={isPromptPaySelected ? "pointer-events-none m-0 h-0 overflow-hidden opacity-0" : fieldLabel}>
+              <label
+                className={
+                  isPromptPaySelected
+                    ? "pointer-events-none m-0 h-0 overflow-hidden opacity-0"
+                    : fieldLabel
+                }
+              >
                 <span className={fieldLabelText}>Card Details</span>
                 <div className={stripeCardClass} ref={cardMountRef}></div>
               </label>
@@ -490,14 +608,23 @@ function PaymentPageContent({ clerkEmail = "" }) {
                       <img
                         className="block h-auto w-full max-w-[min(260px,100%)] rounded-[14px] bg-white p-3"
                         alt="PromptPay QR code"
-                        src={promptPayQrCode.image_url_svg || promptPayQrCode.image_url_png}
+                        src={
+                          promptPayQrCode.image_url_svg ||
+                          promptPayQrCode.image_url_png
+                        }
                       />
-                      <p className="mb-0 mt-2 text-[#bdbdbd]">Scan this QR code with your banking app to complete payment.</p>
+                      <p className="mb-0 mt-2 text-[#bdbdbd]">
+                        Scan this QR code with your banking app to complete
+                        payment.
+                      </p>
                     </>
                   ) : (
                     <>
                       <strong className="text-2xl">PromptPay QR</strong>
-                      <p className="mb-0 mt-2 text-[#bdbdbd]">Generate a secure PromptPay QR code, then scan it with your banking app.</p>
+                      <p className="mb-0 mt-2 text-[#bdbdbd]">
+                        Generate a secure PromptPay QR code, then scan it with
+                        your banking app.
+                      </p>
                     </>
                   )}
                 </div>
@@ -512,26 +639,40 @@ function PaymentPageContent({ clerkEmail = "" }) {
 
             {stripeStatus === "error" && (
               <p className={paymentMessageClass}>
-                Stripe.js could not load. Check your internet connection and publishable key.
+                Stripe.js could not load. Check your internet connection and
+                publishable key.
               </p>
             )}
 
-            {!isPromptPaySelected && cardError && <p className={paymentMessageClass}>{cardError}</p>}
-
+            {!isPromptPaySelected && cardError && (
+              <p className={paymentMessageClass}>{cardError}</p>
+            )}
           </section>
 
-          <aside className={`${panelCard} relative overflow-hidden px-8 py-[34px] before:absolute before:left-0 before:right-0 before:top-0 before:h-[5px] before:bg-[#e6002e]`}>
-            <h2 className="mb-[22px] mt-0 text-[25px] tracking-normal">Order Summary</h2>
+          <aside
+            className={`${panelCard} relative overflow-hidden px-8 py-[34px] before:absolute before:left-0 before:right-0 before:top-0 before:h-[5px] before:bg-[#e6002e]`}
+          >
+            <h2 className="mb-[22px] mt-0 text-[25px] tracking-normal">
+              Order Summary
+            </h2>
             <div className="grid gap-2 rounded-[18px] border border-[#e6002e] px-6 py-[22px]">
-              <span className="text-xs font-black text-[#e6002e]">Selected Plan</span>
-              <strong className="text-[22px]">{selectedPlan.name} Membership</strong>
-              <b className="text-[15px] text-[#ffd54f]">{getPlanMonthlyLabel(selectedPlan)}/month</b>
+              <span className="text-xs font-black text-[#e6002e]">
+                Selected Plan
+              </span>
+              <strong className="text-[22px]">
+                {selectedPlan.name} Membership
+              </strong>
+              <b className="text-[15px] text-[#ffd54f]">
+                {getPlanMonthlyLabel(selectedPlan)}/month
+              </b>
             </div>
 
             <div className="grid gap-[18px] border-b border-[#3a3a3a] py-[26px] pb-[42px]">
               <div className="flex items-center justify-between">
                 <span className="text-[#bdbdbd]">Monthly plan</span>
-                <strong className="font-medium text-white">{getPlanMonthlyLabel(selectedPlan)}</strong>
+                <strong className="font-medium text-white">
+                  {getPlanMonthlyLabel(selectedPlan)}
+                </strong>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-[#bdbdbd]">Registration fee</span>
@@ -541,11 +682,19 @@ function PaymentPageContent({ clerkEmail = "" }) {
 
             <div className="flex items-center justify-between py-6">
               <span className="text-sm font-black">Total Today</span>
-              <strong className="text-[#ffd54f]">฿{monthlyAmount.toLocaleString("en-US")}</strong>
+              <strong className="text-[#ffd54f]">
+                ฿{monthlyAmount.toLocaleString("en-US")}
+              </strong>
             </div>
 
             {paymentMessage && (
-              <p className={paymentStatus === "success" ? successMessageClass : paymentMessageClass}>
+              <p
+                className={
+                  paymentStatus === "success"
+                    ? successMessageClass
+                    : paymentMessageClass
+                }
+              >
                 {paymentMessage}
               </p>
             )}
@@ -555,7 +704,13 @@ function PaymentPageContent({ clerkEmail = "" }) {
               disabled={isBusy || stripeStatus === "loading"}
               type="submit"
             >
-              {isBusy ? "Processing..." : isPromptPayPending ? "Check PromptPay Status" : isPromptPaySelected ? "Generate PromptPay QR" : "Pay with Stripe"}
+              {isBusy
+                ? "Processing..."
+                : isPromptPayPending
+                  ? "Check PromptPay Status"
+                  : isPromptPaySelected
+                    ? "Generate PromptPay QR"
+                    : "Pay with Stripe"}
             </button>
           </aside>
         </form>

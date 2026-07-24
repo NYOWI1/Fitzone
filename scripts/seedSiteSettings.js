@@ -21,7 +21,9 @@ async function seedSiteSettings() {
     { upsert: true },
   );
 
-  console.log(`Seeded site settings: ${result.upsertedCount} inserted, ${result.modifiedCount} updated.`);
+  console.log(
+    `Seeded site settings: ${result.upsertedCount} inserted, ${result.modifiedCount} updated.`,
+  );
 }
 
 seedSiteSettings()

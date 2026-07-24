@@ -2,7 +2,8 @@ const defaultSiteSettings = {
   key: "site",
   brand: {
     name: "FITZONE",
-    description: "Your fitness journey starts here. Train smarter and stay stronger.",
+    description:
+      "Your fitness journey starts here. Train smarter and stay stronger.",
   },
   quickLinks: ["Home", "Membership", "Trainers", "Schedule"],
   contact: {

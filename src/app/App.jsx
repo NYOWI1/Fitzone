@@ -30,7 +30,9 @@ function App({ clerkEnabled }) {
   }
 
   if (pathname.startsWith(`${appRoutes.trainers}/`)) {
-    const trainerSlug = decodeURIComponent(pathname.split("/").filter(Boolean)[1] || "");
+    const trainerSlug = decodeURIComponent(
+      pathname.split("/").filter(Boolean)[1] || "",
+    );
 
     return <TrainerDetailRoute trainerSlug={trainerSlug} />;
   }

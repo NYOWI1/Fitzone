@@ -3,7 +3,15 @@ import { SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
 import { getStripePaymentAccess } from "../../shared/api";
 import "./UserDashboard.css";
 
-const navItems = ["Dashboard", "Classes", "My Plan", "Trainers", "Progress", "Payments", "Settings"];
+const navItems = [
+  "Dashboard",
+  "Classes",
+  "My Plan",
+  "Trainers",
+  "Progress",
+  "Payments",
+  "Settings",
+];
 
 function DashboardContent({ user = null }) {
   const fullName = user?.fullName || "Member";
@@ -24,7 +32,11 @@ function DashboardContent({ user = null }) {
 
         <nav className="member-nav" aria-label="Member dashboard">
           {navItems.map((item) => (
-            <a className={item === "Dashboard" ? "active" : ""} href="#dashboard" key={item}>
+            <a
+              className={item === "Dashboard" ? "active" : ""}
+              href="#dashboard"
+              key={item}
+            >
               <span></span>
               {item}
             </a>
@@ -43,7 +55,10 @@ function DashboardContent({ user = null }) {
       <section className="member-main">
         <section className="member-placeholder-card">
           <h1>User Dashboard</h1>
-          <p>This member section is ready for its live controls and will keep the same responsive layout as the rest of the panel.</p>
+          <p>
+            This member section is ready for its live controls and will keep the
+            same responsive layout as the rest of the panel.
+          </p>
         </section>
       </section>
     </main>
@@ -53,8 +68,12 @@ function DashboardContent({ user = null }) {
 function AuthenticatedDashboard() {
   const { user } = useUser();
   const [accessStatus, setAccessStatus] = useState("loading");
-  const email = user?.primaryEmailAddress?.emailAddress || user?.emailAddresses?.[0]?.emailAddress;
-  const memberName = user?.fullName || [user?.firstName, user?.lastName].filter(Boolean).join(" ");
+  const email =
+    user?.primaryEmailAddress?.emailAddress ||
+    user?.emailAddresses?.[0]?.emailAddress;
+  const memberName =
+    user?.fullName ||
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ");
 
   useEffect(() => {
     let isCurrent = true;
@@ -89,11 +108,21 @@ function AuthenticatedDashboard() {
   }, [email, memberName]);
 
   if (accessStatus === "loading") {
-    return <DashboardState title="Checking payment" message="Verifying your Stripe membership payment..." />;
+    return (
+      <DashboardState
+        title="Checking payment"
+        message="Verifying your Stripe membership payment..."
+      />
+    );
   }
 
   if (accessStatus === "error") {
-    return <DashboardState title="Payment check unavailable" message="Stripe payment verification is unavailable right now." />;
+    return (
+      <DashboardState
+        title="Payment check unavailable"
+        message="Stripe payment verification is unavailable right now."
+      />
+    );
   }
 
   if (accessStatus !== "paid") {
@@ -119,7 +148,9 @@ function PaymentRequired() {
     <main className="member-dashboard member-auth-redirect">
       <section>
         <h1>Payment required</h1>
-        <p>Complete your membership payment before opening the member dashboard.</p>
+        <p>
+          Complete your membership payment before opening the member dashboard.
+        </p>
         <a href="/choose-plan">Choose a plan</a>
       </section>
     </main>

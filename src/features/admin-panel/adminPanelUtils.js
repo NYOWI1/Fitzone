@@ -17,7 +17,12 @@ export const supportedAdminPages = new Set(menuItems.map(getMenuSlug));
 export const periodFilters = ["All", "Morning", "Evening"];
 export const classColors = ["green", "red", "gray", "teal", "yellow"];
 export const classCategories = ["HIIT", "YOGA", "CORE", "STR", "BIKE"];
-export const trainerImageKeys = ["trainer1", "trainer2", "trainer3", "trainer4"];
+export const trainerImageKeys = [
+  "trainer1",
+  "trainer2",
+  "trainer3",
+  "trainer4",
+];
 
 export function getTodayIsoDate() {
   const now = new Date();
@@ -106,7 +111,10 @@ export function getTrainerPayload(values) {
     coach: values.coach,
     bio: values.bio,
     expertise: values.expertise,
-    specialties: values.specialties.split(",").map((item) => item.trim()).filter(Boolean),
+    specialties: values.specialties
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean),
     stats: [
       [values.statValue1, values.statLabel1],
       [values.statValue2, values.statLabel2],
@@ -159,7 +167,10 @@ export function getPlanPayload(values) {
     popular: values.popular,
     premium: values.premium,
     title: values.title,
-    features: values.features.split(",").map((item) => item.trim()).filter(Boolean),
+    features: values.features
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean),
     sortOrder: Number(values.sortOrder),
     active: values.active,
   };
@@ -186,7 +197,9 @@ export function getAdminPageUrl(page) {
 }
 
 export function getClassCount(daySchedule) {
-  return (daySchedule?.morning?.length || 0) + (daySchedule?.evening?.length || 0);
+  return (
+    (daySchedule?.morning?.length || 0) + (daySchedule?.evening?.length || 0)
+  );
 }
 
 export function getScheduleClassesForPeriod(daySchedule, period) {
@@ -239,9 +252,16 @@ export function getClassesStats(schedule) {
     ...(daySchedule.morning || []),
     ...(daySchedule.evening || []),
   ]);
-  const activeDays = schedule.filter((daySchedule) => daySchedule.active !== false).length;
-  const categories = new Set(allClasses.map((classItem) => classItem.category).filter(Boolean));
-  const eveningClasses = schedule.reduce((total, daySchedule) => total + (daySchedule.evening?.length || 0), 0);
+  const activeDays = schedule.filter(
+    (daySchedule) => daySchedule.active !== false,
+  ).length;
+  const categories = new Set(
+    allClasses.map((classItem) => classItem.category).filter(Boolean),
+  );
+  const eveningClasses = schedule.reduce(
+    (total, daySchedule) => total + (daySchedule.evening?.length || 0),
+    0,
+  );
 
   return [
     {
@@ -279,7 +299,10 @@ export function filterVisibleClasses(classes, trainers, searchTerm) {
   }
 
   return classes.filter((classItem, index) => {
-    const trainerName = getTrainerName(trainers, classItem.trainerIndex ?? index);
+    const trainerName = getTrainerName(
+      trainers,
+      classItem.trainerIndex ?? index,
+    );
     const searchableText = [
       classItem.name,
       classItem.time,
@@ -287,19 +310,25 @@ export function filterVisibleClasses(classes, trainers, searchTerm) {
       trainerName,
       classItem.category,
       classItem.period,
-    ].join(" ").toLowerCase();
+    ]
+      .join(" ")
+      .toLowerCase();
 
     return searchableText.includes(query);
   });
 }
 
 export function getTrainerStats(trainers) {
-  const activeTrainers = trainers.filter((trainer) => trainer.active !== false).length;
-  const categories = new Set(trainers.map((trainer) => trainer.category).filter(Boolean));
+  const activeTrainers = trainers.filter(
+    (trainer) => trainer.active !== false,
+  ).length;
+  const categories = new Set(
+    trainers.map((trainer) => trainer.category).filter(Boolean),
+  );
   const popularTrainers = trainers.filter((trainer) => trainer.badge).length;
-  const oneOnOneCoaches = trainers.filter((trainer) => (
-    trainer.stats || []
-  ).some(([value]) => String(value).includes("1:1"))).length;
+  const oneOnOneCoaches = trainers.filter((trainer) =>
+    (trainer.stats || []).some(([value]) => String(value).includes("1:1")),
+  ).length;
 
   return [
     {
@@ -344,7 +373,9 @@ export function filterTrainers(trainers, searchTerm) {
       trainer.coach,
       trainer.expertise,
       ...(trainer.specialties || []),
-    ].join(" ").toLowerCase();
+    ]
+      .join(" ")
+      .toLowerCase();
 
     return searchableText.includes(query);
   });
@@ -367,10 +398,15 @@ export function getPlanPriceValue(plan) {
 
 export function getPlanStats(plans) {
   const activePlans = plans.filter((plan) => plan.active !== false).length;
-  const popularPlans = plans.filter((plan) => plan.popular || plan.badge).length;
+  const popularPlans = plans.filter(
+    (plan) => plan.popular || plan.badge,
+  ).length;
   const premiumPlans = plans.filter((plan) => plan.premium).length;
   const averagePrice = plans.length
-    ? Math.round(plans.reduce((total, plan) => total + getPlanPriceValue(plan), 0) / plans.length)
+    ? Math.round(
+        plans.reduce((total, plan) => total + getPlanPriceValue(plan), 0) /
+          plans.length,
+      )
     : 0;
 
   return [
@@ -416,14 +452,18 @@ export function filterPlans(plans, searchTerm) {
       plan.badge,
       plan.title,
       ...(plan.features || []),
-    ].join(" ").toLowerCase();
+    ]
+      .join(" ")
+      .toLowerCase();
 
     return searchableText.includes(query);
   });
 }
 
 export function getMemberStats(members) {
-  const activeMembers = members.filter((member) => member.status === "Active").length;
+  const activeMembers = members.filter(
+    (member) => member.status === "Active",
+  ).length;
   const newMembers = members.filter((member) => {
     if (!member.joined) {
       return false;
@@ -446,7 +486,9 @@ export function getMemberStats(members) {
 
     return daysUntilRenewal >= 0 && daysUntilRenewal <= 14;
   }).length;
-  const premiumMembers = members.filter((member) => member.plan === "Premium").length;
+  const premiumMembers = members.filter(
+    (member) => member.plan === "Premium",
+  ).length;
 
   return [
     {
@@ -493,7 +535,9 @@ export function filterMembers(members, searchTerm) {
       member.status,
       member.joined,
       member.renewal,
-    ].join(" ").toLowerCase();
+    ]
+      .join(" ")
+      .toLowerCase();
 
     return searchableText.includes(query);
   });
@@ -522,10 +566,15 @@ export function filterMembersByStatus(members, statusFilter) {
 }
 
 export function getMemberPlanBreakdown(members) {
-  return Object.entries(members.reduce((plans, member) => ({
-    ...plans,
-    [member.plan]: (plans[member.plan] || 0) + 1,
-  }), {})).map(([plan, count], index) => [
+  return Object.entries(
+    members.reduce(
+      (plans, member) => ({
+        ...plans,
+        [member.plan]: (plans[member.plan] || 0) + 1,
+      }),
+      {},
+    ),
+  ).map(([plan, count], index) => [
     plan,
     count,
     ["blue", "red", "yellow", "green"][index % 4],
@@ -533,14 +582,22 @@ export function getMemberPlanBreakdown(members) {
 }
 
 export function getMemberActivity(members) {
-  const totalVisits = members.reduce((total, member) => total + (Number(member.visits) || 0), 0);
+  const totalVisits = members.reduce(
+    (total, member) => total + (Number(member.visits) || 0),
+    0,
+  );
   const todayAttendance = getTodayAttendanceCount(members);
-  const paymentIssues = members.filter((member) => member.status === "Pending" || member.status === "Expired").length;
+  const paymentIssues = members.filter(
+    (member) => member.status === "Pending" || member.status === "Expired",
+  ).length;
 
   return [
     ["Total visits", String(totalVisits)],
     ["Today attendance", String(todayAttendance)],
-    ["Active accounts", String(members.filter((member) => member.status === "Active").length)],
+    [
+      "Active accounts",
+      String(members.filter((member) => member.status === "Active").length),
+    ],
     ["Payment issues", String(paymentIssues)],
   ];
 }
@@ -548,17 +605,22 @@ export function getMemberActivity(members) {
 export function getTodayAttendanceCount(members) {
   const today = getTodayIsoDate();
 
-  return members.filter((member) => (
-    member.attendanceDate === today && Number(member.todayVisits || 0) > 0
-  )).length;
+  return members.filter(
+    (member) =>
+      member.attendanceDate === today && Number(member.todayVisits || 0) > 0,
+  ).length;
 }
 
 export function getTodayVisitTotal(members) {
   const today = getTodayIsoDate();
 
-  return members.reduce((total, member) => (
-    member.attendanceDate === today ? total + Number(member.todayVisits || 0) : total
-  ), 0);
+  return members.reduce(
+    (total, member) =>
+      member.attendanceDate === today
+        ? total + Number(member.todayVisits || 0)
+        : total,
+    0,
+  );
 }
 
 export function getPaymentAmountValue(payment) {
@@ -622,9 +684,19 @@ export function getRelativeDateLabel(dateValue) {
   }
 
   const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const daysAgo = Math.floor((startOfToday - startOfDate) / (1000 * 60 * 60 * 24));
+  const startOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  );
+  const startOfDate = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  );
+  const daysAgo = Math.floor(
+    (startOfToday - startOfDate) / (1000 * 60 * 60 * 24),
+  );
 
   if (daysAgo <= 0) {
     return "Today";
@@ -637,12 +709,19 @@ export function getRelativeDateLabel(dateValue) {
   return `${daysAgo} days ago`;
 }
 
-export function getOverviewKpis({ members, schedule, trainers, stripeRevenue }) {
+export function getOverviewKpis({
+  members,
+  schedule,
+  trainers,
+  stripeRevenue,
+}) {
   const allClasses = schedule.flatMap((daySchedule) => [
     ...(daySchedule.morning || []),
     ...(daySchedule.evening || []),
   ]);
-  const todaySchedule = schedule.find((daySchedule) => daySchedule.weekday === new Date().getDay());
+  const todaySchedule = schedule.find(
+    (daySchedule) => daySchedule.weekday === new Date().getDay(),
+  );
   const todayClassCount = getClassCount(todaySchedule);
   const newMembers = members.filter((member) => {
     if (!member.joined) {
@@ -688,11 +767,16 @@ export function getOverviewKpis({ members, schedule, trainers, stripeRevenue }) 
 
 export function getOverviewRecentMembers(members) {
   return [...members]
-    .sort((left, right) => new Date(right.joined || 0) - new Date(left.joined || 0))
+    .sort(
+      (left, right) => new Date(right.joined || 0) - new Date(left.joined || 0),
+    )
     .slice(0, 4)
     .map((member, index) => ({
       name: member.name || "Member",
-      id: member.memberId || member.email || `${member.name || "member"}-${index}`,
+      id:
+        member.memberId ||
+        member.email ||
+        `${member.name || "member"}-${index}`,
       email: member.email || "No email",
       plan: member.plan || "Unassigned",
       status: member.status || "Unknown",
@@ -702,23 +786,31 @@ export function getOverviewRecentMembers(members) {
 }
 
 export function getOverviewTodayClasses(schedule) {
-  const todaySchedule = schedule.find((daySchedule) => daySchedule.weekday === new Date().getDay());
+  const todaySchedule = schedule.find(
+    (daySchedule) => daySchedule.weekday === new Date().getDay(),
+  );
 
-  return getScheduleClassesForPeriod(todaySchedule, "All")
-    .map((classItem, index) => ({
+  return getScheduleClassesForPeriod(todaySchedule, "All").map(
+    (classItem, index) => ({
       id: `${classItem.periodKey}-${classItem.periodIndex}-${classItem.name}-${index}`,
       name: classItem.name,
       time: classItem.time,
       duration: classItem.duration || "Open",
       meta: [classItem.period, classItem.category].filter(Boolean).join(" / "),
       status: classItem.status || "open",
-    }));
+    }),
+  );
 }
 
 export function getOverviewRevenueBars(stripeRevenue) {
-  const serverBars = Array.isArray(stripeRevenue.revenueBars) ? stripeRevenue.revenueBars : [];
+  const serverBars = Array.isArray(stripeRevenue.revenueBars)
+    ? stripeRevenue.revenueBars
+    : [];
   const now = new Date();
-  const months = Array.from({ length: 12 }, (_, index) => new Date(now.getFullYear(), now.getMonth() - 11 + index, 1));
+  const months = Array.from(
+    { length: 12 },
+    (_, index) => new Date(now.getFullYear(), now.getMonth() - 11 + index, 1),
+  );
   const totals = months.map((monthDate) => {
     const monthLabel = monthDate.toLocaleString("en-US", { month: "short" });
     const matchingBar = serverBars.find((bar) => bar.month === monthLabel);
@@ -736,11 +828,19 @@ export function getOverviewRevenueBars(stripeRevenue) {
 }
 
 export function getOverviewRevenueSummary(stripeRevenue) {
-  const revenueBars = Array.isArray(stripeRevenue.revenueBars) ? stripeRevenue.revenueBars : [];
-  const twelveMonthTotal = revenueBars.reduce((total, bar) => total + Number(bar.total || 0), 0);
+  const revenueBars = Array.isArray(stripeRevenue.revenueBars)
+    ? stripeRevenue.revenueBars
+    : [];
+  const twelveMonthTotal = revenueBars.reduce(
+    (total, bar) => total + Number(bar.total || 0),
+    0,
+  );
 
   return [
-    ["This month", formatPaymentAmount({ amount: stripeRevenue.monthlyRevenue || 0 })],
+    [
+      "This month",
+      formatPaymentAmount({ amount: stripeRevenue.monthlyRevenue || 0 }),
+    ],
     ["12-month total", formatPaymentAmount({ amount: twelveMonthTotal })],
     ["Paid payments", String(stripeRevenue.paidInvoiceCount || 0)],
   ];
@@ -757,7 +857,9 @@ export function getReportTopClass(schedule) {
         [label]: (counts[label] || 0) + 1,
       };
     }, {});
-  const [topClass] = Object.entries(classCounts).sort((left, right) => right[1] - left[1])[0] || [];
+  const [topClass] =
+    Object.entries(classCounts).sort((left, right) => right[1] - left[1])[0] ||
+    [];
 
   return topClass || "N/A";
 }
@@ -805,7 +907,7 @@ export function getReportsKpis({ members, schedule, stripeRevenue }) {
 export function getReportYearOptions(payments) {
   const currentYear = new Date().getFullYear();
   const years = new Set(
-    Array.from({ length: 11 }, (_, index) => currentYear - 7 + index)
+    Array.from({ length: 11 }, (_, index) => currentYear - 7 + index),
   );
 
   payments.forEach((payment) => {
@@ -819,10 +921,16 @@ export function getReportYearOptions(payments) {
     .sort((left, right) => right - left);
 }
 
-export function getReportsYearRevenue({ payments, stripeRevenue, selectedYear }) {
-  const monthNames = Array.from({ length: 12 }, (_, index) => (
-    new Date(selectedYear, index, 1).toLocaleString("en-US", { month: "short" })
-  ));
+export function getReportsYearRevenue({
+  payments,
+  stripeRevenue,
+  selectedYear,
+}) {
+  const monthNames = Array.from({ length: 12 }, (_, index) =>
+    new Date(selectedYear, index, 1).toLocaleString("en-US", {
+      month: "short",
+    }),
+  );
   const totals = Array(12).fill(0);
 
   payments.forEach((payment) => {
@@ -837,7 +945,10 @@ export function getReportsYearRevenue({ payments, stripeRevenue, selectedYear })
     }
   });
 
-  if (totals.every((total) => total === 0) && Number(selectedYear) === new Date().getFullYear()) {
+  if (
+    totals.every((total) => total === 0) &&
+    Number(selectedYear) === new Date().getFullYear()
+  ) {
     (stripeRevenue.revenueBars || []).forEach((bar) => {
       const monthIndex = monthNames.indexOf(bar.month);
 
@@ -862,9 +973,10 @@ export function getReportsYearRevenue({ payments, stripeRevenue, selectedYear })
 }
 
 export function getAdminSettingsRows(settings) {
-  const openingHours = Array.isArray(settings.openingHours) && settings.openingHours.length
-    ? settings.openingHours.join("\n")
-    : "";
+  const openingHours =
+    Array.isArray(settings.openingHours) && settings.openingHours.length
+      ? settings.openingHours.join("\n")
+      : "";
 
   return [
     {
@@ -942,9 +1054,16 @@ export function applyAdminSettingsValue(settings, key, value) {
 
 export function getPaymentStats(payments) {
   const paidPayments = payments.filter((payment) => payment.status === "Paid");
-  const pendingPayments = payments.filter((payment) => payment.status === "Pending");
-  const failedPayments = payments.filter((payment) => payment.status === "Failed");
-  const paidTotal = paidPayments.reduce((total, payment) => total + getPaymentAmountValue(payment), 0);
+  const pendingPayments = payments.filter(
+    (payment) => payment.status === "Pending",
+  );
+  const failedPayments = payments.filter(
+    (payment) => payment.status === "Failed",
+  );
+  const paidTotal = paidPayments.reduce(
+    (total, payment) => total + getPaymentAmountValue(payment),
+    0,
+  );
 
   return [
     {
@@ -990,7 +1109,9 @@ export function filterPayments(payments, searchTerm) {
       payment.method,
       payment.status,
       payment.date,
-    ].join(" ").toLowerCase();
+    ]
+      .join(" ")
+      .toLowerCase();
 
     return searchableText.includes(query);
   });

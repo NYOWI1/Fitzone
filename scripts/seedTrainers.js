@@ -25,7 +25,9 @@ async function seedTrainers() {
 
   const result = await collection.bulkWrite(operations);
 
-  console.log(`Seeded trainers: ${result.upsertedCount} inserted, ${result.modifiedCount} updated.`);
+  console.log(
+    `Seeded trainers: ${result.upsertedCount} inserted, ${result.modifiedCount} updated.`,
+  );
 }
 
 seedTrainers()

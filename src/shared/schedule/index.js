@@ -51,15 +51,34 @@ export function filterClassesByType(classes, filter) {
   return classes.filter((classItem) => classItem[4] === category);
 }
 
-export function buildScheduleDays(weeklySchedule, scheduleTrainerLabels, days = getScheduleDays()) {
+export function buildScheduleDays(
+  weeklySchedule,
+  scheduleTrainerLabels,
+  days = getScheduleDays(),
+) {
   return days.map((day, dayIndex) => ({
     dayKey: day[0],
-    morning: getClassesForWeekday(weeklySchedule, dayIndex, "morning", scheduleTrainerLabels),
-    evening: getClassesForWeekday(weeklySchedule, dayIndex, "evening", scheduleTrainerLabels),
+    morning: getClassesForWeekday(
+      weeklySchedule,
+      dayIndex,
+      "morning",
+      scheduleTrainerLabels,
+    ),
+    evening: getClassesForWeekday(
+      weeklySchedule,
+      dayIndex,
+      "evening",
+      scheduleTrainerLabels,
+    ),
   }));
 }
 
-function getClassesForWeekday(weeklySchedule, dayIndex, period, scheduleTrainerLabels) {
+function getClassesForWeekday(
+  weeklySchedule,
+  dayIndex,
+  period,
+  scheduleTrainerLabels,
+) {
   const date = new Date();
   date.setDate(date.getDate() - date.getDay() + dayIndex);
   const weekday = date.getDay();

@@ -51,11 +51,22 @@ function sanitizeClassItem(payload) {
   const name = String(payload.name || "").trim();
   const time = String(payload.time || "").trim();
   const duration = String(payload.duration || "").trim();
-  const category = String(payload.category || "").trim().toUpperCase();
-  const color = String(payload.color || "").trim().toLowerCase();
+  const category = String(payload.category || "")
+    .trim()
+    .toUpperCase();
+  const color = String(payload.color || "")
+    .trim()
+    .toLowerCase();
   const trainerIndex = Number(payload.trainerIndex);
 
-  if (!name || !time || !duration || !category || !color || !Number.isInteger(trainerIndex)) {
+  if (
+    !name ||
+    !time ||
+    !duration ||
+    !category ||
+    !color ||
+    !Number.isInteger(trainerIndex)
+  ) {
     return null;
   }
 
@@ -111,14 +122,25 @@ function sanitizeTrainer(payload) {
   const name = String(payload.name || "").trim();
   const role = String(payload.role || "").trim();
   const imageKey = String(payload.imageKey || "trainer1").trim();
-  const category = String(payload.category || "").trim().toUpperCase();
+  const category = String(payload.category || "")
+    .trim()
+    .toUpperCase();
   const coach = String(payload.coach || "").trim();
   const bio = String(payload.bio || "").trim();
   const expertise = String(payload.expertise || "").trim();
   const sortOrder = Number(payload.sortOrder);
   const slug = makeSlug(payload.slug || name);
 
-  if (!slug || !name || !role || !category || !coach || !bio || !expertise || !Number.isFinite(sortOrder)) {
+  if (
+    !slug ||
+    !name ||
+    !role ||
+    !category ||
+    !coach ||
+    !bio ||
+    !expertise ||
+    !Number.isFinite(sortOrder)
+  ) {
     return null;
   }
 
@@ -147,7 +169,14 @@ function sanitizeMembershipPlan(payload) {
   const sortOrder = Number(payload.sortOrder);
   const slug = makeSlug(payload.slug || name);
 
-  if (!slug || !name || !price || !desc || !title || !Number.isFinite(sortOrder)) {
+  if (
+    !slug ||
+    !name ||
+    !price ||
+    !desc ||
+    !title ||
+    !Number.isFinite(sortOrder)
+  ) {
     return null;
   }
 
@@ -168,15 +197,29 @@ function sanitizeMembershipPlan(payload) {
 
 function sanitizeStripePaymentIntent(payload) {
   const amount = Number(payload.amount);
-  const currency = String(payload.currency || "thb").trim().toLowerCase();
-  const description = String(payload.description || "FitZone membership payment").trim();
+  const currency = String(payload.currency || "thb")
+    .trim()
+    .toLowerCase();
+  const description = String(
+    payload.description || "FitZone membership payment",
+  ).trim();
   const plan = String(payload.plan || "").trim();
   const planSlug = makeSlug(payload.planSlug || plan);
   const member = String(payload.member || "FitZone Member").trim();
-  const memberEmail = String(payload.memberEmail || "").trim().toLowerCase();
-  const paymentMethodType = String(payload.paymentMethodType || "card").trim().toLowerCase();
+  const memberEmail = String(payload.memberEmail || "")
+    .trim()
+    .toLowerCase();
+  const paymentMethodType = String(payload.paymentMethodType || "card")
+    .trim()
+    .toLowerCase();
 
-  if (!Number.isFinite(amount) || amount <= 0 || !plan || !memberEmail || !["card", "promptpay"].includes(paymentMethodType)) {
+  if (
+    !Number.isFinite(amount) ||
+    amount <= 0 ||
+    !plan ||
+    !memberEmail ||
+    !["card", "promptpay"].includes(paymentMethodType)
+  ) {
     return null;
   }
 
@@ -193,7 +236,9 @@ function sanitizeStripePaymentIntent(payload) {
 }
 
 function sanitizeEmail(value) {
-  const email = String(value || "").trim().toLowerCase();
+  const email = String(value || "")
+    .trim()
+    .toLowerCase();
 
   if (!email || !email.includes("@")) {
     return "";
@@ -203,7 +248,10 @@ function sanitizeEmail(value) {
 }
 
 function normalizeComparableText(value) {
-  return String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
 }
 
 function mapStripePaymentIntent(paymentIntent) {
@@ -235,7 +283,10 @@ function mapStripePaymentStatus(status) {
 }
 
 function getStripePaymentMethod(paymentIntent, charge) {
-  const methodType = charge?.payment_method_details?.type || paymentIntent?.payment_method_types?.[0] || "card";
+  const methodType =
+    charge?.payment_method_details?.type ||
+    paymentIntent?.payment_method_types?.[0] ||
+    "card";
 
   if (methodType === "promptpay") {
     return {
@@ -255,7 +306,8 @@ function getStripePaymentMethod(paymentIntent, charge) {
     card: {
       brand: card.brand || "",
       last4: card.last4 || "",
-      authorizationCode: charge?.payment_method_details?.card?.network_transaction_id || "",
+      authorizationCode:
+        charge?.payment_method_details?.card?.network_transaction_id || "",
     },
   };
 }
@@ -264,20 +316,26 @@ async function mapStripePaymentIntentToAdminPayment(paymentIntent) {
   const metadata = paymentIntent.metadata || {};
   const charge = paymentIntent.latest_charge
     ? await getStripeCharge(paymentIntent.latest_charge).catch((error) => {
-      console.error("Stripe payment charge lookup error:", error.message);
-      return null;
-    })
+        console.error("Stripe payment charge lookup error:", error.message);
+        return null;
+      })
     : null;
   const paymentMethod = getStripePaymentMethod(paymentIntent, charge);
 
   return {
     invoice: paymentIntent.id,
-    member: metadata.member || charge?.billing_details?.name || metadata.member_email || "Stripe Customer",
+    member:
+      metadata.member ||
+      charge?.billing_details?.name ||
+      metadata.member_email ||
+      "Stripe Customer",
     plan: metadata.plan || "Membership",
     amount: getStripeAmountValue(paymentIntent),
     currency: String(paymentIntent.currency || "thb").toUpperCase(),
     status: mapStripePaymentStatus(paymentIntent.status),
-    date: paymentIntent.created ? new Date(paymentIntent.created * 1000).toISOString().slice(0, 10) : "",
+    date: paymentIntent.created
+      ? new Date(paymentIntent.created * 1000).toISOString().slice(0, 10)
+      : "",
     stripeStatus: paymentIntent.status,
     stripePaymentIntentId: paymentIntent.id,
     ...paymentMethod,
@@ -285,7 +343,9 @@ async function mapStripePaymentIntentToAdminPayment(paymentIntent) {
 }
 
 function getStripeAmountValue(paymentIntent) {
-  return Number(paymentIntent?.amount_received || paymentIntent?.amount || 0) / 100;
+  return (
+    Number(paymentIntent?.amount_received || paymentIntent?.amount || 0) / 100
+  );
 }
 
 function getMonthKey(date) {
@@ -316,10 +376,14 @@ function paymentIntentMatchesEmail(paymentIntent, memberEmail) {
 }
 
 function paymentIntentMatchesMemberName(paymentIntent, memberName) {
-  const metadataMember = normalizeComparableText(paymentIntent?.metadata?.member);
+  const metadataMember = normalizeComparableText(
+    paymentIntent?.metadata?.member,
+  );
   const comparableName = normalizeComparableText(memberName);
 
-  return Boolean(comparableName && metadataMember && metadataMember === comparableName);
+  return Boolean(
+    comparableName && metadataMember && metadataMember === comparableName,
+  );
 }
 
 function getPriceValue(plan) {
@@ -355,10 +419,12 @@ async function getStripeProduct(product) {
     return product || null;
   }
 
-  return fetchStripeJson(`/v1/products/${encodeURIComponent(product)}`).catch((error) => {
-    console.error("Stripe product lookup error:", error.message);
-    return null;
-  });
+  return fetchStripeJson(`/v1/products/${encodeURIComponent(product)}`).catch(
+    (error) => {
+      console.error("Stripe product lookup error:", error.message);
+      return null;
+    },
+  );
 }
 
 async function getPlanFromStripePrice(price) {
@@ -367,9 +433,16 @@ async function getPlanFromStripePrice(price) {
   }
 
   const product = await getStripeProduct(price.product);
-  const metadataPlan = price.metadata?.plan || price.metadata?.plan_name || product?.metadata?.plan || product?.metadata?.plan_name;
-  const namedPlan = metadataPlan || price.nickname || product?.name || price.lookup_key || "";
-  const inferredPlan = await inferPlanFromAmount(Number(price.unit_amount || price.unit_amount_decimal || 0));
+  const metadataPlan =
+    price.metadata?.plan ||
+    price.metadata?.plan_name ||
+    product?.metadata?.plan ||
+    product?.metadata?.plan_name;
+  const namedPlan =
+    metadataPlan || price.nickname || product?.name || price.lookup_key || "";
+  const inferredPlan = await inferPlanFromAmount(
+    Number(price.unit_amount || price.unit_amount_decimal || 0),
+  );
 
   if (inferredPlan) {
     return inferredPlan;
@@ -380,7 +453,9 @@ async function getPlanFromStripePrice(price) {
   }
 
   return {
-    planName: String(namedPlan).replace(/\s+membership$/i, "").trim(),
+    planName: String(namedPlan)
+      .replace(/\s+membership$/i, "")
+      .trim(),
     planSlug: makeSlug(namedPlan),
   };
 }
@@ -409,7 +484,9 @@ async function findStripePaymentByMetadata(memberEmail) {
       query: `metadata['member_email']:'${memberEmail}' AND status:'succeeded'`,
       limit: "1",
     });
-    const searchResult = await fetchStripeJson(`/v1/payment_intents/search?${params.toString()}`);
+    const searchResult = await fetchStripeJson(
+      `/v1/payment_intents/search?${params.toString()}`,
+    );
 
     return searchResult.data?.[0] || null;
   } catch (error) {
@@ -427,8 +504,8 @@ async function getStripeCharge(chargeId) {
 }
 
 function chooseBestStripePaymentIntent(paymentIntents) {
-  return [...paymentIntents]
-    .sort((left, right) => {
+  return (
+    [...paymentIntents].sort((left, right) => {
       const amountDifference = (right.amount || 0) - (left.amount || 0);
 
       if (amountDifference !== 0) {
@@ -436,12 +513,15 @@ function chooseBestStripePaymentIntent(paymentIntents) {
       }
 
       return (right.created || 0) - (left.created || 0);
-    })[0] || null;
+    })[0] || null
+  );
 }
 
 async function findRecentStripePaymentByMember(memberEmail, memberName = "") {
   const params = new URLSearchParams({ limit: "100" });
-  const paymentIntents = await fetchStripeJson(`/v1/payment_intents?${params.toString()}`);
+  const paymentIntents = await fetchStripeJson(
+    `/v1/payment_intents?${params.toString()}`,
+  );
   const matches = [];
 
   for (const paymentIntent of paymentIntents.data || []) {
@@ -449,16 +529,23 @@ async function findRecentStripePaymentByMember(memberEmail, memberName = "") {
       continue;
     }
 
-    if (paymentIntentMatchesEmail(paymentIntent, memberEmail) || paymentIntentMatchesMemberName(paymentIntent, memberName)) {
+    if (
+      paymentIntentMatchesEmail(paymentIntent, memberEmail) ||
+      paymentIntentMatchesMemberName(paymentIntent, memberName)
+    ) {
       matches.push(paymentIntent);
       continue;
     }
 
-    const charge = await getStripeCharge(paymentIntent.latest_charge).catch((error) => {
-      console.error("Stripe charge lookup error:", error.message);
-      return null;
-    });
-    const chargeEmail = sanitizeEmail(charge?.billing_details?.email || charge?.receipt_email);
+    const charge = await getStripeCharge(paymentIntent.latest_charge).catch(
+      (error) => {
+        console.error("Stripe charge lookup error:", error.message);
+        return null;
+      },
+    );
+    const chargeEmail = sanitizeEmail(
+      charge?.billing_details?.email || charge?.receipt_email,
+    );
 
     if (chargeEmail === memberEmail) {
       matches.push(paymentIntent);
@@ -474,7 +561,9 @@ async function findStripeCustomerByEmail(memberEmail) {
       query: `email:'${memberEmail}'`,
       limit: "1",
     });
-    const searchResult = await fetchStripeJson(`/v1/customers/search?${params.toString()}`);
+    const searchResult = await fetchStripeJson(
+      `/v1/customers/search?${params.toString()}`,
+    );
 
     if (searchResult.data?.[0]) {
       return searchResult.data[0];
@@ -487,7 +576,9 @@ async function findStripeCustomerByEmail(memberEmail) {
     email: memberEmail,
     limit: "1",
   });
-  const listResult = await fetchStripeJson(`/v1/customers?${params.toString()}`).catch((error) => {
+  const listResult = await fetchStripeJson(
+    `/v1/customers?${params.toString()}`,
+  ).catch((error) => {
     console.error("Stripe customer list error:", error.message);
     return null;
   });
@@ -509,12 +600,16 @@ async function findStripeSubscriptionByEmail(memberEmail) {
   });
   params.append("expand[]", "data.items.data.price.product");
 
-  const subscriptions = await fetchStripeJson(`/v1/subscriptions?${params.toString()}`).catch((error) => {
+  const subscriptions = await fetchStripeJson(
+    `/v1/subscriptions?${params.toString()}`,
+  ).catch((error) => {
     console.error("Stripe subscriptions lookup error:", error.message);
     return null;
   });
   const usableSubscriptions = (subscriptions?.data || [])
-    .filter((subscription) => ["active", "trialing", "past_due"].includes(subscription.status))
+    .filter((subscription) =>
+      ["active", "trialing", "past_due"].includes(subscription.status),
+    )
     .sort((left, right) => (right.created || 0) - (left.created || 0));
 
   return usableSubscriptions[0] || null;
@@ -587,7 +682,8 @@ async function fetchClerkJson(path, options = {}) {
   const data = await response.json();
 
   if (!response.ok) {
-    const message = data?.errors?.[0]?.message || data?.message || "Clerk request failed.";
+    const message =
+      data?.errors?.[0]?.message || data?.message || "Clerk request failed.";
     const error = new Error(message);
     error.statusCode = response.status;
     error.clerk = data;
@@ -598,15 +694,19 @@ async function fetchClerkJson(path, options = {}) {
 }
 
 function getClerkPrimaryEmail(user) {
-  const primaryEmail = (user.email_addresses || []).find((email) => email.id === user.primary_email_address_id) ||
-    user.email_addresses?.[0];
+  const primaryEmail =
+    (user.email_addresses || []).find(
+      (email) => email.id === user.primary_email_address_id,
+    ) || user.email_addresses?.[0];
 
   return primaryEmail?.email_address || "";
 }
 
 function getClerkPrimaryPhone(user) {
-  const primaryPhone = (user.phone_numbers || []).find((phone) => phone.id === user.primary_phone_number_id) ||
-    user.phone_numbers?.[0];
+  const primaryPhone =
+    (user.phone_numbers || []).find(
+      (phone) => phone.id === user.primary_phone_number_id,
+    ) || user.phone_numbers?.[0];
 
   return primaryPhone?.phone_number || "";
 }
@@ -630,22 +730,39 @@ function addDaysToIsoDate(timestamp, days) {
 }
 
 function getClerkMetadataPlan(user) {
-  return user.private_metadata?.plan ??
+  return (
+    user.private_metadata?.plan ??
     user.public_metadata?.plan ??
     user.unsafe_metadata?.plan ??
-    "";
+    ""
+  );
 }
 
 function getClerkMetadataVisits(user) {
-  return Number(user.private_metadata?.visits ?? user.public_metadata?.visits ?? user.unsafe_metadata?.visits ?? 0);
+  return Number(
+    user.private_metadata?.visits ??
+      user.public_metadata?.visits ??
+      user.unsafe_metadata?.visits ??
+      0,
+  );
 }
 
 function getClerkMetadataAttendanceDate(user) {
-  return String(user.private_metadata?.attendanceDate ?? user.public_metadata?.attendanceDate ?? user.unsafe_metadata?.attendanceDate ?? "");
+  return String(
+    user.private_metadata?.attendanceDate ??
+      user.public_metadata?.attendanceDate ??
+      user.unsafe_metadata?.attendanceDate ??
+      "",
+  );
 }
 
 function getClerkMetadataTodayVisits(user) {
-  return Number(user.private_metadata?.todayVisits ?? user.public_metadata?.todayVisits ?? user.unsafe_metadata?.todayVisits ?? 0);
+  return Number(
+    user.private_metadata?.todayVisits ??
+      user.public_metadata?.todayVisits ??
+      user.unsafe_metadata?.todayVisits ??
+      0,
+  );
 }
 
 function getClerkMemberStatus(user, paymentAccess) {
@@ -672,8 +789,9 @@ async function getStripePaymentAccessForEmail(memberEmail, memberName = "") {
     return mapStripeSubscriptionAccess(subscription, memberEmail);
   }
 
-  const paymentIntent = await findRecentStripePaymentByMember(memberEmail, memberName) ||
-    await findStripePaymentByMetadata(memberEmail);
+  const paymentIntent =
+    (await findRecentStripePaymentByMember(memberEmail, memberName)) ||
+    (await findStripePaymentByMetadata(memberEmail));
 
   if (!paymentIntent) {
     return {
@@ -689,7 +807,8 @@ async function getStripePaymentAccessForEmail(memberEmail, memberName = "") {
 
 async function mapClerkUserToMember(user, index) {
   const email = sanitizeEmail(getClerkPrimaryEmail(user));
-  const name = [user.first_name, user.last_name].filter(Boolean).join(" ").trim() ||
+  const name =
+    [user.first_name, user.last_name].filter(Boolean).join(" ").trim() ||
     user.username ||
     email ||
     "Clerk Member";
@@ -731,29 +850,95 @@ async function getClerkMemberDocuments() {
   return Promise.all(userList.map(mapClerkUserToMember));
 }
 
+async function getAttendanceHistoryByMember(db, memberIds) {
+  if (!memberIds.length) {
+    return new Map();
+  }
+
+  const records = await db
+    .collection("attendanceHistory")
+    .find({ memberId: { $in: memberIds } })
+    .sort({ attendanceDate: -1 })
+    .toArray();
+
+  return records.reduce((historyByMember, record) => {
+    const memberHistory = historyByMember.get(record.memberId) || [];
+
+    memberHistory.push({
+      attendanceDate: record.attendanceDate,
+      visits: Number(record.visits || 0),
+    });
+    historyByMember.set(record.memberId, memberHistory);
+
+    return historyByMember;
+  }, new Map());
+}
+
 async function updateMemberAttendance(request, response) {
   try {
     const payload = await readJsonBody(request);
     const memberId = String(payload.memberId || "").trim();
     const visits = Number(payload.visits);
     const todayVisits = Number(payload.todayVisits ?? visits);
-    const attendanceDate = String(payload.attendanceDate || new Date().toISOString().slice(0, 10)).trim();
+    const attendanceDate = String(
+      payload.attendanceDate || new Date().toISOString().slice(0, 10),
+    ).trim();
 
-    if (!memberId || !Number.isInteger(visits) || visits < 0 || !Number.isInteger(todayVisits) || todayVisits < 0 || !attendanceDate) {
-      sendJson(response, 400, { message: "A valid member and attendance count are required." });
+    if (
+      !memberId ||
+      !Number.isInteger(visits) ||
+      visits < 0 ||
+      !Number.isInteger(todayVisits) ||
+      todayVisits < 0 ||
+      !attendanceDate
+    ) {
+      sendJson(response, 400, {
+        message: "A valid member and attendance count are required.",
+      });
       return;
     }
 
-    const updatedUser = await fetchClerkJson(`/v1/users/${encodeURIComponent(memberId)}/metadata`, {
-      method: "PATCH",
-      body: {
-        private_metadata: {
-          visits,
-          todayVisits,
-          attendanceDate,
+    const updatedUser = await fetchClerkJson(
+      `/v1/users/${encodeURIComponent(memberId)}/metadata`,
+      {
+        method: "PATCH",
+        body: {
+          private_metadata: {
+            visits,
+            todayVisits,
+            attendanceDate,
+          },
         },
       },
-    });
+    );
+
+    const db = await getDb();
+
+    if (todayVisits > 0) {
+      await db.collection("attendanceHistory").updateOne(
+        {
+          memberId,
+          attendanceDate,
+        },
+        {
+          $set: {
+            memberId,
+            attendanceDate,
+            visits: todayVisits,
+            updatedAt: new Date(),
+          },
+          $setOnInsert: {
+            createdAt: new Date(),
+          },
+        },
+        { upsert: true },
+      );
+    } else {
+      await db.collection("attendanceHistory").deleteOne({
+        memberId,
+        attendanceDate,
+      });
+    }
 
     sendJson(response, 200, {
       memberId: updatedUser.id || memberId,
@@ -775,7 +960,9 @@ async function createStripePaymentIntent(request, response) {
     const secretKey = process.env.STRIPE_SECRET_KEY;
 
     if (!secretKey) {
-      sendJson(response, 500, { message: "STRIPE_SECRET_KEY is not configured." });
+      sendJson(response, 500, {
+        message: "STRIPE_SECRET_KEY is not configured.",
+      });
       return;
     }
 
@@ -783,7 +970,9 @@ async function createStripePaymentIntent(request, response) {
     const paymentIntent = sanitizeStripePaymentIntent(body || {});
 
     if (!paymentIntent) {
-      sendJson(response, 400, { message: "Invalid Stripe payment intent payload." });
+      sendJson(response, 400, {
+        message: "Invalid Stripe payment intent payload.",
+      });
       return;
     }
 
@@ -799,20 +988,25 @@ async function createStripePaymentIntent(request, response) {
       "metadata[member_email]": paymentIntent.memberEmail,
     });
 
-    const stripeResponse = await fetch("https://api.stripe.com/v1/payment_intents", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${secretKey}`,
-        "Content-Type": "application/x-www-form-urlencoded",
+    const stripeResponse = await fetch(
+      "https://api.stripe.com/v1/payment_intents",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${secretKey}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: params,
       },
-      body: params,
-    });
+    );
 
     const stripePaymentIntent = await stripeResponse.json();
 
     if (!stripeResponse.ok) {
       sendJson(response, stripeResponse.status, {
-        message: stripePaymentIntent.error?.message || "Stripe payment intent creation failed.",
+        message:
+          stripePaymentIntent.error?.message ||
+          "Stripe payment intent creation failed.",
         stripe: stripePaymentIntent,
       });
       return;
@@ -839,15 +1033,18 @@ async function getStripePaymentAccess(request, response) {
   try {
     const requestUrl = new URL(request.url, "http://localhost");
     const memberEmail = sanitizeEmail(requestUrl.searchParams.get("email"));
-    const memberName = String(requestUrl.searchParams.get("memberName") || "").trim();
+    const memberName = String(
+      requestUrl.searchParams.get("memberName") || "",
+    ).trim();
 
     if (!memberEmail) {
       sendJson(response, 400, { message: "A valid member email is required." });
       return;
     }
 
-    const paymentIntent = await findRecentStripePaymentByMember(memberEmail, memberName) ||
-      await findStripePaymentByMetadata(memberEmail);
+    const paymentIntent =
+      (await findRecentStripePaymentByMember(memberEmail, memberName)) ||
+      (await findStripePaymentByMetadata(memberEmail));
 
     if (!paymentIntent) {
       sendJson(response, 200, {
@@ -859,7 +1056,11 @@ async function getStripePaymentAccess(request, response) {
       return;
     }
 
-    sendJson(response, 200, await mapStripePaymentAccess(paymentIntent, memberEmail));
+    sendJson(
+      response,
+      200,
+      await mapStripePaymentAccess(paymentIntent, memberEmail),
+    );
   } catch (error) {
     console.error("Stripe payment access API error:", error);
     sendJson(response, error.statusCode || 500, {
@@ -873,10 +1074,13 @@ async function getStripeRevenueOverview(response) {
   try {
     const months = getStripeRevenueMonths();
     const firstMonthStart = Math.floor(months[0].start.getTime() / 1000);
-    const totalsByMonth = months.reduce((totals, month) => ({
-      ...totals,
-      [month.key]: 0,
-    }), {});
+    const totalsByMonth = months.reduce(
+      (totals, month) => ({
+        ...totals,
+        [month.key]: 0,
+      }),
+      {},
+    );
     let paidInvoiceCount = 0;
     let hasMore = true;
     let startingAfter = "";
@@ -891,7 +1095,9 @@ async function getStripeRevenueOverview(response) {
         params.set("starting_after", startingAfter);
       }
 
-      const stripeResponse = await fetchStripeJson(`/v1/payment_intents?${params.toString()}`);
+      const stripeResponse = await fetchStripeJson(
+        `/v1/payment_intents?${params.toString()}`,
+      );
       const paymentIntents = stripeResponse.data || [];
 
       paymentIntents.forEach((paymentIntent) => {
@@ -976,9 +1182,23 @@ async function getMembershipPlans(response) {
 
 async function getMembers(response) {
   try {
+    const db = await getDb();
     const members = await getClerkMemberDocuments();
+    const memberIds = members
+      .map((member) => member.memberId || member.clerkUserId)
+      .filter(Boolean);
+    const attendanceHistoryByMember = await getAttendanceHistoryByMember(
+      db,
+      memberIds,
+    );
+    const membersWithAttendanceHistory = members.map((member) => ({
+      ...member,
+      attendanceHistory:
+        attendanceHistoryByMember.get(member.memberId || member.clerkUserId) ||
+        [],
+    }));
 
-    sendJson(response, 200, members);
+    sendJson(response, 200, membersWithAttendanceHistory);
   } catch (error) {
     console.error("Clerk members API error:", error);
     sendJson(response, error.statusCode || 500, {
@@ -991,9 +1211,13 @@ async function getMembers(response) {
 async function getStripePayments(response) {
   try {
     const params = new URLSearchParams({ limit: "100" });
-    const stripeResponse = await fetchStripeJson(`/v1/payment_intents?${params.toString()}`);
+    const stripeResponse = await fetchStripeJson(
+      `/v1/payment_intents?${params.toString()}`,
+    );
     const paymentIntents = stripeResponse.data || [];
-    const payments = await Promise.all(paymentIntents.map(mapStripePaymentIntentToAdminPayment));
+    const payments = await Promise.all(
+      paymentIntents.map(mapStripePaymentIntentToAdminPayment),
+    );
 
     sendJson(response, 200, payments);
   } catch (error) {
@@ -1016,10 +1240,14 @@ async function addMembershipPlan(request, response) {
     }
 
     const db = await getDb();
-    const existingPlan = await db.collection("membershipPlans").findOne({ slug: plan.slug });
+    const existingPlan = await db
+      .collection("membershipPlans")
+      .findOne({ slug: plan.slug });
 
     if (existingPlan) {
-      sendJson(response, 409, { message: "A membership plan with this slug already exists." });
+      sendJson(response, 409, {
+        message: "A membership plan with this slug already exists.",
+      });
       return;
     }
 
@@ -1050,10 +1278,14 @@ async function updateMembershipPlan(request, response) {
     const db = await getDb();
 
     if (plan.slug !== originalSlug) {
-      const existingPlan = await db.collection("membershipPlans").findOne({ slug: plan.slug });
+      const existingPlan = await db
+        .collection("membershipPlans")
+        .findOne({ slug: plan.slug });
 
       if (existingPlan) {
-        sendJson(response, 409, { message: "A membership plan with this slug already exists." });
+        sendJson(response, 409, {
+          message: "A membership plan with this slug already exists.",
+        });
         return;
       }
     }
@@ -1103,10 +1335,14 @@ async function addTrainer(request, response) {
     }
 
     const db = await getDb();
-    const existingTrainer = await db.collection("trainers").findOne({ slug: trainer.slug });
+    const existingTrainer = await db
+      .collection("trainers")
+      .findOne({ slug: trainer.slug });
 
     if (existingTrainer) {
-      sendJson(response, 409, { message: "A trainer with this slug already exists." });
+      sendJson(response, 409, {
+        message: "A trainer with this slug already exists.",
+      });
       return;
     }
 
@@ -1137,10 +1373,14 @@ async function updateTrainer(request, response) {
     const db = await getDb();
 
     if (trainer.slug !== originalSlug) {
-      const existingTrainer = await db.collection("trainers").findOne({ slug: trainer.slug });
+      const existingTrainer = await db
+        .collection("trainers")
+        .findOne({ slug: trainer.slug });
 
       if (existingTrainer) {
-        sendJson(response, 409, { message: "A trainer with this slug already exists." });
+        sendJson(response, 409, {
+          message: "A trainer with this slug already exists.",
+        });
         return;
       }
     }
@@ -1186,7 +1426,11 @@ async function addClassScheduleItem(request, response) {
     const period = body.period;
     const classItem = sanitizeClassItem(body.classItem || {});
 
-    if (!isValidWeekday(weekday) || !isValidSchedulePeriod(period) || !classItem) {
+    if (
+      !isValidWeekday(weekday) ||
+      !isValidSchedulePeriod(period) ||
+      !classItem
+    ) {
       sendJson(response, 400, { message: "Invalid class schedule payload." });
       return;
     }
@@ -1220,7 +1464,13 @@ async function updateClassScheduleItem(request, response) {
     const index = Number(body.index);
     const classItem = sanitizeClassItem(body.classItem || {});
 
-    if (!isValidWeekday(weekday) || !isValidSchedulePeriod(period) || !Number.isInteger(index) || index < 0 || !classItem) {
+    if (
+      !isValidWeekday(weekday) ||
+      !isValidSchedulePeriod(period) ||
+      !Number.isInteger(index) ||
+      index < 0 ||
+      !classItem
+    ) {
       sendJson(response, 400, { message: "Invalid class schedule payload." });
       return;
     }
@@ -1257,7 +1507,10 @@ async function getSiteSettings(response) {
     const db = await getDb();
     const settings = await db
       .collection("siteSettings")
-      .findOne({ key: "site", active: { $ne: false } }, { projection: { _id: 0 } });
+      .findOne(
+        { key: "site", active: { $ne: false } },
+        { projection: { _id: 0 } },
+      );
 
     sendJson(response, 200, settings || {});
   } catch (error) {
@@ -1282,9 +1535,17 @@ function sanitizeSiteSettings(payload, existing = {}) {
       ...(payload.contact || {}),
     },
   };
-  const openingHours = sanitizeStringArray(payload.openingHours ?? existing.openingHours ?? defaultSiteSettings.openingHours);
-  const quickLinks = sanitizeStringArray(payload.quickLinks ?? existing.quickLinks ?? defaultSiteSettings.quickLinks);
-  const socials = sanitizeStringArray(payload.socials ?? existing.socials ?? defaultSiteSettings.socials);
+  const openingHours = sanitizeStringArray(
+    payload.openingHours ??
+      existing.openingHours ??
+      defaultSiteSettings.openingHours,
+  );
+  const quickLinks = sanitizeStringArray(
+    payload.quickLinks ?? existing.quickLinks ?? defaultSiteSettings.quickLinks,
+  );
+  const socials = sanitizeStringArray(
+    payload.socials ?? existing.socials ?? defaultSiteSettings.socials,
+  );
   const brandName = String(merged.brand.name || "").trim();
   const brandDescription = String(merged.brand.description || "").trim();
   const location = String(merged.contact.location || "").trim();
@@ -1292,7 +1553,14 @@ function sanitizeSiteSettings(payload, existing = {}) {
   const email = String(merged.contact.email || "").trim();
   const copyright = String(merged.copyright || "").trim();
 
-  if (!brandName || !brandDescription || !location || !phone || !email || !openingHours.length) {
+  if (
+    !brandName ||
+    !brandDescription ||
+    !location ||
+    !phone ||
+    !email ||
+    !openingHours.length
+  ) {
     return null;
   }
 
@@ -1321,8 +1589,14 @@ async function updateSiteSettings(request, response) {
     const db = await getDb();
     const existing = await db
       .collection("siteSettings")
-      .findOne({ key: "site", active: { $ne: false } }, { projection: { _id: 0 } });
-    const settings = sanitizeSiteSettings(body.settings || body, existing || {});
+      .findOne(
+        { key: "site", active: { $ne: false } },
+        { projection: { _id: 0 } },
+      );
+    const settings = sanitizeSiteSettings(
+      body.settings || body,
+      existing || {},
+    );
 
     if (!settings) {
       sendJson(response, 400, { message: "Invalid site settings payload." });
@@ -1334,11 +1608,13 @@ async function updateSiteSettings(request, response) {
       updatedAt: new Date(),
     };
 
-    await db.collection("siteSettings").updateOne(
-      { key: "site" },
-      { $set: nextSettings, $setOnInsert: { createdAt: new Date() } },
-      { upsert: true },
-    );
+    await db
+      .collection("siteSettings")
+      .updateOne(
+        { key: "site" },
+        { $set: nextSettings, $setOnInsert: { createdAt: new Date() } },
+        { upsert: true },
+      );
 
     sendJson(response, 200, nextSettings);
   } catch (error) {
@@ -1368,17 +1644,26 @@ function handleApiRequest(request, response) {
     return true;
   }
 
-  if (request.method === "POST" && request.url === "/api/stripe/payment-intents") {
+  if (
+    request.method === "POST" &&
+    request.url === "/api/stripe/payment-intents"
+  ) {
     createStripePaymentIntent(request, response);
     return true;
   }
 
-  if (request.method === "GET" && request.url === "/api/stripe/revenue-overview") {
+  if (
+    request.method === "GET" &&
+    request.url === "/api/stripe/revenue-overview"
+  ) {
     getStripeRevenueOverview(response);
     return true;
   }
 
-  if (request.method === "GET" && request.url.startsWith("/api/stripe/payment-access")) {
+  if (
+    request.method === "GET" &&
+    request.url.startsWith("/api/stripe/payment-access")
+  ) {
     getStripePaymentAccess(request, response);
     return true;
   }
@@ -1413,12 +1698,18 @@ function handleApiRequest(request, response) {
     return true;
   }
 
-  if (request.method === "POST" && request.url === "/api/class-schedule/classes") {
+  if (
+    request.method === "POST" &&
+    request.url === "/api/class-schedule/classes"
+  ) {
     addClassScheduleItem(request, response);
     return true;
   }
 
-  if (request.method === "PUT" && request.url === "/api/class-schedule/classes") {
+  if (
+    request.method === "PUT" &&
+    request.url === "/api/class-schedule/classes"
+  ) {
     updateClassScheduleItem(request, response);
     return true;
   }

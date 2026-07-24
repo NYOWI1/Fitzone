@@ -11,7 +11,9 @@ function TrainerDetail({ trainer, onBack }) {
           onClick={onBack}
           type="button"
         >
-          <span className="grid h-7 w-7 place-items-center rounded-full bg-[#e6002e] text-[27px] leading-none max-[640px]:h-6 max-[640px]:w-6 max-[640px]:text-2xl">‹</span>
+          <span className="grid h-7 w-7 place-items-center rounded-full bg-[#e6002e] text-[27px] leading-none max-[640px]:h-6 max-[640px]:w-6 max-[640px]:text-2xl">
+            ‹
+          </span>
           Back to Teams
         </button>
 
@@ -30,24 +32,43 @@ function TrainerDetail({ trainer, onBack }) {
           <div className="mb-5 inline-flex min-h-8 items-center rounded-full border border-[#e6002e] px-4 text-xs font-black uppercase text-[#ff3156]">
             Trainer Profile
           </div>
-          <h1 className="mb-3 mt-0 break-words text-[clamp(40px,5.6vw,72px)] leading-none tracking-normal max-[640px]:text-[clamp(34px,11vw,48px)]">{trainer.name}</h1>
-          <h2 className="mb-5 mt-0 max-w-[720px] text-[clamp(21px,2.2vw,30px)] leading-tight text-[#f1f1f1]">{trainer.role}</h2>
+          <h1 className="mb-3 mt-0 break-words text-[clamp(40px,5.6vw,72px)] leading-none tracking-normal max-[640px]:text-[clamp(34px,11vw,48px)]">
+            {trainer.name}
+          </h1>
+          <h2 className="mb-5 mt-0 max-w-[720px] text-[clamp(21px,2.2vw,30px)] leading-tight text-[#f1f1f1]">
+            {trainer.role}
+          </h2>
           <div className="mb-7 h-1.5 w-[104px] rounded-lg bg-[#e6002e]"></div>
 
           <div className="rounded-lg border border-[#333] bg-[#202020] p-[clamp(22px,3.4vw,38px)] shadow-[0_24px_50px_rgba(0,0,0,0.26)]">
-            <p className="mb-5 mt-0 text-[clamp(15px,1.45vw,18px)] leading-[1.55] text-[#d0d0d0]">{trainer.bio}</p>
+            <p className="mb-5 mt-0 text-[clamp(15px,1.45vw,18px)] leading-[1.55] text-[#d0d0d0]">
+              {trainer.bio}
+            </p>
             <div className="grid gap-3 border-y border-[#363636] py-5">
-              <p className="m-0 text-xs font-black uppercase tracking-normal text-[#8f8f8f]">Expertise</p>
-              <p className="m-0 text-[clamp(15px,1.35vw,17px)] font-bold leading-[1.45] text-white">{trainer.expertise}</p>
+              <p className="m-0 text-xs font-black uppercase tracking-normal text-[#8f8f8f]">
+                Expertise
+              </p>
+              <p className="m-0 text-[clamp(15px,1.35vw,17px)] font-bold leading-[1.45] text-white">
+                {trainer.expertise}
+              </p>
             </div>
-            <span className="mt-5 inline-flex min-h-[38px] max-w-full items-center justify-center rounded-full bg-[#e6002e] px-5 text-center text-xs font-black uppercase text-white">{trainer.coach}</span>
+            <span className="mt-5 inline-flex min-h-[38px] max-w-full items-center justify-center rounded-full bg-[#e6002e] px-5 text-center text-xs font-black uppercase text-white">
+              {trainer.coach}
+            </span>
           </div>
 
           <div className="my-6 grid grid-cols-3 gap-3 max-[640px]:grid-cols-1">
             {(trainer.stats || []).map(([value, label]) => (
-              <div className="grid min-h-[88px] content-center gap-1 rounded-lg border border-[#353535] bg-[#171717] p-4" key={label}>
-                <strong className="text-[30px] leading-none text-[#e6002e]">{value}</strong>
-                <span className="text-xs font-bold leading-tight text-[#c9c9c9]">{label}</span>
+              <div
+                className="grid min-h-[88px] content-center gap-1 rounded-lg border border-[#353535] bg-[#171717] p-4"
+                key={label}
+              >
+                <strong className="text-[30px] leading-none text-[#e6002e]">
+                  {value}
+                </strong>
+                <span className="text-xs font-bold leading-tight text-[#c9c9c9]">
+                  {label}
+                </span>
               </div>
             ))}
           </div>
@@ -55,7 +76,12 @@ function TrainerDetail({ trainer, onBack }) {
           <h3 className="mb-3 mt-0 text-lg">Specialties</h3>
           <div className="flex flex-wrap gap-3">
             {(trainer.specialties || []).map((specialty) => (
-              <span className="inline-flex min-h-9 items-center justify-center rounded-full border border-[#e6002e] bg-[#161616] px-5 text-center text-xs font-extrabold text-white max-[640px]:w-full" key={specialty}>{specialty}</span>
+              <span
+                className="inline-flex min-h-9 items-center justify-center rounded-full border border-[#e6002e] bg-[#161616] px-5 text-center text-xs font-extrabold text-white max-[640px]:w-full"
+                key={specialty}
+              >
+                {specialty}
+              </span>
             ))}
           </div>
         </section>
@@ -112,9 +138,15 @@ export function TrainerDetailRoute({ trainerSlug }) {
   return (
     <main className="grid min-h-screen place-items-center bg-[#0d0d0d] px-6 text-center text-white">
       <div className="max-w-[520px] rounded-lg border border-[#333] bg-[#181818] p-8">
-        <p className="mb-3 mt-0 text-xs font-black uppercase text-[#e6002e]">Trainer Profile</p>
+        <p className="mb-3 mt-0 text-xs font-black uppercase text-[#e6002e]">
+          Trainer Profile
+        </p>
         <h1 className="mb-3 mt-0 text-[clamp(28px,7vw,42px)]">
-          {status === "loading" ? "Loading trainer..." : status === "not-found" ? "Trainer not found" : "Unable to load trainer"}
+          {status === "loading"
+            ? "Loading trainer..."
+            : status === "not-found"
+              ? "Trainer not found"
+              : "Unable to load trainer"}
         </h1>
         <p className="mb-6 mt-0 text-sm leading-[1.5] text-[#bdbdbd]">
           {status === "loading"

@@ -25,7 +25,9 @@ async function seedMembershipPlans() {
 
   const result = await collection.bulkWrite(operations);
 
-  console.log(`Seeded membership plans: ${result.upsertedCount} inserted, ${result.modifiedCount} updated.`);
+  console.log(
+    `Seeded membership plans: ${result.upsertedCount} inserted, ${result.modifiedCount} updated.`,
+  );
 }
 
 seedMembershipPlans()

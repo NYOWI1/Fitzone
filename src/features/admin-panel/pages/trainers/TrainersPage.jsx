@@ -1,8 +1,29 @@
 import { useEffect, useState } from "react";
 import { addTrainer, getTrainers, updateTrainer } from "../../../../shared/api";
 import { attachTrainerImage } from "../../../../shared/trainers";
-import { filterTrainers, getEmptyTrainerForm, getTrainerCategoryBreakdown, getTrainerFormFromRecord, getTrainerPayload, getTrainerStats, trainerImageKeys } from "../../adminPanelUtils";
-import "./TrainersPage.css";
+import {
+  filterTrainers,
+  getEmptyTrainerForm,
+  getTrainerCategoryBreakdown,
+  getTrainerFormFromRecord,
+  getTrainerPayload,
+  getTrainerStats,
+  trainerImageKeys,
+} from "../../adminPanelUtils";
+
+const trainerTableGridClass =
+  "grid min-w-0 items-center gap-2.5 [grid-template-columns:minmax(180px,1.35fr)_minmax(106px,0.8fr)_minmax(80px,0.6fr)_minmax(104px,0.78fr)_minmax(70px,0.52fr)_minmax(58px,0.44fr)] max-[980px]:[grid-template-columns:minmax(0,1fr)_auto] max-[980px]:items-start max-[980px]:gap-x-3.5 max-[980px]:gap-y-2.5 max-[560px]:[grid-template-columns:minmax(0,1fr)]";
+const mutedTrainerCellClass =
+  "min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-xs text-[#b8b8b8] max-[980px]:flex max-[980px]:min-h-[34px] max-[980px]:items-center max-[980px]:rounded-[11px] max-[980px]:bg-[rgba(15,15,15,0.35)] max-[980px]:px-2.5";
+const filterTabClass =
+  "min-h-[30px] rounded-[10px] bg-transparent px-3.5 text-xs font-extrabold text-[#b8b8b8] max-[980px]:flex-1 max-[980px]:basis-auto";
+const activeFilterTabClass = `${filterTabClass} bg-[#d90429] text-white`;
+const categoryPillClass =
+  "inline-flex justify-center rounded-full bg-[rgba(77,163,255,0.12)] px-2.5 py-[7px] text-[11px] font-black text-[#4da3ff] max-[980px]:min-h-[34px] max-[980px]:items-center max-[560px]:justify-center";
+const rowActionClass =
+  "min-h-[34px] rounded-[11px] border border-[#393939] bg-transparent text-xs font-extrabold text-[#eaeaea] max-[980px]:flex max-[980px]:items-center max-[980px]:justify-center";
+const emptyRowClass =
+  "m-0 flex min-h-16 items-center rounded-2xl border border-[rgba(57,57,57,0.82)] bg-[rgba(43,43,43,0.72)] px-3.5 text-[13px] font-extrabold text-[#b8b8b8]";
 
 export default function TrainersPage() {
   const [trainers, setTrainers] = useState([]);
@@ -15,7 +36,10 @@ export default function TrainersPage() {
   const trainerStats = getTrainerStats(trainers);
   const visibleTrainers = filterTrainers(trainers, searchTerm);
   const categoryBreakdown = getTrainerCategoryBreakdown(trainers);
-  const selectedTrainer = visibleTrainers.find((trainer) => trainer.slug === selectedTrainerSlug) || visibleTrainers[0] || trainers[0];
+  const selectedTrainer =
+    visibleTrainers.find((trainer) => trainer.slug === selectedTrainerSlug) ||
+    visibleTrainers[0] ||
+    trainers[0];
 
   useEffect(() => {
     let isCurrent = true;
@@ -28,7 +52,9 @@ export default function TrainersPage() {
           const attachedTrainers = nextTrainers.map(attachTrainerImage);
 
           setTrainers(attachedTrainers);
-          setSelectedTrainerSlug((currentSlug) => currentSlug || attachedTrainers[0]?.slug || "");
+          setSelectedTrainerSlug(
+            (currentSlug) => currentSlug || attachedTrainers[0]?.slug || "",
+          );
           setStatus("ready");
         }
       } catch (error) {
@@ -96,9 +122,13 @@ export default function TrainersPage() {
       setTrainerFormError("");
 
       const trainer = getTrainerPayload(trainerForm.values);
-      const nextTrainers = trainerForm.mode === "edit"
-        ? await updateTrainer({ originalSlug: trainerForm.originalSlug, trainer })
-        : await addTrainer({ trainer });
+      const nextTrainers =
+        trainerForm.mode === "edit"
+          ? await updateTrainer({
+              originalSlug: trainerForm.originalSlug,
+              trainer,
+            })
+          : await addTrainer({ trainer });
       const attachedTrainers = nextTrainers.map(attachTrainerImage);
 
       setTrainers(attachedTrainers);
@@ -106,18 +136,25 @@ export default function TrainersPage() {
       setTrainerForm(null);
     } catch (error) {
       console.error(error);
-      setTrainerFormError(trainerForm.mode === "edit" ? "Unable to update this trainer." : "Unable to add this trainer.");
+      setTrainerFormError(
+        trainerForm.mode === "edit"
+          ? "Unable to update this trainer."
+          : "Unable to add this trainer.",
+      );
     } finally {
       setTrainerFormStatus("idle");
     }
   };
 
   return (
-    <section className="admin-content admin-trainers-page" id="trainers">
+    <section className="admin-content gap-0" id="trainers">
       <header className="admin-header">
         <div>
           <h2>Trainers</h2>
-          <p>Manage trainer profiles, coaching categories, specialties, and database availability.</p>
+          <p>
+            Manage trainer profiles, coaching categories, specialties, and
+            database availability.
+          </p>
         </div>
 
         <div className="admin-header-actions">
@@ -130,7 +167,13 @@ export default function TrainersPage() {
               value={searchTerm}
             />
           </label>
-          <button className="admin-add-button" onClick={openAddTrainerForm} type="button">+ Add Trainer</button>
+          <button
+            className="admin-add-button"
+            onClick={openAddTrainerForm}
+            type="button"
+          >
+            + Add Trainer
+          </button>
         </div>
       </header>
 
@@ -139,16 +182,20 @@ export default function TrainersPage() {
       )}
 
       {status === "error" && (
-        <p className="admin-state-message error">Trainers are unavailable. Start the API server and try again.</p>
+        <p className="admin-state-message error">
+          Trainers are unavailable. Start the API server and try again.
+        </p>
       )}
 
       {status === "ready" && trainers.length === 0 && (
-        <p className="admin-state-message">No trainers are available in the current database.</p>
+        <p className="admin-state-message">
+          No trainers are available in the current database.
+        </p>
       )}
 
       {status === "ready" && trainers.length > 0 && (
         <>
-          <div className="admin-kpi-grid admin-trainer-kpi-grid">
+          <div className="admin-kpi-grid flex-none">
             {trainerStats.map((stat) => (
               <article className="admin-kpi-card" key={stat.label}>
                 <span className={`admin-kpi-icon ${stat.tone}`}></span>
@@ -161,19 +208,30 @@ export default function TrainersPage() {
             ))}
           </div>
 
-          <div className="admin-trainers-management-grid">
-            <section className="admin-card admin-trainer-directory-card">
+          <div className="grid min-h-0 min-w-0 flex-1 gap-x-7 gap-y-6 [grid-template-columns:minmax(0,1.72fr)_minmax(280px,0.72fr)] max-[1360px]:grid-cols-1">
+            <section className="admin-card min-h-[480px] min-[1440px]:min-h-[540px]">
               <div className="admin-card-header admin-table-header">
                 <h3>Trainer Directory</h3>
-                <div className="admin-filter-tabs" aria-label="Filter trainers">
-                  <button className="active" type="button">All</button>
-                  <button type="button">Active</button>
-                  <button type="button">Featured</button>
+                <div
+                  className="flex gap-1 rounded-[14px] border border-[#393939] bg-[#2b2b2b] p-1 max-[980px]:w-full max-[980px]:overflow-x-auto"
+                  aria-label="Filter trainers"
+                >
+                  <button className={activeFilterTabClass} type="button">
+                    All
+                  </button>
+                  <button className={filterTabClass} type="button">
+                    Active
+                  </button>
+                  <button className={filterTabClass} type="button">
+                    Featured
+                  </button>
                 </div>
               </div>
 
-              <div className="admin-trainer-table">
-                <div className="admin-trainer-table-head">
+              <div className="grid min-w-0 gap-2.5">
+                <div
+                  className={`${trainerTableGridClass} border-b border-[#393939] pb-3 text-[11px] font-extrabold uppercase text-[#b8b8b8] max-[980px]:hidden`}
+                >
                   <span>Trainer</span>
                   <span>Role</span>
                   <span>Category</span>
@@ -184,7 +242,11 @@ export default function TrainersPage() {
 
                 {visibleTrainers.map((trainer) => (
                   <div
-                    className={selectedTrainer?.slug === trainer.slug ? "admin-trainer-table-row selected" : "admin-trainer-table-row"}
+                    className={
+                      selectedTrainer?.slug === trainer.slug
+                        ? `${trainerTableGridClass} min-h-[72px] cursor-pointer rounded-2xl border border-[rgba(234,0,48,0.72)] bg-[rgba(48,34,38,0.82)] px-3 py-2.5 shadow-[0_0_0_1px_rgba(234,0,48,0.14)] outline-none transition max-[980px]:min-h-0 max-[980px]:p-3.5`
+                        : `${trainerTableGridClass} min-h-[72px] cursor-pointer rounded-2xl border border-[rgba(57,57,57,0.82)] bg-[rgba(43,43,43,0.72)] px-3 py-2.5 transition hover:border-[rgba(234,0,48,0.72)] hover:bg-[rgba(48,34,38,0.82)] hover:shadow-[0_0_0_1px_rgba(234,0,48,0.14)] focus-visible:border-[rgba(234,0,48,0.72)] focus-visible:bg-[rgba(48,34,38,0.82)] focus-visible:shadow-[0_0_0_1px_rgba(234,0,48,0.14)] focus-visible:outline-none max-[980px]:min-h-0 max-[980px]:p-3.5`
+                    }
                     key={trainer.slug || trainer.name}
                     onClick={() => setSelectedTrainerSlug(trainer.slug)}
                     onKeyDown={(event) => {
@@ -196,21 +258,41 @@ export default function TrainersPage() {
                     role="button"
                     tabIndex={0}
                   >
-                    <div className="admin-table-trainer">
-                      <img src={trainer.image} alt={trainer.name} />
-                      <div>
-                        <strong>{trainer.name}</strong>
-                        <small>{trainer.badge || "Trainer"}</small>
+                    <div className="flex min-w-0 items-center gap-3 max-[980px]:col-span-full">
+                      <img
+                        className="h-[46px] w-[46px] flex-[0_0_46px] rounded-[14px] border border-[#393939] bg-[#161616] object-cover object-top"
+                        src={trainer.image}
+                        alt={trainer.name}
+                      />
+                      <div className="min-w-0">
+                        <strong className="mb-[5px] block overflow-hidden text-ellipsis whitespace-nowrap text-[13px] text-white">
+                          {trainer.name}
+                        </strong>
+                        <small className="block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-xs text-[#b8b8b8]">
+                          {trainer.badge || "Trainer"}
+                        </small>
                       </div>
                     </div>
-                    <span>{trainer.role}</span>
-                    <span className="admin-category-pill">{trainer.category}</span>
-                    <span>{trainer.coach}</span>
-                    <span className={trainer.active === false ? "admin-status-pill expired" : "admin-status-pill active"}>
+                    <span className={mutedTrainerCellClass}>
+                      {trainer.role}
+                    </span>
+                    <span className={categoryPillClass}>
+                      {trainer.category}
+                    </span>
+                    <span className={mutedTrainerCellClass}>
+                      {trainer.coach}
+                    </span>
+                    <span
+                      className={
+                        trainer.active === false
+                          ? "admin-status-pill expired"
+                          : "admin-status-pill active"
+                      }
+                    >
                       {trainer.active === false ? "Inactive" : "Active"}
                     </span>
                     <button
-                      className="admin-row-action"
+                      className={rowActionClass}
                       onClick={(event) => {
                         event.stopPropagation();
                         openEditTrainerForm(trainer);
@@ -223,32 +305,51 @@ export default function TrainersPage() {
                 ))}
 
                 {visibleTrainers.length === 0 && (
-                  <p className="admin-empty-row">No trainers match your search.</p>
+                  <p className={emptyRowClass}>
+                    No trainers match your search.
+                  </p>
                 )}
               </div>
             </section>
 
-            <aside className="admin-trainers-side">
-              <section className="admin-card admin-trainer-profile-card">
+            <aside className="grid min-h-0 grid-rows-[minmax(300px,1fr)_minmax(220px,0.7fr)] gap-6 max-[1360px]:grid-cols-2 max-[1360px]:grid-rows-none max-[980px]:grid-cols-1">
+              <section className="admin-card min-h-0">
                 <h3>Profile Preview</h3>
-                <div className="admin-featured-trainer">
-                  <img src={selectedTrainer.image} alt={selectedTrainer.name} />
-                  <strong>{selectedTrainer.name}</strong>
-                  <span>{selectedTrainer.role}</span>
-                  <p>{selectedTrainer.bio}</p>
+                <div className="mt-[22px] grid gap-2.5">
+                  <img
+                    className="aspect-[16/12] h-auto w-full rounded-[18px] border border-[#393939] bg-[#161616] object-cover object-top"
+                    src={selectedTrainer.image}
+                    alt={selectedTrainer.name}
+                  />
+                  <strong className="text-base text-white">
+                    {selectedTrainer.name}
+                  </strong>
+                  <span className="text-xs font-black text-[#d90429]">
+                    {selectedTrainer.role}
+                  </span>
+                  <p className="m-0 text-xs leading-normal text-[#b8b8b8]">
+                    {selectedTrainer.bio}
+                  </p>
                 </div>
               </section>
 
-              <section className="admin-card admin-trainer-category-card">
+              <section className="admin-card min-h-0">
                 <h3>Categories</h3>
-                <div className="admin-plan-list">
-                  {Object.entries(categoryBreakdown).map(([category, count]) => (
-                    <div className="admin-plan-row" key={category}>
-                      <span className="admin-class-dot blue"></span>
-                      <strong>{category}</strong>
-                      <b>{count}</b>
-                    </div>
-                  ))}
+                <div className="mt-[22px] grid gap-3.5">
+                  {Object.entries(categoryBreakdown).map(
+                    ([category, count]) => (
+                      <div
+                        className="grid min-h-12 grid-cols-[10px_1fr_auto] items-center gap-3 rounded-[15px] border border-[rgba(57,57,57,0.82)] bg-[rgba(43,43,43,0.72)] px-3.5"
+                        key={category}
+                      >
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#4da3ff]"></span>
+                        <strong className="text-[13px] text-white">
+                          {category}
+                        </strong>
+                        <b className="text-[13px] text-[#b8b8b8]">{count}</b>
+                      </div>
+                    ),
+                  )}
                 </div>
               </section>
             </aside>
@@ -258,20 +359,37 @@ export default function TrainersPage() {
 
       {trainerForm && (
         <div className="admin-modal-backdrop" role="presentation">
-          <form className="admin-class-form admin-trainer-form" onSubmit={saveTrainerForm}>
+          <form
+            className="admin-class-form w-[min(760px,100%)]"
+            onSubmit={saveTrainerForm}
+          >
             <div className="admin-form-header">
               <div>
-                <h3>{trainerForm.mode === "edit" ? "Edit Trainer" : "Add Trainer"}</h3>
-                <p>{trainerForm.mode === "edit" ? "Update this database trainer profile." : "Create a new trainer profile in the database."}</p>
+                <h3>
+                  {trainerForm.mode === "edit" ? "Edit Trainer" : "Add Trainer"}
+                </h3>
+                <p>
+                  {trainerForm.mode === "edit"
+                    ? "Update this database trainer profile."
+                    : "Create a new trainer profile in the database."}
+                </p>
               </div>
-              <button aria-label="Close trainer form" onClick={closeTrainerForm} type="button">×</button>
+              <button
+                aria-label="Close trainer form"
+                onClick={closeTrainerForm}
+                type="button"
+              >
+                ×
+              </button>
             </div>
 
             <div className="admin-form-grid">
               <label>
                 <span>Name</span>
                 <input
-                  onChange={(event) => updateTrainerFormValue("name", event.target.value)}
+                  onChange={(event) =>
+                    updateTrainerFormValue("name", event.target.value)
+                  }
                   required
                   value={trainerForm.values.name}
                 />
@@ -280,7 +398,9 @@ export default function TrainersPage() {
               <label>
                 <span>Slug</span>
                 <input
-                  onChange={(event) => updateTrainerFormValue("slug", makeSlug(event.target.value))}
+                  onChange={(event) =>
+                    updateTrainerFormValue("slug", makeSlug(event.target.value))
+                  }
                   value={trainerForm.values.slug}
                 />
               </label>
@@ -288,7 +408,9 @@ export default function TrainersPage() {
               <label>
                 <span>Role</span>
                 <input
-                  onChange={(event) => updateTrainerFormValue("role", event.target.value)}
+                  onChange={(event) =>
+                    updateTrainerFormValue("role", event.target.value)
+                  }
                   required
                   value={trainerForm.values.role}
                 />
@@ -297,7 +419,9 @@ export default function TrainersPage() {
               <label>
                 <span>Coach Type</span>
                 <input
-                  onChange={(event) => updateTrainerFormValue("coach", event.target.value)}
+                  onChange={(event) =>
+                    updateTrainerFormValue("coach", event.target.value)
+                  }
                   required
                   value={trainerForm.values.coach}
                 />
@@ -306,7 +430,9 @@ export default function TrainersPage() {
               <label>
                 <span>Category</span>
                 <input
-                  onChange={(event) => updateTrainerFormValue("category", event.target.value)}
+                  onChange={(event) =>
+                    updateTrainerFormValue("category", event.target.value)
+                  }
                   required
                   value={trainerForm.values.category}
                 />
@@ -315,11 +441,15 @@ export default function TrainersPage() {
               <label>
                 <span>Image</span>
                 <select
-                  onChange={(event) => updateTrainerFormValue("imageKey", event.target.value)}
+                  onChange={(event) =>
+                    updateTrainerFormValue("imageKey", event.target.value)
+                  }
                   value={trainerForm.values.imageKey}
                 >
                   {trainerImageKeys.map((imageKey) => (
-                    <option key={imageKey} value={imageKey}>{imageKey}</option>
+                    <option key={imageKey} value={imageKey}>
+                      {imageKey}
+                    </option>
                   ))}
                 </select>
               </label>
@@ -327,7 +457,9 @@ export default function TrainersPage() {
               <label>
                 <span>Badge</span>
                 <input
-                  onChange={(event) => updateTrainerFormValue("badge", event.target.value)}
+                  onChange={(event) =>
+                    updateTrainerFormValue("badge", event.target.value)
+                  }
                   value={trainerForm.values.badge}
                 />
               </label>
@@ -336,7 +468,12 @@ export default function TrainersPage() {
                 <span>Sort Order</span>
                 <input
                   min="1"
-                  onChange={(event) => updateTrainerFormValue("sortOrder", Number(event.target.value))}
+                  onChange={(event) =>
+                    updateTrainerFormValue(
+                      "sortOrder",
+                      Number(event.target.value),
+                    )
+                  }
                   required
                   type="number"
                   value={trainerForm.values.sortOrder}
@@ -346,7 +483,9 @@ export default function TrainersPage() {
               <label className="wide">
                 <span>Bio</span>
                 <textarea
-                  onChange={(event) => updateTrainerFormValue("bio", event.target.value)}
+                  onChange={(event) =>
+                    updateTrainerFormValue("bio", event.target.value)
+                  }
                   required
                   rows="4"
                   value={trainerForm.values.bio}
@@ -356,7 +495,9 @@ export default function TrainersPage() {
               <label className="wide">
                 <span>Expertise</span>
                 <textarea
-                  onChange={(event) => updateTrainerFormValue("expertise", event.target.value)}
+                  onChange={(event) =>
+                    updateTrainerFormValue("expertise", event.target.value)
+                  }
                   required
                   rows="3"
                   value={trainerForm.values.expertise}
@@ -366,7 +507,9 @@ export default function TrainersPage() {
               <label className="wide">
                 <span>Specialties</span>
                 <input
-                  onChange={(event) => updateTrainerFormValue("specialties", event.target.value)}
+                  onChange={(event) =>
+                    updateTrainerFormValue("specialties", event.target.value)
+                  }
                   value={trainerForm.values.specialties}
                 />
               </label>
@@ -376,14 +519,24 @@ export default function TrainersPage() {
                   <label>
                     <span>Stat {number}</span>
                     <input
-                      onChange={(event) => updateTrainerFormValue(`statValue${number}`, event.target.value)}
+                      onChange={(event) =>
+                        updateTrainerFormValue(
+                          `statValue${number}`,
+                          event.target.value,
+                        )
+                      }
                       value={trainerForm.values[`statValue${number}`]}
                     />
                   </label>
                   <label>
                     <span>Label {number}</span>
                     <input
-                      onChange={(event) => updateTrainerFormValue(`statLabel${number}`, event.target.value)}
+                      onChange={(event) =>
+                        updateTrainerFormValue(
+                          `statLabel${number}`,
+                          event.target.value,
+                        )
+                      }
                       value={trainerForm.values[`statLabel${number}`]}
                     />
                   </label>
@@ -393,18 +546,28 @@ export default function TrainersPage() {
               <label className="admin-checkbox-label">
                 <input
                   checked={trainerForm.values.active}
-                  onChange={(event) => updateTrainerFormValue("active", event.target.checked)}
+                  onChange={(event) =>
+                    updateTrainerFormValue("active", event.target.checked)
+                  }
                   type="checkbox"
                 />
                 <span>Active trainer</span>
               </label>
             </div>
 
-            {trainerFormError && <p className="admin-form-error">{trainerFormError}</p>}
+            {trainerFormError && (
+              <p className="admin-form-error">{trainerFormError}</p>
+            )}
 
             <div className="admin-form-actions">
-              <button onClick={closeTrainerForm} type="button">Cancel</button>
-              <button className="primary" disabled={trainerFormStatus === "saving"} type="submit">
+              <button onClick={closeTrainerForm} type="button">
+                Cancel
+              </button>
+              <button
+                className="primary"
+                disabled={trainerFormStatus === "saving"}
+                type="submit"
+              >
                 {trainerFormStatus === "saving" ? "Saving..." : "Save Trainer"}
               </button>
             </div>

@@ -9,20 +9,22 @@
     "seed:site-settings": "node scripts/seedSiteSettings.js",
     "seed:all": "npm run seed:membership-plans && npm run seed:trainers && npm run seed:class-schedule && npm run seed:site-settings",
     "build": "vite build",
+    "format": "npm exec prettier -- --write .",
     "preview": "vite preview"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.61.8",
-    "@vitejs/plugin-react": "latest",
     "mongodb": "^7.0.0",
     "react": "latest",
-    "react-dom": "latest",
-    "vite": "latest"
+    "react-dom": "latest"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
+    "@vitejs/plugin-react": "latest",
     "autoprefixer": "^10.5.4",
     "postcss": "^8.5.22",
-    "tailwindcss": "^4.3.3"
+    "prettier": "^3.9.6",
+    "tailwindcss": "^4.3.3",
+    "vite": "latest"
   }
 }

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { getSiteSettings, updateSiteSettings } from "../../../../shared/api";
-import { applyAdminSettingsValue, getAdminSettingsRows } from "../../adminPanelUtils";
-import "./SettingsPage.css";
+import {
+  applyAdminSettingsValue,
+  getAdminSettingsRows,
+} from "../../adminPanelUtils";
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({});
@@ -33,7 +35,9 @@ export default function SettingsPage() {
   }
 
   function updateSettingsFormValue(value) {
-    setSettingsForm((currentForm) => currentForm ? { ...currentForm, value } : currentForm);
+    setSettingsForm((currentForm) =>
+      currentForm ? { ...currentForm, value } : currentForm,
+    );
   }
 
   async function saveSettingsForm(event) {
@@ -54,7 +58,11 @@ export default function SettingsPage() {
       setFormStatus("saving");
       setFormError("");
 
-      const nextSettings = applyAdminSettingsValue(settings, settingsForm.key, settingsForm.value);
+      const nextSettings = applyAdminSettingsValue(
+        settings,
+        settingsForm.key,
+        settingsForm.value,
+      );
       const savedSettings = await updateSiteSettings(nextSettings);
 
       setSettings(savedSettings);
@@ -94,11 +102,14 @@ export default function SettingsPage() {
   }, []);
 
   return (
-    <section className="admin-content admin-settings-page" id="settings">
-      <header className="admin-header admin-settings-header">
+    <section className="admin-content min-h-[calc(100vh_-_64px)]" id="settings">
+      <header className="admin-header mb-[clamp(36px,5.5vh,56px)]">
         <div>
-          <h2>Admin Settings</h2>
-          <p>Control admin accounts, gym information, system settings, and security.</p>
+          <h2 className="text-[clamp(34px,3.3vw,44px)]">Admin Settings</h2>
+          <p>
+            Control admin accounts, gym information, system settings, and
+            security.
+          </p>
         </div>
         <div className="admin-header-actions">
           <label className="admin-search" aria-label="Search settings">
@@ -108,16 +119,34 @@ export default function SettingsPage() {
       </header>
 
       {status === "error" && (
-        <div className="admin-empty-state">Settings are unavailable right now.</div>
+        <div className="admin-empty-state">
+          Settings are unavailable right now.
+        </div>
       )}
 
       {status !== "error" && (
-        <section className="admin-settings-list" aria-busy={status === "loading"}>
+        <section
+          className="grid gap-[clamp(24px,4vh,34px)]"
+          aria-busy={status === "loading"}
+        >
           {rows.map((row) => (
-            <article className="admin-settings-row" key={row.label}>
-              <span>{row.label}</span>
-              <strong>{row.displayValue}</strong>
-              <button onClick={() => openSettingsForm(row)} type="button">Edit</button>
+            <article
+              className="grid min-h-[86px] grid-cols-[minmax(140px,0.35fr)_minmax(0,1fr)_100px] items-center gap-[26px] rounded-[22px] border border-[#393939] bg-[#242424] py-5 pl-7 pr-[42px] shadow-[0_18px_34px_rgba(0,0,0,0.26)] max-[680px]:grid-cols-1 max-[680px]:gap-3 max-[680px]:p-5"
+              key={row.label}
+            >
+              <span className="text-sm font-extrabold text-[#b8b8b8]">
+                {row.label}
+              </span>
+              <strong className="whitespace-pre-line text-[clamp(18px,1.5vw,20px)] leading-tight text-white">
+                {row.displayValue}
+              </strong>
+              <button
+                className="h-10 min-w-[100px] rounded-[13px] border border-[rgba(69,69,69,0.95)] bg-[rgba(47,47,47,0.9)] text-[13px] font-extrabold text-white max-[680px]:justify-self-start"
+                onClick={() => openSettingsForm(row)}
+                type="button"
+              >
+                Edit
+              </button>
             </article>
           ))}
         </section>
@@ -125,13 +154,21 @@ export default function SettingsPage() {
 
       {settingsForm && (
         <div className="admin-modal-backdrop" role="presentation">
-          <form className="admin-class-form admin-settings-form" onSubmit={saveSettingsForm}>
+          <form className="admin-class-form" onSubmit={saveSettingsForm}>
             <div className="admin-form-header">
               <div>
                 <h3>Edit {settingsForm.label}</h3>
-                <p>This updates the contact information shown on the home page.</p>
+                <p>
+                  This updates the contact information shown on the home page.
+                </p>
               </div>
-              <button aria-label="Close settings form" onClick={closeSettingsForm} type="button">×</button>
+              <button
+                aria-label="Close settings form"
+                onClick={closeSettingsForm}
+                type="button"
+              >
+                ×
+              </button>
             </div>
 
             <div className="admin-form-grid">
@@ -139,13 +176,17 @@ export default function SettingsPage() {
                 <span>{settingsForm.label}</span>
                 {settingsForm.multiline ? (
                   <textarea
-                    onChange={(event) => updateSettingsFormValue(event.target.value)}
+                    onChange={(event) =>
+                      updateSettingsFormValue(event.target.value)
+                    }
                     rows="4"
                     value={settingsForm.value}
                   />
                 ) : (
                   <input
-                    onChange={(event) => updateSettingsFormValue(event.target.value)}
+                    onChange={(event) =>
+                      updateSettingsFormValue(event.target.value)
+                    }
                     type={settingsForm.inputType}
                     value={settingsForm.value}
                   />
@@ -156,8 +197,18 @@ export default function SettingsPage() {
             {formError && <p className="admin-form-error">{formError}</p>}
 
             <div className="admin-form-actions">
-              <button disabled={formStatus === "saving"} onClick={closeSettingsForm} type="button">Cancel</button>
-              <button className="primary" disabled={formStatus === "saving"} type="submit">
+              <button
+                disabled={formStatus === "saving"}
+                onClick={closeSettingsForm}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                className="primary"
+                disabled={formStatus === "saving"}
+                type="submit"
+              >
                 {formStatus === "saving" ? "Saving..." : "Save Setting"}
               </button>
             </div>

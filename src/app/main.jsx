@@ -10,9 +10,9 @@ const app = <App clerkEnabled={isClerkEnabled} />;
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     {isClerkEnabled ? (
-      <ClerkProvider {...clerkProviderProps}>
-        {app}
-      </ClerkProvider>
-    ) : app}
-  </React.StrictMode>
+      <ClerkProvider {...clerkProviderProps}>{app}</ClerkProvider>
+    ) : (
+      app
+    )}
+  </React.StrictMode>,
 );

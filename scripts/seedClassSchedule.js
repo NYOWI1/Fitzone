@@ -25,7 +25,9 @@ async function seedClassSchedule() {
 
   const result = await collection.bulkWrite(operations);
 
-  console.log(`Seeded class schedule: ${result.upsertedCount} inserted, ${result.modifiedCount} updated.`);
+  console.log(
+    `Seeded class schedule: ${result.upsertedCount} inserted, ${result.modifiedCount} updated.`,
+  );
 }
 
 seedClassSchedule()

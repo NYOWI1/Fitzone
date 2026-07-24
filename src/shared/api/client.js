@@ -55,15 +55,30 @@ export function getMembers() {
 }
 
 export function updateMemberAttendance(payload) {
-  return sendJson("/api/members/attendance", "PUT", payload, "Unable to update member attendance.");
+  return sendJson(
+    "/api/members/attendance",
+    "PUT",
+    payload,
+    "Unable to update member attendance.",
+  );
 }
 
 export function addMembershipPlan(payload) {
-  return sendJson("/api/membership-plans", "POST", payload, "Unable to add membership plan.");
+  return sendJson(
+    "/api/membership-plans",
+    "POST",
+    payload,
+    "Unable to add membership plan.",
+  );
 }
 
 export function updateMembershipPlan(payload) {
-  return sendJson("/api/membership-plans", "PUT", payload, "Unable to update membership plan.");
+  return sendJson(
+    "/api/membership-plans",
+    "PUT",
+    payload,
+    "Unable to update membership plan.",
+  );
 }
 
 export function getPayments() {
@@ -71,7 +86,12 @@ export function getPayments() {
 }
 
 export function createStripePaymentIntent(payload) {
-  return sendJson("/api/stripe/payment-intents", "POST", payload, "Unable to create Stripe payment intent.");
+  return sendJson(
+    "/api/stripe/payment-intents",
+    "POST",
+    payload,
+    "Unable to create Stripe payment intent.",
+  );
 }
 
 export function getStripePaymentAccess(email, memberName = "") {
@@ -80,11 +100,17 @@ export function getStripePaymentAccess(email, memberName = "") {
     memberName,
   });
 
-  return getObject(`/api/stripe/payment-access?${params.toString()}`, "Unable to verify Stripe payment access.");
+  return getObject(
+    `/api/stripe/payment-access?${params.toString()}`,
+    "Unable to verify Stripe payment access.",
+  );
 }
 
 export function getStripeRevenueOverview() {
-  return getObject("/api/stripe/revenue-overview", "Unable to load Stripe revenue overview.");
+  return getObject(
+    "/api/stripe/revenue-overview",
+    "Unable to load Stripe revenue overview.",
+  );
 }
 
 export function getTrainers() {
@@ -104,11 +130,21 @@ export function getClassSchedule() {
 }
 
 export function addClassScheduleItem(payload) {
-  return sendJson("/api/class-schedule/classes", "POST", payload, "Unable to add class.");
+  return sendJson(
+    "/api/class-schedule/classes",
+    "POST",
+    payload,
+    "Unable to add class.",
+  );
 }
 
 export function updateClassScheduleItem(payload) {
-  return sendJson("/api/class-schedule/classes", "PUT", payload, "Unable to update class.");
+  return sendJson(
+    "/api/class-schedule/classes",
+    "PUT",
+    payload,
+    "Unable to update class.",
+  );
 }
 
 export function getSiteSettings() {
@@ -116,5 +152,10 @@ export function getSiteSettings() {
 }
 
 export function updateSiteSettings(payload) {
-  return sendJson("/api/site-settings", "PUT", payload, "Unable to update site settings.");
+  return sendJson(
+    "/api/site-settings",
+    "PUT",
+    payload,
+    "Unable to update site settings.",
+  );
 }
