@@ -7,6 +7,7 @@ const { handleApiRequest } = require("./routes/api");
 loadEnvFile();
 
 const port = Number(process.env.PORT || 3001);
+const host = process.env.HOST || "127.0.0.1";
 const distPath = path.join(process.cwd(), "dist");
 
 function serveStatic(request, response) {
@@ -50,6 +51,16 @@ const server = http.createServer((request, response) => {
   serveStatic(request, response);
 });
 
-server.listen(port, () => {
-  console.log(`API server running at http://localhost:${port}`);
+server.on("error", (error) => {
+  if (error.code === "EADDRINUSE") {
+    console.error(`Port ${port} is already in use. Set PORT to use a different port.`);
+    process.exit(1);
+  }
+
+  console.error(`API server failed to start: ${error.message}`);
+  process.exit(1);
+});
+
+server.listen(port, host, () => {
+  console.log(`API server running at http://${host}:${port}`);
 });

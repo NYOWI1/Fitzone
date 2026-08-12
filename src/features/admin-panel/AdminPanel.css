@@ -248,6 +248,85 @@
   color: #ff7088;
 }
 
+.admin-skeleton {
+  display: contents;
+}
+
+.admin-skeleton-line {
+  animation: admin-skeleton-pulse 1.35s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    rgba(69, 69, 69, 0.74),
+    rgba(96, 96, 96, 0.78),
+    rgba(69, 69, 69, 0.74)
+  );
+  background-size: 220% 100%;
+  border-radius: 999px;
+  display: block;
+  min-height: 10px;
+}
+
+.admin-skeleton-icon {
+  border-radius: 50%;
+  height: 34px;
+  margin-bottom: 8px;
+  opacity: 0.55;
+  width: 34px;
+}
+
+.admin-skeleton-kpi .admin-kpi-copy {
+  top: 26px;
+}
+
+.admin-skeleton-table-row {
+  align-items: center;
+  background: rgba(43, 43, 43, 0.72);
+  border: 1px solid rgba(57, 57, 57, 0.82);
+  border-radius: 16px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns:
+    minmax(170px, 1.35fr) minmax(70px, 0.58fr) minmax(84px, 0.64fr)
+    minmax(74px, 0.56fr) minmax(72px, 0.5fr) minmax(58px, 0.42fr);
+  min-height: 68px;
+  padding: 10px 12px;
+}
+
+.admin-skeleton-side-row {
+  align-items: center;
+  background: rgba(43, 43, 43, 0.72);
+  border: 1px solid rgba(57, 57, 57, 0.82);
+  border-radius: 15px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 10px 1fr auto;
+  min-height: 48px;
+  padding: 0 14px;
+}
+
+.admin-skeleton-settings-row {
+  align-items: center;
+  background: #242424;
+  border: 1px solid #393939;
+  border-radius: 22px;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.26);
+  display: grid;
+  gap: 26px;
+  grid-template-columns: minmax(140px, 0.35fr) minmax(0, 1fr) 100px;
+  min-height: 86px;
+  padding: 20px 42px 20px 28px;
+}
+
+@keyframes admin-skeleton-pulse {
+  0% {
+    background-position: 100% 0;
+  }
+
+  100% {
+    background-position: -120% 0;
+  }
+}
+
 .admin-empty-row {
   background: rgba(43, 43, 43, 0.72);
   border-color: rgba(57, 57, 57, 0.82);
@@ -567,6 +646,11 @@
     align-items: stretch;
     flex-direction: column;
   }
+
+  .admin-skeleton-table-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 14px;
+  }
 }
 
 @media (max-width: 680px) {
@@ -590,6 +674,12 @@
 
   .admin-status-pill {
     justify-content: center;
+  }
+
+  .admin-skeleton-settings-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    padding: 20px;
   }
 
   .admin-form-grid,

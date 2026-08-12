@@ -1,4 +1,4 @@
-const dayFormatter = new Intl.DateTimeFormat("en-US", { weekday: "short" });
+const dayFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'short' });
 
 export function getScheduleDays() {
   const today = new Date();
@@ -11,27 +11,27 @@ export function getScheduleDays() {
     const isToday = date.toDateString() === today.toDateString();
 
     return [
-      isToday ? "Today" : dayFormatter.format(date),
-      `${date.getDate()}/${date.getMonth() + 1}`,
+      isToday ? 'Today' : dayFormatter.format(date),
+      `${date.getDate()}/${date.getMonth() + 1}`
     ];
   });
 }
 
 export const scheduleDays = getScheduleDays();
 
-export const filters = ["All Classes", "Strength", "HIIT", "Yoga", "Cycling"];
+export const filters = ['All Classes', 'Strength', 'HIIT', 'Yoga', 'Cycling'];
 
 const filterCategories = {
-  "All Classes": null,
-  Strength: "STR",
-  HIIT: "HIIT",
-  Yoga: "YOGA",
-  Cycling: "BIKE",
+  'All Classes': null,
+  Strength: 'STR',
+  HIIT: 'HIIT',
+  Yoga: 'YOGA',
+  Cycling: 'BIKE'
 };
 
 export function makeScheduleTrainerLabels(trainers) {
   if (!trainers.length) {
-    return ["Cbn - Trainer", "Cbn - Trainer", "Cbn - Trainer", "Cbn - Trainer"];
+    return ['Cbn - Trainer', 'Cbn - Trainer', 'Cbn - Trainer', 'Cbn - Trainer'];
   }
 
   return trainers.map((trainer) => `Cbn - ${trainer.name}`);
@@ -54,22 +54,22 @@ export function filterClassesByType(classes, filter) {
 export function buildScheduleDays(
   weeklySchedule,
   scheduleTrainerLabels,
-  days = getScheduleDays(),
+  days = getScheduleDays()
 ) {
   return days.map((day, dayIndex) => ({
     dayKey: day[0],
     morning: getClassesForWeekday(
       weeklySchedule,
       dayIndex,
-      "morning",
-      scheduleTrainerLabels,
+      'morning',
+      scheduleTrainerLabels
     ),
     evening: getClassesForWeekday(
       weeklySchedule,
       dayIndex,
-      "evening",
-      scheduleTrainerLabels,
-    ),
+      'evening',
+      scheduleTrainerLabels
+    )
   }));
 }
 
@@ -77,7 +77,7 @@ function getClassesForWeekday(
   weeklySchedule,
   dayIndex,
   period,
-  scheduleTrainerLabels,
+  scheduleTrainerLabels
 ) {
   const date = new Date();
   date.setDate(date.getDate() - date.getDay() + dayIndex);
@@ -94,6 +94,6 @@ function getClassesForWeekday(
     classItem.duration,
     getScheduleTrainer(scheduleTrainerLabels, classItem.trainerIndex ?? index),
     classItem.category,
-    classItem.color,
+    classItem.color
   ]);
 }

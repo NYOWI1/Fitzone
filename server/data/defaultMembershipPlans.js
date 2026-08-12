@@ -38,8 +38,6 @@ const defaultMembershipPlans = [
     name: "Premium",
     price: "4299฿",
     desc: "For members who want maximum support and results.",
-    badge: "ELITE",
-    premium: true,
     title: "What you get",
     features: [
       "Unlimited Fitness Classes",

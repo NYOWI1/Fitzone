@@ -185,9 +185,9 @@ function sanitizeMembershipPlan(payload) {
     name,
     price,
     desc,
-    badge: String(payload.badge || "").trim(),
+    badge: payload.popular === true ? "MOST POPULAR" : "",
     popular: payload.popular === true,
-    premium: payload.premium === true,
+    premium: false,
     title,
     features: sanitizeStringArray(payload.features),
     sortOrder,
@@ -1150,10 +1150,12 @@ async function getClassScheduleDocuments(db) {
     .toArray();
 }
 
-async function getMembershipPlanDocuments(db) {
+async function getMembershipPlanDocuments(db, options = {}) {
+  const query = options.includeInactive ? {} : { active: { $ne: false } };
+
   return db
     .collection("membershipPlans")
-    .find({ active: { $ne: false } })
+    .find(query)
     .sort({ sortOrder: 1, name: 1 })
     .project({ _id: 0 })
     .toArray();
@@ -1176,6 +1178,20 @@ async function getMembershipPlans(response) {
     sendJson(response, 200, plans);
   } catch (error) {
     console.error("Membership plans API error:", error);
+    sendJson(response, 500, { message: "Unable to load membership plans." });
+  }
+}
+
+async function getAdminMembershipPlans(response) {
+  try {
+    const db = await getDb();
+    const plans = await getMembershipPlanDocuments(db, {
+      includeInactive: true,
+    });
+
+    sendJson(response, 200, plans);
+  } catch (error) {
+    console.error("Admin membership plans API error:", error);
     sendJson(response, 500, { message: "Unable to load membership plans." });
   }
 }
@@ -1257,7 +1273,11 @@ async function addMembershipPlan(request, response) {
       updatedAt: new Date(),
     });
 
-    sendJson(response, 200, await getMembershipPlanDocuments(db));
+    sendJson(
+      response,
+      200,
+      await getMembershipPlanDocuments(db, { includeInactive: true }),
+    );
   } catch (error) {
     console.error("Add membership plan API error:", error);
     sendJson(response, 500, { message: "Unable to add membership plan." });
@@ -1305,7 +1325,11 @@ async function updateMembershipPlan(request, response) {
       return;
     }
 
-    sendJson(response, 200, await getMembershipPlanDocuments(db));
+    sendJson(
+      response,
+      200,
+      await getMembershipPlanDocuments(db, { includeInactive: true }),
+    );
   } catch (error) {
     console.error("Update membership plan API error:", error);
     sendJson(response, 500, { message: "Unable to update membership plan." });
@@ -1636,6 +1660,14 @@ function handleApiRequest(request, response) {
 
   if (request.method === "GET" && request.url === "/api/membership-plans") {
     getMembershipPlans(response);
+    return true;
+  }
+
+  if (
+    request.method === "GET" &&
+    request.url === "/api/admin/membership-plans"
+  ) {
+    getAdminMembershipPlans(response);
     return true;
   }
 

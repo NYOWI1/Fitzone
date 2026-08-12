@@ -1,5 +1,5 @@
 import Home from "../features/home";
-import AdminPanel from "../features/admin-panel";
+import AdminPanel, { AdminLoginPage } from "../features/admin-panel";
 import { LoginPage, SignUpPage } from "../features/auth";
 import UserDashboard from "../features/user-dashboard";
 import { ChoosePlanPage, PaymentPage } from "../features/membership-flow";
@@ -8,6 +8,21 @@ import { appRoutes, isAdminRoute } from "./routes";
 
 function App({ clerkEnabled }) {
   const pathname = window.location.pathname;
+  const authRedirect = new URLSearchParams(window.location.search).get(
+    "redirect_url",
+  );
+
+  if (pathname.startsWith(appRoutes.adminLogin)) {
+    return <AdminLoginPage clerkEnabled={clerkEnabled} />;
+  }
+
+  if (
+    pathname.startsWith(appRoutes.login) &&
+    (authRedirect === appRoutes.admin ||
+      authRedirect?.startsWith(`${appRoutes.admin}/`))
+  ) {
+    return <AdminLoginPage clerkEnabled={clerkEnabled} />;
+  }
 
   if (pathname.startsWith(appRoutes.login)) {
     return <LoginPage clerkEnabled={clerkEnabled} />;
@@ -38,7 +53,7 @@ function App({ clerkEnabled }) {
   }
 
   if (isAdminRoute(pathname, window.location.hash)) {
-    return <AdminPanel />;
+    return <AdminPanel clerkEnabled={clerkEnabled} />;
   }
 
   return <Home clerkEnabled={clerkEnabled} />;

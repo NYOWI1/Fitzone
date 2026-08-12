@@ -1,27 +1,27 @@
-import { attachTrainerImage } from "../../shared/trainers";
+import { attachTrainerImage } from '../../shared/trainers';
 
 export const menuItems = [
-  "Overview",
-  "Members",
-  "Classes",
-  "Trainers",
-  "Plans",
-  "Payments",
-  "Reports",
-  "Crowd Detection",
-  "Settings",
+  'Overview',
+  'Members',
+  'Classes',
+  'Trainers',
+  'Plans',
+  'Payments',
+  'Reports',
+  'Crowd Detection',
+  'Settings'
 ];
 
 export const supportedAdminPages = new Set(menuItems.map(getMenuSlug));
 
-export const periodFilters = ["All", "Morning", "Evening"];
-export const classColors = ["green", "red", "gray", "teal", "yellow"];
-export const classCategories = ["HIIT", "YOGA", "CORE", "STR", "BIKE"];
+export const periodFilters = ['All', 'Morning', 'Evening'];
+export const classColors = ['green', 'red', 'gray', 'teal', 'yellow'];
+export const classCategories = ['HIIT', 'YOGA', 'CORE', 'STR', 'BIKE'];
 export const trainerImageKeys = [
-  "trainer1",
-  "trainer2",
-  "trainer3",
-  "trainer4",
+  'trainer1',
+  'trainer2',
+  'trainer3',
+  'trainer4'
 ];
 
 export function getTodayIsoDate() {
@@ -34,13 +34,13 @@ export function getTodayIsoDate() {
 export function getEmptyClassForm(activeDay = new Date().getDay()) {
   return {
     weekday: activeDay,
-    period: "morning",
-    name: "",
-    time: "",
-    duration: "",
+    period: 'morning',
+    name: '',
+    time: '',
+    duration: '',
     trainerIndex: 0,
     category: classCategories[0],
-    color: classColors[0],
+    color: classColors[0]
   };
 }
 
@@ -48,30 +48,30 @@ export function makeSlug(value) {
   return value
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 export function getEmptyTrainerForm(nextSortOrder = 1) {
   return {
-    slug: "",
-    name: "",
-    role: "",
-    imageKey: "trainer1",
-    category: "",
-    badge: "",
-    coach: "",
-    bio: "",
-    expertise: "",
-    specialties: "",
-    statValue1: "",
-    statLabel1: "",
-    statValue2: "",
-    statLabel2: "",
-    statValue3: "",
-    statLabel3: "",
+    slug: '',
+    name: '',
+    role: '',
+    imageKey: 'trainer1',
+    category: '',
+    badge: '',
+    coach: '',
+    bio: '',
+    expertise: '',
+    specialties: '',
+    statValue1: '',
+    statLabel1: '',
+    statValue2: '',
+    statLabel2: '',
+    statValue3: '',
+    statLabel3: '',
     sortOrder: nextSortOrder,
-    active: true,
+    active: true
   };
 }
 
@@ -79,24 +79,24 @@ export function getTrainerFormFromRecord(trainer) {
   const stats = trainer.stats || [];
 
   return {
-    slug: trainer.slug || makeSlug(trainer.name || ""),
-    name: trainer.name || "",
-    role: trainer.role || "",
-    imageKey: trainer.imageKey || "trainer1",
-    category: trainer.category || "",
-    badge: trainer.badge || "",
-    coach: trainer.coach || "",
-    bio: trainer.bio || "",
-    expertise: trainer.expertise || "",
-    specialties: (trainer.specialties || []).join(", "),
-    statValue1: stats[0]?.[0] || "",
-    statLabel1: stats[0]?.[1] || "",
-    statValue2: stats[1]?.[0] || "",
-    statLabel2: stats[1]?.[1] || "",
-    statValue3: stats[2]?.[0] || "",
-    statLabel3: stats[2]?.[1] || "",
+    slug: trainer.slug || makeSlug(trainer.name || ''),
+    name: trainer.name || '',
+    role: trainer.role || '',
+    imageKey: trainer.imageKey || 'trainer1',
+    category: trainer.category || '',
+    badge: trainer.badge || '',
+    coach: trainer.coach || '',
+    bio: trainer.bio || '',
+    expertise: trainer.expertise || '',
+    specialties: (trainer.specialties || []).join(', '),
+    statValue1: stats[0]?.[0] || '',
+    statLabel1: stats[0]?.[1] || '',
+    statValue2: stats[1]?.[0] || '',
+    statLabel2: stats[1]?.[1] || '',
+    statValue3: stats[2]?.[0] || '',
+    statLabel3: stats[2]?.[1] || '',
     sortOrder: trainer.sortOrder || 1,
-    active: trainer.active !== false,
+    active: trainer.active !== false
   };
 }
 
@@ -112,48 +112,46 @@ export function getTrainerPayload(values) {
     bio: values.bio,
     expertise: values.expertise,
     specialties: values.specialties
-      .split(",")
+      .split(',')
       .map((item) => item.trim())
       .filter(Boolean),
     stats: [
       [values.statValue1, values.statLabel1],
       [values.statValue2, values.statLabel2],
-      [values.statValue3, values.statLabel3],
+      [values.statValue3, values.statLabel3]
     ].filter(([value, label]) => value && label),
     sortOrder: Number(values.sortOrder),
-    active: values.active,
+    active: values.active
   };
 }
 
 export function getEmptyPlanForm(nextSortOrder = 1) {
   return {
-    slug: "",
-    name: "",
-    price: "",
-    desc: "",
-    badge: "",
+    slug: '',
+    name: '',
+    price: '',
+    desc: '',
+    badge: '',
     popular: false,
-    premium: false,
-    title: "",
-    features: "",
+    title: '',
+    features: '',
     sortOrder: nextSortOrder,
-    active: true,
+    active: true
   };
 }
 
 export function getPlanFormFromRecord(plan) {
   return {
-    slug: plan.slug || makeSlug(plan.name || ""),
-    name: plan.name || "",
-    price: plan.price || "",
-    desc: plan.desc || "",
-    badge: plan.badge || "",
+    slug: plan.slug || makeSlug(plan.name || ''),
+    name: plan.name || '',
+    price: plan.price || '',
+    desc: plan.desc || '',
+    badge: plan.popular ? 'MOST POPULAR' : '',
     popular: plan.popular === true,
-    premium: plan.premium === true,
-    title: plan.title || "",
-    features: (plan.features || []).join(", "),
+    title: plan.title || '',
+    features: (plan.features || []).join(', '),
     sortOrder: plan.sortOrder || 1,
-    active: plan.active !== false,
+    active: plan.active !== false
   };
 }
 
@@ -163,37 +161,37 @@ export function getPlanPayload(values) {
     name: values.name,
     price: values.price,
     desc: values.desc,
-    badge: values.badge,
+    badge: values.popular ? 'MOST POPULAR' : '',
     popular: values.popular,
-    premium: values.premium,
+    premium: false,
     title: values.title,
     features: values.features
-      .split(",")
+      .split(',')
       .map((item) => item.trim())
       .filter(Boolean),
     sortOrder: Number(values.sortOrder),
-    active: values.active,
+    active: values.active
   };
 }
 
 export function getMenuSlug(item) {
-  return item.toLowerCase().replace(/\s+/g, "-");
+  return item.toLowerCase().replace(/\s+/g, '-');
 }
 
 export function getActiveAdminPage() {
-  const pathPage = window.location.pathname.split("/").filter(Boolean)[1];
-  const hashPage = window.location.hash.replace("#", "");
-  const requestedPage = pathPage || hashPage || "overview";
+  const pathPage = window.location.pathname.split('/').filter(Boolean)[1];
+  const hashPage = window.location.hash.replace('#', '');
+  const requestedPage = pathPage || hashPage || 'overview';
 
-  return supportedAdminPages.has(requestedPage) ? requestedPage : "overview";
+  return supportedAdminPages.has(requestedPage) ? requestedPage : 'overview';
 }
 
 export function getAdminPageFromMenuSlug(slug) {
-  return supportedAdminPages.has(slug) ? slug : "overview";
+  return supportedAdminPages.has(slug) ? slug : 'overview';
 }
 
 export function getAdminPageUrl(page) {
-  return page === "overview" ? "/admin" : `/admin/${page}`;
+  return page === 'overview' ? '/admin' : `/admin/${page}`;
 }
 
 export function getClassCount(daySchedule) {
@@ -207,87 +205,87 @@ export function getScheduleClassesForPeriod(daySchedule, period) {
     return [];
   }
 
-  if (period === "Morning") {
+  if (period === 'Morning') {
     return (daySchedule.morning || []).map((classItem, index) => ({
       ...classItem,
-      period: "Morning",
-      periodKey: "morning",
-      periodIndex: index,
+      period: 'Morning',
+      periodKey: 'morning',
+      periodIndex: index
     }));
   }
 
-  if (period === "Evening") {
+  if (period === 'Evening') {
     return (daySchedule.evening || []).map((classItem, index) => ({
       ...classItem,
-      period: "Evening",
-      periodKey: "evening",
-      periodIndex: index,
+      period: 'Evening',
+      periodKey: 'evening',
+      periodIndex: index
     }));
   }
 
   return [
     ...(daySchedule.morning || []).map((classItem, index) => ({
       ...classItem,
-      period: "Morning",
-      periodKey: "morning",
-      periodIndex: index,
+      period: 'Morning',
+      periodKey: 'morning',
+      periodIndex: index
     })),
     ...(daySchedule.evening || []).map((classItem, index) => ({
       ...classItem,
-      period: "Evening",
-      periodKey: "evening",
-      periodIndex: index,
-    })),
+      period: 'Evening',
+      periodKey: 'evening',
+      periodIndex: index
+    }))
   ];
 }
 
 export function getTrainerName(trainers, trainerIndex) {
   const trainer = trainers[trainerIndex % Math.max(trainers.length, 1)];
 
-  return trainer?.name || "Unassigned trainer";
+  return trainer?.name || 'Unassigned trainer';
 }
 
 export function getClassesStats(schedule) {
   const allClasses = schedule.flatMap((daySchedule) => [
     ...(daySchedule.morning || []),
-    ...(daySchedule.evening || []),
+    ...(daySchedule.evening || [])
   ]);
   const activeDays = schedule.filter(
-    (daySchedule) => daySchedule.active !== false,
+    (daySchedule) => daySchedule.active !== false
   ).length;
   const categories = new Set(
-    allClasses.map((classItem) => classItem.category).filter(Boolean),
+    allClasses.map((classItem) => classItem.category).filter(Boolean)
   );
   const eveningClasses = schedule.reduce(
     (total, daySchedule) => total + (daySchedule.evening?.length || 0),
-    0,
+    0
   );
 
   return [
     {
-      label: "Weekly Classes",
+      label: 'Weekly Classes',
       value: String(allClasses.length),
       note: `${activeDays} active days`,
-      tone: "red",
+      tone: 'red'
     },
     {
-      label: "Active Days",
+      label: 'Active Days',
       value: String(activeDays),
-      note: "Published schedule",
-      tone: "green",
+      note: 'Published schedule',
+      tone: 'green'
     },
     {
-      label: "Categories",
+      label: 'Categories',
       value: String(categories.size),
-      note: "Class categories",
-      tone: "yellow",
+      note: 'Class categories',
+      tone: 'yellow'
     },
     {
-      label: "Evening Classes",
+      label: 'Evening Classes',
       value: String(eveningClasses),
-      note: "After work slots",
-      tone: "blue",
-    },
+      note: 'After work slots',
+      tone: 'blue'
+    }
   ];
 }
 
@@ -301,7 +299,7 @@ export function filterVisibleClasses(classes, trainers, searchTerm) {
   return classes.filter((classItem, index) => {
     const trainerName = getTrainerName(
       trainers,
-      classItem.trainerIndex ?? index,
+      classItem.trainerIndex ?? index
     );
     const searchableText = [
       classItem.name,
@@ -309,9 +307,9 @@ export function filterVisibleClasses(classes, trainers, searchTerm) {
       classItem.duration,
       trainerName,
       classItem.category,
-      classItem.period,
+      classItem.period
     ]
-      .join(" ")
+      .join(' ')
       .toLowerCase();
 
     return searchableText.includes(query);
@@ -320,41 +318,41 @@ export function filterVisibleClasses(classes, trainers, searchTerm) {
 
 export function getTrainerStats(trainers) {
   const activeTrainers = trainers.filter(
-    (trainer) => trainer.active !== false,
+    (trainer) => trainer.active !== false
   ).length;
   const categories = new Set(
-    trainers.map((trainer) => trainer.category).filter(Boolean),
+    trainers.map((trainer) => trainer.category).filter(Boolean)
   );
   const popularTrainers = trainers.filter((trainer) => trainer.badge).length;
   const oneOnOneCoaches = trainers.filter((trainer) =>
-    (trainer.stats || []).some(([value]) => String(value).includes("1:1")),
+    (trainer.stats || []).some(([value]) => String(value).includes('1:1'))
   ).length;
 
   return [
     {
-      label: "Active Trainers",
+      label: 'Active Trainers',
       value: String(activeTrainers),
-      note: "Available in database",
-      tone: "red",
+      note: 'Available in database',
+      tone: 'red'
     },
     {
-      label: "Categories",
+      label: 'Categories',
       value: String(categories.size),
-      note: "Training departments",
-      tone: "green",
+      note: 'Training departments',
+      tone: 'green'
     },
     {
-      label: "Featured",
+      label: 'Featured',
       value: String(popularTrainers),
-      note: "With admin badge",
-      tone: "yellow",
+      note: 'With admin badge',
+      tone: 'yellow'
     },
     {
-      label: "1:1 Coaches",
+      label: '1:1 Coaches',
       value: String(oneOnOneCoaches),
-      note: "Personal training ready",
-      tone: "blue",
-    },
+      note: 'Personal training ready',
+      tone: 'blue'
+    }
   ];
 }
 
@@ -372,9 +370,9 @@ export function filterTrainers(trainers, searchTerm) {
       trainer.category,
       trainer.coach,
       trainer.expertise,
-      ...(trainer.specialties || []),
+      ...(trainer.specialties || [])
     ]
-      .join(" ")
+      .join(' ')
       .toLowerCase();
 
     return searchableText.includes(query);
@@ -383,57 +381,54 @@ export function filterTrainers(trainers, searchTerm) {
 
 export function getTrainerCategoryBreakdown(trainers) {
   return trainers.reduce((categories, trainer) => {
-    const category = trainer.category || "GENERAL";
+    const category = trainer.category || 'GENERAL';
 
     return {
       ...categories,
-      [category]: (categories[category] || 0) + 1,
+      [category]: (categories[category] || 0) + 1
     };
   }, {});
 }
 
 export function getPlanPriceValue(plan) {
-  return Number(String(plan.price || "").replace(/[^\d.]/g, "")) || 0;
+  return Number(String(plan.price || '').replace(/[^\d.]/g, '')) || 0;
 }
 
 export function getPlanStats(plans) {
   const activePlans = plans.filter((plan) => plan.active !== false).length;
-  const popularPlans = plans.filter(
-    (plan) => plan.popular || plan.badge,
-  ).length;
-  const premiumPlans = plans.filter((plan) => plan.premium).length;
+  const popularPlans = plans.filter((plan) => plan.popular).length;
   const averagePrice = plans.length
     ? Math.round(
         plans.reduce((total, plan) => total + getPlanPriceValue(plan), 0) /
-          plans.length,
+          plans.length
       )
     : 0;
 
   return [
     {
-      label: "Active Plans",
+      label: 'Active Plans',
       value: String(activePlans),
-      note: "Available to members",
-      tone: "red",
+      note: 'Available to members',
+      tone: 'red'
     },
     {
-      label: "Featured Plans",
+      label: 'Featured Plans',
       value: String(popularPlans),
-      note: "Badged or popular",
-      tone: "green",
+      note: 'Marked popular',
+      tone: 'green'
     },
     {
-      label: "Premium Tier",
-      value: String(premiumPlans),
-      note: "High value packages",
-      tone: "yellow",
+      label: 'Total Plans',
+      value: String(plans.length),
+      note: 'In database',
+      tone: 'yellow'
     },
     {
-      label: "Avg. Price",
+      label: 'Avg. Price',
       value: `${averagePrice}฿`,
-      note: "Monthly estimate",
-      tone: "blue",
-    },
+      note: 'Monthly estimate',
+      tone: 'blue'
+    }
   ];
 }
 
@@ -449,11 +444,11 @@ export function filterPlans(plans, searchTerm) {
       plan.name,
       plan.price,
       plan.desc,
-      plan.badge,
+      plan.popular ? 'MOST POPULAR' : '',
       plan.title,
-      ...(plan.features || []),
+      ...(plan.features || [])
     ]
-      .join(" ")
+      .join(' ')
       .toLowerCase();
 
     return searchableText.includes(query);
@@ -462,7 +457,7 @@ export function filterPlans(plans, searchTerm) {
 
 export function getMemberStats(members) {
   const activeMembers = members.filter(
-    (member) => member.status === "Active",
+    (member) => member.status === 'Active'
   ).length;
   const newMembers = members.filter((member) => {
     if (!member.joined) {
@@ -487,34 +482,34 @@ export function getMemberStats(members) {
     return daysUntilRenewal >= 0 && daysUntilRenewal <= 14;
   }).length;
   const premiumMembers = members.filter(
-    (member) => member.plan === "Premium",
+    (member) => member.plan === 'Premium'
   ).length;
 
   return [
     {
-      label: "Active Members",
+      label: 'Active Members',
       value: String(activeMembers),
-      note: "Clerk users",
-      tone: "green",
+      note: 'Clerk users',
+      tone: 'green'
     },
     {
-      label: "New Signups",
+      label: 'New Signups',
       value: String(newMembers),
-      note: "Last 30 days",
-      tone: "red",
+      note: 'Last 30 days',
+      tone: 'red'
     },
     {
-      label: "Expiring Soon",
+      label: 'Expiring Soon',
       value: String(expiringSoon),
-      note: "Next 14 days",
-      tone: "yellow",
+      note: 'Next 14 days',
+      tone: 'yellow'
     },
     {
-      label: "Premium Plans",
+      label: 'Premium Plans',
       value: String(premiumMembers),
-      note: "Highest plan tier",
-      tone: "blue",
-    },
+      note: 'Highest plan tier',
+      tone: 'blue'
+    }
   ];
 }
 
@@ -534,9 +529,9 @@ export function filterMembers(members, searchTerm) {
       member.plan,
       member.status,
       member.joined,
-      member.renewal,
+      member.renewal
     ]
-      .join(" ")
+      .join(' ')
       .toLowerCase();
 
     return searchableText.includes(query);
@@ -544,11 +539,11 @@ export function filterMembers(members, searchTerm) {
 }
 
 export function filterMembersByStatus(members, statusFilter) {
-  if (statusFilter === "All") {
+  if (statusFilter === 'All') {
     return members;
   }
 
-  if (statusFilter === "Expiring") {
+  if (statusFilter === 'Expiring') {
     return members.filter((member) => {
       if (!member.renewal) {
         return false;
@@ -570,35 +565,35 @@ export function getMemberPlanBreakdown(members) {
     members.reduce(
       (plans, member) => ({
         ...plans,
-        [member.plan]: (plans[member.plan] || 0) + 1,
+        [member.plan]: (plans[member.plan] || 0) + 1
       }),
-      {},
-    ),
+      {}
+    )
   ).map(([plan, count], index) => [
     plan,
     count,
-    ["blue", "red", "yellow", "green"][index % 4],
+    ['blue', 'red', 'yellow', 'green'][index % 4]
   ]);
 }
 
 export function getMemberActivity(members) {
   const totalVisits = members.reduce(
     (total, member) => total + (Number(member.visits) || 0),
-    0,
+    0
   );
   const todayAttendance = getTodayAttendanceCount(members);
   const paymentIssues = members.filter(
-    (member) => member.status === "Pending" || member.status === "Expired",
+    (member) => member.status === 'Pending' || member.status === 'Expired'
   ).length;
 
   return [
-    ["Total visits", String(totalVisits)],
-    ["Today attendance", String(todayAttendance)],
+    ['Total visits', String(totalVisits)],
+    ['Today attendance', String(todayAttendance)],
     [
-      "Active accounts",
-      String(members.filter((member) => member.status === "Active").length),
+      'Active accounts',
+      String(members.filter((member) => member.status === 'Active').length)
     ],
-    ["Payment issues", String(paymentIssues)],
+    ['Payment issues', String(paymentIssues)]
   ];
 }
 
@@ -607,7 +602,7 @@ export function getTodayAttendanceCount(members) {
 
   return members.filter(
     (member) =>
-      member.attendanceDate === today && Number(member.todayVisits || 0) > 0,
+      member.attendanceDate === today && Number(member.todayVisits || 0) > 0
   ).length;
 }
 
@@ -619,19 +614,19 @@ export function getTodayVisitTotal(members) {
       member.attendanceDate === today
         ? total + Number(member.todayVisits || 0)
         : total,
-    0,
+    0
   );
 }
 
 export function getPaymentAmountValue(payment) {
-  return Number(String(payment.amount || "").replace(/[^\d.]/g, "")) || 0;
+  return Number(String(payment.amount || '').replace(/[^\d.]/g, '')) || 0;
 }
 
 export function formatPaymentAmount(payment) {
   const amount = getPaymentAmountValue(payment);
 
   if (!amount) {
-    return payment.amount || "0฿";
+    return payment.amount || '0฿';
   }
 
   return `${amount.toLocaleString()}฿`;
@@ -639,26 +634,26 @@ export function formatPaymentAmount(payment) {
 
 export function formatPaymentDate(date) {
   if (!date) {
-    return "";
+    return '';
   }
 
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric'
   }).format(new Date(date));
 }
 
 export function getPaymentDetail(payment) {
-  if (payment.paymentType === "credit_card") {
-    const brand = payment.card?.brand || "Card";
-    const last4 = payment.card?.last4 ? `•••• ${payment.card.last4}` : "";
+  if (payment.paymentType === 'credit_card') {
+    const brand = payment.card?.brand || 'Card';
+    const last4 = payment.card?.last4 ? `•••• ${payment.card.last4}` : '';
 
-    return [brand, last4].filter(Boolean).join(" ");
+    return [brand, last4].filter(Boolean).join(' ');
   }
 
-  if (payment.paymentType === "promptpay_qr") {
-    return payment.promptPay?.qrReference || "PromptPay QR";
+  if (payment.paymentType === 'promptpay_qr') {
+    return payment.promptPay?.qrReference || 'PromptPay QR';
   }
 
   return payment.method;
@@ -674,36 +669,36 @@ export function formatCompactBaht(amount) {
 
 export function getRelativeDateLabel(dateValue) {
   if (!dateValue) {
-    return "Unknown";
+    return 'Unknown';
   }
 
   const date = new Date(dateValue);
 
   if (Number.isNaN(date.getTime())) {
-    return "Unknown";
+    return 'Unknown';
   }
 
   const now = new Date();
   const startOfToday = new Date(
     now.getFullYear(),
     now.getMonth(),
-    now.getDate(),
+    now.getDate()
   );
   const startOfDate = new Date(
     date.getFullYear(),
     date.getMonth(),
-    date.getDate(),
+    date.getDate()
   );
   const daysAgo = Math.floor(
-    (startOfToday - startOfDate) / (1000 * 60 * 60 * 24),
+    (startOfToday - startOfDate) / (1000 * 60 * 60 * 24)
   );
 
   if (daysAgo <= 0) {
-    return "Today";
+    return 'Today';
   }
 
   if (daysAgo === 1) {
-    return "1 day ago";
+    return '1 day ago';
   }
 
   return `${daysAgo} days ago`;
@@ -713,14 +708,14 @@ export function getOverviewKpis({
   members,
   schedule,
   trainers,
-  stripeRevenue,
+  stripeRevenue
 }) {
   const allClasses = schedule.flatMap((daySchedule) => [
     ...(daySchedule.morning || []),
-    ...(daySchedule.evening || []),
+    ...(daySchedule.evening || [])
   ]);
   const todaySchedule = schedule.find(
-    (daySchedule) => daySchedule.weekday === new Date().getDay(),
+    (daySchedule) => daySchedule.weekday === new Date().getDay()
   );
   const todayClassCount = getClassCount(todaySchedule);
   const newMembers = members.filter((member) => {
@@ -739,66 +734,66 @@ export function getOverviewKpis({
 
   return [
     {
-      label: "Total Members",
+      label: 'Total Members',
       value: members.length.toLocaleString(),
       note: `${newMembers} new this month`,
-      tone: "red",
+      tone: 'red'
     },
     {
-      label: "Classes / Week",
+      label: 'Classes / Week',
       value: String(allClasses.length),
       note: `${todayClassCount} active today`,
-      tone: "green",
+      tone: 'green'
     },
     {
-      label: "Trainers",
+      label: 'Trainers',
       value: String(trainers.length),
       note: `${trainers.filter((trainer) => trainer.active !== false).length} available now`,
-      tone: "yellow",
+      tone: 'yellow'
     },
     {
-      label: "Monthly Revenue",
+      label: 'Monthly Revenue',
       value: formatCompactBaht(monthlyRevenue),
       note: `${paidInvoiceCount} Stripe payments`,
-      tone: "blue",
-    },
+      tone: 'blue'
+    }
   ];
 }
 
 export function getOverviewRecentMembers(members) {
   return [...members]
     .sort(
-      (left, right) => new Date(right.joined || 0) - new Date(left.joined || 0),
+      (left, right) => new Date(right.joined || 0) - new Date(left.joined || 0)
     )
     .slice(0, 4)
     .map((member, index) => ({
-      name: member.name || "Member",
+      name: member.name || 'Member',
       id:
         member.memberId ||
         member.email ||
-        `${member.name || "member"}-${index}`,
-      email: member.email || "No email",
-      plan: member.plan || "Unassigned",
-      status: member.status || "Unknown",
+        `${member.name || 'member'}-${index}`,
+      email: member.email || 'No email',
+      plan: member.plan || 'Unassigned',
+      status: member.status || 'Unknown',
       joined: getRelativeDateLabel(member.joined),
-      tone: member.tone || ["red", "green", "yellow", "blue"][index % 4],
+      tone: member.tone || ['red', 'green', 'yellow', 'blue'][index % 4]
     }));
 }
 
 export function getOverviewTodayClasses(schedule) {
   const todaySchedule = schedule.find(
-    (daySchedule) => daySchedule.weekday === new Date().getDay(),
+    (daySchedule) => daySchedule.weekday === new Date().getDay()
   );
 
-  return getScheduleClassesForPeriod(todaySchedule, "All").map(
+  return getScheduleClassesForPeriod(todaySchedule, 'All').map(
     (classItem, index) => ({
       id: `${classItem.periodKey}-${classItem.periodIndex}-${classItem.name}-${index}`,
       name: classItem.name,
       time: classItem.time,
-      duration: classItem.duration || "Open",
-      meta: [classItem.period, classItem.category].filter(Boolean).join(" / "),
-      status: classItem.status || "open",
-    }),
+      duration: classItem.duration || 'Open',
+      meta: [classItem.period, classItem.category].filter(Boolean).join(' / '),
+      status: classItem.status || 'open'
+    })
   );
 }
 
@@ -809,10 +804,10 @@ export function getOverviewRevenueBars(stripeRevenue) {
   const now = new Date();
   const months = Array.from(
     { length: 12 },
-    (_, index) => new Date(now.getFullYear(), now.getMonth() - 11 + index, 1),
+    (_, index) => new Date(now.getFullYear(), now.getMonth() - 11 + index, 1)
   );
   const totals = months.map((monthDate) => {
-    const monthLabel = monthDate.toLocaleString("en-US", { month: "short" });
+    const monthLabel = monthDate.toLocaleString('en-US', { month: 'short' });
     const matchingBar = serverBars.find((bar) => bar.month === monthLabel);
 
     return Number(matchingBar?.total || 0);
@@ -820,10 +815,10 @@ export function getOverviewRevenueBars(stripeRevenue) {
   const maxTotal = Math.max(...totals, 1);
 
   return months.map((monthDate, index) => ({
-    month: monthDate.toLocaleString("en-US", { month: "short" }),
+    month: monthDate.toLocaleString('en-US', { month: 'short' }),
     height: Math.max(10, Math.round((totals[index] / maxTotal) * 92)),
     total: totals[index],
-    label: formatCompactBaht(totals[index]),
+    label: formatCompactBaht(totals[index])
   }));
 }
 
@@ -833,35 +828,35 @@ export function getOverviewRevenueSummary(stripeRevenue) {
     : [];
   const twelveMonthTotal = revenueBars.reduce(
     (total, bar) => total + Number(bar.total || 0),
-    0,
+    0
   );
 
   return [
     [
-      "This month",
-      formatPaymentAmount({ amount: stripeRevenue.monthlyRevenue || 0 }),
+      'This month',
+      formatPaymentAmount({ amount: stripeRevenue.monthlyRevenue || 0 })
     ],
-    ["12-month total", formatPaymentAmount({ amount: twelveMonthTotal })],
-    ["Paid payments", String(stripeRevenue.paidInvoiceCount || 0)],
+    ['12-month total', formatPaymentAmount({ amount: twelveMonthTotal })],
+    ['Paid payments', String(stripeRevenue.paidInvoiceCount || 0)]
   ];
 }
 
 export function getReportTopClass(schedule) {
   const classCounts = schedule
-    .flatMap((daySchedule) => getScheduleClassesForPeriod(daySchedule, "All"))
+    .flatMap((daySchedule) => getScheduleClassesForPeriod(daySchedule, 'All'))
     .reduce((counts, classItem) => {
-      const label = classItem.category || classItem.name || "Class";
+      const label = classItem.category || classItem.name || 'Class';
 
       return {
         ...counts,
-        [label]: (counts[label] || 0) + 1,
+        [label]: (counts[label] || 0) + 1
       };
     }, {});
   const [topClass] =
     Object.entries(classCounts).sort((left, right) => right[1] - left[1])[0] ||
     [];
 
-  return topClass || "N/A";
+  return topClass || 'N/A';
 }
 
 export function getReportsKpis({ members, schedule, stripeRevenue }) {
@@ -881,33 +876,33 @@ export function getReportsKpis({ members, schedule, stripeRevenue }) {
 
   return [
     {
-      label: "Monthly Revenue",
+      label: 'Monthly Revenue',
       value: formatCompactBaht(Number(stripeRevenue.monthlyRevenue || 0)),
-      tone: "blue",
+      tone: 'blue'
     },
     {
-      label: "Today Attendance",
+      label: 'Today Attendance',
       value: String(todayAttendance),
       note: `${todayVisitTotal} manual visits`,
-      tone: "green",
+      tone: 'green'
     },
     {
-      label: "Top Class",
+      label: 'Top Class',
       value: getReportTopClass(schedule),
-      tone: "red",
+      tone: 'red'
     },
     {
-      label: "New Members",
+      label: 'New Members',
       value: String(newMembers),
-      tone: "yellow",
-    },
+      tone: 'yellow'
+    }
   ];
 }
 
 export function getReportYearOptions(payments) {
   const currentYear = new Date().getFullYear();
   const years = new Set(
-    Array.from({ length: 11 }, (_, index) => currentYear - 7 + index),
+    Array.from({ length: 11 }, (_, index) => currentYear - 7 + index)
   );
 
   payments.forEach((payment) => {
@@ -924,17 +919,17 @@ export function getReportYearOptions(payments) {
 export function getReportsYearRevenue({
   payments,
   stripeRevenue,
-  selectedYear,
+  selectedYear
 }) {
   const monthNames = Array.from({ length: 12 }, (_, index) =>
-    new Date(selectedYear, index, 1).toLocaleString("en-US", {
-      month: "short",
-    }),
+    new Date(selectedYear, index, 1).toLocaleString('en-US', {
+      month: 'short'
+    })
   );
   const totals = Array(12).fill(0);
 
   payments.forEach((payment) => {
-    if (payment.status !== "Paid" || !payment.date) {
+    if (payment.status !== 'Paid' || !payment.date) {
       return;
     }
 
@@ -967,51 +962,51 @@ export function getReportsYearRevenue({
       month,
       total: totals[index],
       label: formatCompactBaht(totals[index]),
-      height: Math.max(10, Math.round((totals[index] / maxTotal) * 180)),
-    })),
+      height: Math.max(10, Math.round((totals[index] / maxTotal) * 180))
+    }))
   };
 }
 
 export function getAdminSettingsRows(settings) {
   const openingHours =
     Array.isArray(settings.openingHours) && settings.openingHours.length
-      ? settings.openingHours.join("\n")
-      : "";
+      ? settings.openingHours.join('\n')
+      : '';
 
   return [
     {
-      key: "gymName",
-      label: "Gym Name",
-      value: settings.brand?.name || "",
-      displayValue: settings.brand?.name || "Not set",
+      key: 'gymName',
+      label: 'Gym Name',
+      value: settings.brand?.name || '',
+      displayValue: settings.brand?.name || 'Not set'
     },
     {
-      key: "adminEmail",
-      label: "Admin Email",
-      value: settings.contact?.email || "",
-      displayValue: settings.contact?.email || "Not set",
-      inputType: "email",
+      key: 'adminEmail',
+      label: 'Admin Email',
+      value: settings.contact?.email || '',
+      displayValue: settings.contact?.email || 'Not set',
+      inputType: 'email'
     },
     {
-      key: "openingHours",
-      label: "Opening Hours",
+      key: 'openingHours',
+      label: 'Opening Hours',
       value: openingHours,
-      displayValue: openingHours || "Not set",
-      multiline: true,
+      displayValue: openingHours || 'Not set',
+      multiline: true
     },
     {
-      key: "location",
-      label: "Location",
-      value: settings.contact?.location || "",
-      displayValue: settings.contact?.location || "Not set",
+      key: 'location',
+      label: 'Location',
+      value: settings.contact?.location || '',
+      displayValue: settings.contact?.location || 'Not set'
     },
     {
-      key: "phone",
-      label: "Phone No.",
-      value: settings.contact?.phone || "",
-      displayValue: settings.contact?.phone || "Not set",
-      inputType: "tel",
-    },
+      key: 'phone',
+      label: 'Phone No.',
+      value: settings.contact?.phone || '',
+      displayValue: settings.contact?.phone || 'Not set',
+      inputType: 'tel'
+    }
   ];
 }
 
@@ -1019,33 +1014,33 @@ export function applyAdminSettingsValue(settings, key, value) {
   const nextSettings = {
     ...settings,
     brand: {
-      ...(settings.brand || {}),
+      ...(settings.brand || {})
     },
     contact: {
-      ...(settings.contact || {}),
-    },
+      ...(settings.contact || {})
+    }
   };
 
-  if (key === "gymName") {
+  if (key === 'gymName') {
     nextSettings.brand.name = value;
   }
 
-  if (key === "adminEmail") {
+  if (key === 'adminEmail') {
     nextSettings.contact.email = value;
   }
 
-  if (key === "openingHours") {
+  if (key === 'openingHours') {
     nextSettings.openingHours = value
-      .split("\n")
+      .split('\n')
       .map((line) => line.trim())
       .filter(Boolean);
   }
 
-  if (key === "location") {
+  if (key === 'location') {
     nextSettings.contact.location = value;
   }
 
-  if (key === "phone") {
+  if (key === 'phone') {
     nextSettings.contact.phone = value;
   }
 
@@ -1053,43 +1048,43 @@ export function applyAdminSettingsValue(settings, key, value) {
 }
 
 export function getPaymentStats(payments) {
-  const paidPayments = payments.filter((payment) => payment.status === "Paid");
+  const paidPayments = payments.filter((payment) => payment.status === 'Paid');
   const pendingPayments = payments.filter(
-    (payment) => payment.status === "Pending",
+    (payment) => payment.status === 'Pending'
   );
   const failedPayments = payments.filter(
-    (payment) => payment.status === "Failed",
+    (payment) => payment.status === 'Failed'
   );
   const paidTotal = paidPayments.reduce(
     (total, payment) => total + getPaymentAmountValue(payment),
-    0,
+    0
   );
 
   return [
     {
-      label: "Paid Revenue",
+      label: 'Paid Revenue',
       value: `${paidTotal.toLocaleString()}฿`,
-      note: "Collected invoices",
-      tone: "red",
+      note: 'Collected invoices',
+      tone: 'red'
     },
     {
-      label: "Paid Invoices",
+      label: 'Paid Invoices',
       value: String(paidPayments.length),
-      note: "Completed payments",
-      tone: "green",
+      note: 'Completed payments',
+      tone: 'green'
     },
     {
-      label: "Pending",
+      label: 'Pending',
       value: String(pendingPayments.length),
-      note: "Awaiting payment",
-      tone: "yellow",
+      note: 'Awaiting payment',
+      tone: 'yellow'
     },
     {
-      label: "Failed",
+      label: 'Failed',
       value: String(failedPayments.length),
-      note: "Needs follow-up",
-      tone: "blue",
-    },
+      note: 'Needs follow-up',
+      tone: 'blue'
+    }
   ];
 }
 
@@ -1108,9 +1103,9 @@ export function filterPayments(payments, searchTerm) {
       payment.amount,
       payment.method,
       payment.status,
-      payment.date,
+      payment.date
     ]
-      .join(" ")
+      .join(' ')
       .toLowerCase();
 
     return searchableText.includes(query);
@@ -1118,7 +1113,7 @@ export function filterPayments(payments, searchTerm) {
 }
 
 export function filterPaymentsByMethod(payments, methodFilter) {
-  if (methodFilter === "All") {
+  if (methodFilter === 'All') {
     return payments;
   }
 

@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
-function RedirectSignedInUser({ to = "/" }) {
+function RedirectSignedInUser({ to = '/' }) {
   useEffect(() => {
     window.location.replace(to);
   }, [to]);

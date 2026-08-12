@@ -1,28 +1,28 @@
-const selectedPlanStorageKey = "fitzone:selected-plan";
+const selectedPlanStorageKey = 'fitzone:selected-plan';
 
 export function getPlanPriceValue(plan) {
-  return Number(String(plan?.price || "").replace(/[^\d.]/g, "")) || 0;
+  return Number(String(plan?.price || '').replace(/[^\d.]/g, '')) || 0;
 }
 
 export function getPlanMonthlyLabel(plan) {
   const price = getPlanPriceValue(plan);
-  return price ? `฿${price.toLocaleString("en-US")}` : plan?.price || "฿0";
+  return price ? `฿${price.toLocaleString('en-US')}` : plan?.price || '฿0';
 }
 
 export function getPlanVariant(plan) {
   if (plan?.premium) {
-    return "premium";
+    return 'premium';
   }
 
-  if (plan?.popular || plan?.badge) {
-    return "standard";
+  if (plan?.popular) {
+    return 'standard';
   }
 
-  return "basic";
+  return 'basic';
 }
 
 export function getPlanCtaLabel(plan) {
-  return `Choose ${plan?.name || "Plan"}`;
+  return `Choose ${plan?.name || 'Plan'}`;
 }
 
 export function saveSelectedPlan(plan) {
@@ -32,7 +32,7 @@ export function saveSelectedPlan(plan) {
 export function getSavedSelectedPlan() {
   try {
     return JSON.parse(
-      window.localStorage.getItem(selectedPlanStorageKey) || "null",
+      window.localStorage.getItem(selectedPlanStorageKey) || 'null'
     );
   } catch {
     return null;
@@ -44,7 +44,7 @@ export function getPlanFromSelection(plans, slug) {
   return (
     plans.find((plan) => plan.slug === slug) ||
     plans.find((plan) => plan.slug === savedPlan?.slug) ||
-    plans.find((plan) => plan.popular || plan.slug === "standard") ||
+    plans.find((plan) => plan.popular || plan.slug === 'standard') ||
     plans[0] ||
     savedPlan
   );

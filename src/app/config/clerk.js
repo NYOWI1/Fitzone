@@ -4,10 +4,8 @@ export const clerkProviderProps = {
   afterSignOutUrl: "/",
   publishableKey: clerkPublishableKey,
   signInFallbackRedirectUrl: "/dashboard",
-  signInForceRedirectUrl: "/dashboard",
   signInUrl: "/login",
   signUpFallbackRedirectUrl: "/choose-plan",
-  signUpForceRedirectUrl: "/choose-plan",
   signUpUrl: "/signup",
 };
 

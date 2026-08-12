@@ -1,73 +1,73 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const CONFIDENCE_STEP = 0.05;
 const INITIAL_CONFIDENCE = 0.45;
 const DETECTION_INTERVAL_MS = 700;
-const PERSON_CLASS = "person";
+const PERSON_CLASS = 'person';
 const INITIAL_GYM_CAPACITY = 70;
 const INITIAL_RANGES = {
   normalMax: 35,
-  moderateMax: 55,
+  moderateMax: 55
 };
 const YOLO_INPUT_SIZE = 640;
 const YOLO_PERSON_CLASS_INDEX = 0;
 const YOLO_NMS_THRESHOLD = 0.45;
 const YOLO_MAX_DETECTIONS = 120;
 const YOLO11_MODEL_URL =
-  import.meta.env.VITE_YOLO11_MODEL_URL || "/models/yolo11n.onnx";
-const ONNX_RUNTIME_SCRIPT_ID = "onnx-runtime-web-script";
-const TENSORFLOW_SCRIPT_ID = "tensorflow-js-script";
-const COCO_SSD_SCRIPT_ID = "coco-ssd-script";
+  import.meta.env.VITE_YOLO11_MODEL_URL || '/models/yolo11n.onnx';
+const ONNX_RUNTIME_SCRIPT_ID = 'onnx-runtime-web-script';
+const TENSORFLOW_SCRIPT_ID = 'tensorflow-js-script';
+const COCO_SSD_SCRIPT_ID = 'coco-ssd-script';
 const ONNX_RUNTIME_SCRIPT_SRC =
-  "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js";
+  'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js';
 const TENSORFLOW_SCRIPT_SRC =
-  "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js";
+  'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js';
 const COCO_SSD_SCRIPT_SRC =
-  "https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js";
+  'https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js';
 const toneTextClasses = {
-  green: "text-[#39e600]",
-  red: "text-[#d90429]",
-  yellow: "text-[#ffd54f]",
+  green: 'text-[#39e600]',
+  red: 'text-[#d90429]',
+  yellow: 'text-[#ffd54f]'
 };
 const toneDotClasses = {
-  green: "bg-[#39e600]",
-  red: "bg-[#d90429]",
-  yellow: "bg-[#ffd54f]",
+  green: 'bg-[#39e600]',
+  red: 'bg-[#d90429]',
+  yellow: 'bg-[#ffd54f]'
 };
 const monitorCardClass =
-  "admin-card flex min-h-0 flex-col overflow-hidden rounded-[26px] border-[#424242] bg-[#252525] p-0";
+  'admin-card flex min-h-0 flex-col overflow-hidden rounded-[26px] border-[#424242] bg-[#252525] p-0';
 const sourceButtonClass =
-  "flex h-[30px] min-w-24 cursor-pointer items-center justify-center rounded-full border border-[#3e3e3e] bg-[#1a1a1a] px-[13px] text-[11px] font-black text-white hover:border-[#d90429] disabled:cursor-not-allowed disabled:opacity-55";
+  'flex h-[30px] min-w-24 cursor-pointer items-center justify-center rounded-full border border-[#3e3e3e] bg-[#1a1a1a] px-[13px] text-[11px] font-black text-white hover:border-[#d90429] disabled:cursor-not-allowed disabled:opacity-55';
 const rangeInputClass =
-  "h-8 w-10 border-x border-[#353535] bg-transparent p-0 text-center text-[11px] font-extrabold text-white outline-none";
+  'h-8 w-10 border-x border-[#353535] bg-transparent p-0 text-center text-[11px] font-extrabold text-white outline-none';
 const rangeStepperButtonClass =
-  "grid h-8 w-8 cursor-pointer place-items-center border-0 bg-transparent p-0 text-sm font-black leading-none text-[#b8b8b8] hover:text-white";
+  'grid h-8 w-8 cursor-pointer place-items-center border-0 bg-transparent p-0 text-sm font-black leading-none text-[#b8b8b8] hover:text-white';
 const stepperShellClass =
-  "ml-1 inline-flex overflow-hidden rounded-lg border border-[#424242] bg-[#1a1a1a]";
+  'ml-1 inline-flex overflow-hidden rounded-lg border border-[#424242] bg-[#1a1a1a]';
 const summaryCardClass =
-  "admin-card flex min-h-[140px] flex-col justify-center rounded-[20px] border-[#424242] bg-[#252525] px-[23px] py-7";
+  'admin-card flex min-h-[140px] flex-col justify-center rounded-[20px] border-[#424242] bg-[#252525] px-[23px] py-7';
 
 function loadScript({ id, src }) {
   return new Promise((resolve, reject) => {
     const existingScript = document.getElementById(id);
 
-    if (existingScript?.dataset.loaded === "true") {
+    if (existingScript?.dataset.loaded === 'true') {
       resolve();
       return;
     }
 
     if (existingScript) {
-      existingScript.addEventListener("load", resolve, { once: true });
-      existingScript.addEventListener("error", reject, { once: true });
+      existingScript.addEventListener('load', resolve, { once: true });
+      existingScript.addEventListener('error', reject, { once: true });
       return;
     }
 
-    const script = document.createElement("script");
+    const script = document.createElement('script');
     script.id = id;
     script.src = src;
     script.async = true;
     script.onload = () => {
-      script.dataset.loaded = "true";
+      script.dataset.loaded = 'true';
       resolve();
     };
     script.onerror = reject;
@@ -78,7 +78,7 @@ function loadScript({ id, src }) {
 function getSourceSize(source) {
   return {
     height: source.videoHeight || source.naturalHeight || source.clientHeight,
-    width: source.videoWidth || source.naturalWidth || source.clientWidth,
+    width: source.videoWidth || source.naturalWidth || source.clientWidth
   };
 }
 
@@ -99,7 +99,7 @@ function getIntersectionOverUnion(leftBox, rightBox) {
 
 function applyNonMaxSuppression(predictions) {
   const sortedPredictions = [...predictions].sort(
-    (left, right) => right.score - left.score,
+    (left, right) => right.score - left.score
   );
   const selectedPredictions = [];
 
@@ -107,7 +107,7 @@ function applyNonMaxSuppression(predictions) {
     const overlapsExistingPrediction = selectedPredictions.some(
       (selectedPrediction) =>
         getIntersectionOverUnion(prediction.bbox, selectedPrediction.bbox) >
-        YOLO_NMS_THRESHOLD,
+        YOLO_NMS_THRESHOLD
     );
 
     if (
@@ -128,16 +128,21 @@ function makeYoloInputTensor(source) {
   const resizedHeight = Math.round(height * scale);
   const padX = Math.floor((YOLO_INPUT_SIZE - resizedWidth) / 2);
   const padY = Math.floor((YOLO_INPUT_SIZE - resizedHeight) / 2);
-  const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
 
   canvas.width = YOLO_INPUT_SIZE;
   canvas.height = YOLO_INPUT_SIZE;
-  context.fillStyle = "#727272";
+  context.fillStyle = '#727272';
   context.fillRect(0, 0, YOLO_INPUT_SIZE, YOLO_INPUT_SIZE);
   context.drawImage(source, padX, padY, resizedWidth, resizedHeight);
 
-  const imageData = context.getImageData(0, 0, YOLO_INPUT_SIZE, YOLO_INPUT_SIZE);
+  const imageData = context.getImageData(
+    0,
+    0,
+    YOLO_INPUT_SIZE,
+    YOLO_INPUT_SIZE
+  );
   const input = new Float32Array(3 * YOLO_INPUT_SIZE * YOLO_INPUT_SIZE);
   const channelSize = YOLO_INPUT_SIZE * YOLO_INPUT_SIZE;
 
@@ -153,14 +158,14 @@ function makeYoloInputTensor(source) {
       padX,
       padY,
       scale,
-      width,
+      width
     },
-    tensor: new window.ort.Tensor("float32", input, [
+    tensor: new window.ort.Tensor('float32', input, [
       1,
       3,
       YOLO_INPUT_SIZE,
-      YOLO_INPUT_SIZE,
-    ]),
+      YOLO_INPUT_SIZE
+    ])
   };
 }
 
@@ -176,7 +181,9 @@ function getYoloValue(data, dimensions, boxIndex, valueIndex) {
 
 function parseYoloOutput(output, meta, confidence) {
   const dimensions =
-    output.dims.length === 3 ? output.dims : [1, output.dims[0], output.dims[1]];
+    output.dims.length === 3
+      ? output.dims
+      : [1, output.dims[0], output.dims[1]];
   const [, firstDimension, secondDimension] = dimensions;
   const valueCount = Math.min(firstDimension, secondDimension);
   const boxCount = Math.max(firstDimension, secondDimension);
@@ -192,7 +199,7 @@ function parseYoloOutput(output, meta, confidence) {
       output.data,
       dimensions,
       boxIndex,
-      classOffset + YOLO_PERSON_CLASS_INDEX,
+      classOffset + YOLO_PERSON_CLASS_INDEX
     );
     const score = objectness * classScore;
 
@@ -221,7 +228,7 @@ function parseYoloOutput(output, meta, confidence) {
       predictions.push({
         bbox: [x, y, width, height],
         class: PERSON_CLASS,
-        score,
+        score
       });
     }
   }
@@ -230,30 +237,33 @@ function parseYoloOutput(output, meta, confidence) {
 }
 
 async function loadYolo11Model() {
-  await loadScript({ id: ONNX_RUNTIME_SCRIPT_ID, src: ONNX_RUNTIME_SCRIPT_SRC });
+  await loadScript({
+    id: ONNX_RUNTIME_SCRIPT_ID,
+    src: ONNX_RUNTIME_SCRIPT_SRC
+  });
 
   if (!window.ort?.InferenceSession) {
-    throw new Error("ONNX Runtime Web is unavailable.");
+    throw new Error('ONNX Runtime Web is unavailable.');
   }
 
   window.ort.env.wasm.wasmPaths =
-    "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/";
+    'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/';
 
   const session = await window.ort.InferenceSession.create(YOLO11_MODEL_URL, {
-    executionProviders: ["wasm"],
-    graphOptimizationLevel: "all",
+    executionProviders: ['wasm'],
+    graphOptimizationLevel: 'all'
   });
   const inputName = session.inputNames[0];
   const outputName = session.outputNames[0];
 
   return {
-    modelName: "YOLO11",
+    modelName: 'YOLO11',
     async detect(source, confidence) {
       const { meta, tensor } = makeYoloInputTensor(source);
       const results = await session.run({ [inputName]: tensor });
 
       return parseYoloOutput(results[outputName], meta, confidence);
-    },
+    }
   };
 }
 
@@ -262,16 +272,16 @@ async function loadCocoSsdFallbackModel() {
   await loadScript({ id: COCO_SSD_SCRIPT_ID, src: COCO_SSD_SCRIPT_SRC });
 
   if (!window.cocoSsd?.load) {
-    throw new Error("COCO-SSD model loader is unavailable.");
+    throw new Error('COCO-SSD model loader is unavailable.');
   }
 
   const model = await window.cocoSsd.load();
 
   return {
-    modelName: "COCO-SSD fallback",
+    modelName: 'COCO-SSD fallback',
     detect(source) {
       return model.detect(source);
-    },
+    }
   };
 }
 
@@ -279,7 +289,10 @@ async function loadCrowdDetectionModel() {
   try {
     return await loadYolo11Model();
   } catch (error) {
-    console.warn("YOLO11 model could not be loaded. Falling back to COCO-SSD.", error);
+    console.warn(
+      'YOLO11 model could not be loaded. Falling back to COCO-SSD.',
+      error
+    );
     return loadCocoSsdFallbackModel();
   }
 }
@@ -290,37 +303,37 @@ function formatPercent(value) {
 
 function getCrowdStatus(count, ranges) {
   if (count > ranges.moderateMax) {
-    return { label: "Crowded", tone: "red" };
+    return { label: 'Crowded', tone: 'red' };
   }
 
   if (count > ranges.normalMax) {
-    return { label: "Moderate", tone: "yellow" };
+    return { label: 'Moderate', tone: 'yellow' };
   }
 
-  return { label: "Normal", tone: "green" };
+  return { label: 'Normal', tone: 'green' };
 }
 
 function getCameraStatus({ modelStatus, sourceStatus }) {
-  if (modelStatus === "error" || sourceStatus === "error") {
-    return { label: "Offline", tone: "red" };
+  if (modelStatus === 'error' || sourceStatus === 'error') {
+    return { label: 'Offline', tone: 'red' };
   }
 
   if (
-    modelStatus === "loading" ||
-    sourceStatus === "loading" ||
-    sourceStatus === "idle"
+    modelStatus === 'loading' ||
+    sourceStatus === 'loading' ||
+    sourceStatus === 'idle'
   ) {
-    return { label: "Starting", tone: "yellow" };
+    return { label: 'Starting', tone: 'yellow' };
   }
 
-  return { label: "Online", tone: "green" };
+  return { label: 'Online', tone: 'green' };
 }
 
 function drawPredictions(canvas, source, people) {
   const width = source.videoWidth || source.naturalWidth || source.clientWidth;
   const height =
     source.videoHeight || source.naturalHeight || source.clientHeight;
-  const context = canvas.getContext("2d");
+  const context = canvas.getContext('2d');
 
   if (!context || !width || !height) {
     return;
@@ -338,14 +351,14 @@ function drawPredictions(canvas, source, people) {
     const labelWidth = context.measureText(label).width + 16;
     const labelY = y > 30 ? y - 28 : y + 8;
 
-    context.strokeStyle = "#39e600";
-    context.fillStyle = "rgba(57, 230, 0, 0.18)";
+    context.strokeStyle = '#39e600';
+    context.fillStyle = 'rgba(57, 230, 0, 0.18)';
     context.strokeRect(x, y, boxWidth, boxHeight);
     context.fillRect(x, y, boxWidth, boxHeight);
 
-    context.fillStyle = "#39e600";
+    context.fillStyle = '#39e600';
     context.fillRect(x, labelY, labelWidth, 24);
-    context.fillStyle = "#081008";
+    context.fillStyle = '#081008';
     context.fillText(label, x + 8, labelY + 17);
   });
 }
@@ -364,21 +377,21 @@ export default function CrowdDetectionPage({ isActive = true }) {
   const [detections, setDetections] = useState([]);
   const [gymCapacity, setGymCapacity] = useState(INITIAL_GYM_CAPACITY);
   const [ranges, setRanges] = useState(INITIAL_RANGES);
-  const [videoAspectRatio, setVideoAspectRatio] = useState("16 / 9");
-  const [modelStatus, setModelStatus] = useState("loading");
-  const [modelName, setModelName] = useState("YOLO11");
-  const [sourceStatus, setSourceStatus] = useState("idle");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [videoAspectRatio, setVideoAspectRatio] = useState('16 / 9');
+  const [modelStatus, setModelStatus] = useState('loading');
+  const [modelName, setModelName] = useState('YOLO11');
+  const [sourceStatus, setSourceStatus] = useState('idle');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const people = detections.filter(
     (prediction) =>
-      prediction.class === PERSON_CLASS && prediction.score >= confidence,
+      prediction.class === PERSON_CLASS && prediction.score >= confidence
   );
   const crowdStatus = getCrowdStatus(people.length, ranges);
   const cameraStatus = getCameraStatus({ modelStatus, sourceStatus });
   const capacityPercent = Math.min(
     100,
-    Math.round((people.length / gymCapacity) * 100),
+    Math.round((people.length / gymCapacity) * 100)
   );
   const averageConfidence = people.length
     ? people.reduce((total, person) => total + person.score, 0) / people.length
@@ -389,20 +402,20 @@ export default function CrowdDetectionPage({ isActive = true }) {
   const updateRange = (key, value) => {
     const nextValue = Math.max(
       0,
-      Math.min(gymCapacity - 1, Number(value) || 0),
+      Math.min(gymCapacity - 1, Number(value) || 0)
     );
 
     setRanges((currentRanges) => {
-      if (key === "normalMax") {
+      if (key === 'normalMax') {
         return {
           normalMax: Math.min(nextValue, currentRanges.moderateMax - 1),
-          moderateMax: currentRanges.moderateMax,
+          moderateMax: currentRanges.moderateMax
         };
       }
 
       return {
         normalMax: currentRanges.normalMax,
-        moderateMax: Math.max(nextValue, currentRanges.normalMax + 1),
+        moderateMax: Math.max(nextValue, currentRanges.normalMax + 1)
       };
     });
   };
@@ -422,11 +435,11 @@ export default function CrowdDetectionPage({ isActive = true }) {
     setRanges((currentRanges) => {
       const normalMax = Math.min(
         currentRanges.normalMax,
-        Math.max(0, nextCapacity - 2),
+        Math.max(0, nextCapacity - 2)
       );
       const moderateMax = Math.min(
         Math.max(currentRanges.moderateMax, normalMax + 1),
-        Math.max(1, nextCapacity - 1),
+        Math.max(1, nextCapacity - 1)
       );
 
       return { normalMax, moderateMax };
@@ -461,7 +474,7 @@ export default function CrowdDetectionPage({ isActive = true }) {
 
   const clearCanvas = useCallback(() => {
     const canvas = canvasRef.current;
-    const context = canvas?.getContext("2d");
+    const context = canvas?.getContext('2d');
 
     if (canvas && context) {
       context.clearRect(0, 0, canvas.width, canvas.height);
@@ -478,7 +491,7 @@ export default function CrowdDetectionPage({ isActive = true }) {
         const predictions = await modelRef.current.detect(source, confidence);
         const nextPeople = predictions.filter(
           (prediction) =>
-            prediction.class === PERSON_CLASS && prediction.score >= confidence,
+            prediction.class === PERSON_CLASS && prediction.score >= confidence
         );
 
         if (!isMountedRef.current) {
@@ -487,7 +500,7 @@ export default function CrowdDetectionPage({ isActive = true }) {
 
         setDetections(predictions);
         drawPredictions(canvasRef.current, source, nextPeople);
-        setSourceStatus("ready");
+        setSourceStatus('ready');
       } catch (error) {
         if (!isMountedRef.current) {
           return;
@@ -495,12 +508,12 @@ export default function CrowdDetectionPage({ isActive = true }) {
 
         console.error(error);
         setErrorMessage(
-          "Detection failed. Try another image or restart the camera.",
+          'Detection failed. Try another image or restart the camera.'
         );
-        setSourceStatus("error");
+        setSourceStatus('error');
       }
     },
-    [confidence],
+    [confidence]
   );
 
   const detectVideoFrame = useCallback(
@@ -527,21 +540,21 @@ export default function CrowdDetectionPage({ isActive = true }) {
 
       animationRef.current = requestAnimationFrame(detectVideoFrame);
     },
-    [runDetection],
+    [runDetection]
   );
 
   const startCamera = useCallback(async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
-      setErrorMessage("Camera access is not available in this browser.");
-      setSourceStatus("error");
+      setErrorMessage('Camera access is not available in this browser.');
+      setSourceStatus('error');
       return;
     }
 
     stopCamera();
     clearCanvas();
     setDetections([]);
-    setErrorMessage("");
-    setSourceStatus("loading");
+    setErrorMessage('');
+    setSourceStatus('loading');
 
     try {
       const cameraSession = cameraSessionRef.current + 1;
@@ -549,10 +562,10 @@ export default function CrowdDetectionPage({ isActive = true }) {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
         video: {
-          facingMode: "environment",
+          facingMode: 'environment',
           width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
+          height: { ideal: 720 }
+        }
       });
 
       if (!isMountedRef.current || cameraSessionRef.current !== cameraSession) {
@@ -579,8 +592,8 @@ export default function CrowdDetectionPage({ isActive = true }) {
       }
     } catch (error) {
       console.error(error);
-      setErrorMessage("Camera permission was blocked or no camera was found.");
-      setSourceStatus("error");
+      setErrorMessage('Camera permission was blocked or no camera was found.');
+      setSourceStatus('error');
     }
   }, [clearCanvas, detectVideoFrame, stopCamera]);
 
@@ -596,14 +609,16 @@ export default function CrowdDetectionPage({ isActive = true }) {
         if (isCurrent) {
           modelRef.current = model;
           setModelName(model.modelName);
-          setModelStatus("ready");
+          setModelStatus('ready');
         }
       } catch (error) {
         console.error(error);
 
         if (isCurrent) {
-          setModelStatus("error");
-          setErrorMessage("The YOLO11 crowd detection model could not be loaded.");
+          setModelStatus('error');
+          setErrorMessage(
+            'The YOLO11 crowd detection model could not be loaded.'
+          );
         }
       }
     }
@@ -618,7 +633,7 @@ export default function CrowdDetectionPage({ isActive = true }) {
   }, [stopCamera]);
 
   useEffect(() => {
-    if (modelStatus === "ready" && sourceStatus === "idle") {
+    if (modelStatus === 'ready' && sourceStatus === 'idle') {
       startCamera();
     }
   }, [modelStatus, sourceStatus, startCamera]);
@@ -627,7 +642,7 @@ export default function CrowdDetectionPage({ isActive = true }) {
     const source = videoRef.current;
     const visiblePeople = detections.filter(
       (prediction) =>
-        prediction.class === PERSON_CLASS && prediction.score >= confidence,
+        prediction.class === PERSON_CLASS && prediction.score >= confidence
     );
 
     if (source && detections.length > 0) {
@@ -643,64 +658,64 @@ export default function CrowdDetectionPage({ isActive = true }) {
   }, [stopCamera]);
 
   const goToOverview = () => {
-    window.history.pushState(null, "", "/admin");
-    window.dispatchEvent(new PopStateEvent("popstate"));
+    window.history.pushState(null, '', '/admin');
+    window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
   return (
     <section
       className={
         isActive
-          ? "admin-content min-h-[calc(100vh_-_64px)] overflow-visible pt-5 max-[1360px]:h-auto"
-          : "admin-content min-h-[calc(100vh_-_64px)] overflow-visible pt-5"
+          ? 'admin-content min-h-[calc(100vh_-_64px)] overflow-visible pt-5 max-[1360px]:h-auto'
+          : 'admin-content min-h-[calc(100vh_-_64px)] overflow-visible pt-5'
       }
-      id="crowd-detection"
-      style={isActive ? undefined : { display: "none" }}
+      id='crowd-detection'
+      style={isActive ? undefined : { display: 'none' }}
     >
-      <header className="admin-header mb-7 flex-none items-start max-[760px]:items-stretch max-[760px]:flex-col">
+      <header className='admin-header mb-7 flex-none items-start max-[760px]:items-stretch max-[760px]:flex-col'>
         <div>
-          <h2 className="mb-2 text-[clamp(34px,3.4vw,40px)] tracking-normal">
+          <h2 className='mb-2 text-[clamp(34px,3.4vw,40px)] tracking-normal'>
             Crowd Detection System
           </h2>
-          <p className="max-w-[760px] text-base text-[#a9a9a9]">
+          <p className='max-w-[760px] text-base text-[#a9a9a9]'>
             Admin view for monitoring the AI model video, live capacity, and
             detection results.
           </p>
         </div>
 
         <button
-          className="min-h-[46px] min-w-[184px] flex-none cursor-pointer rounded-[14px] border border-[#3b3b3b] bg-[#292929] px-[22px] text-[13px] font-black text-white max-[760px]:w-full"
+          className='min-h-[46px] min-w-[184px] flex-none cursor-pointer rounded-[14px] border border-[#3b3b3b] bg-[#292929] px-[22px] text-[13px] font-black text-white max-[760px]:w-full'
           onClick={goToOverview}
-          type="button"
+          type='button'
         >
           Back to Overview
         </button>
       </header>
 
-      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_270px] gap-7 max-[1360px]:grid-cols-1">
+      <div className='grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_270px] gap-7 max-[1360px]:grid-cols-1'>
         <section className={monitorCardClass}>
-          <div className="flex min-h-[52px] flex-none items-center justify-between rounded-[25px] bg-[#151515] px-[25px]">
-            <h3 className="m-0 text-base leading-none text-white">
+          <div className='flex min-h-[52px] flex-none items-center justify-between rounded-[25px] bg-[#151515] px-[25px]'>
+            <h3 className='m-0 text-base leading-none text-white'>
               AI Model Video Preview
             </h3>
-            <span className="inline-flex h-7 min-w-[86px] items-center justify-center rounded-full bg-[#d90429] text-[11px] font-black text-white">
+            <span className='inline-flex h-7 min-w-[86px] items-center justify-center rounded-full bg-[#d90429] text-[11px] font-black text-white'>
               LIVE
             </span>
           </div>
 
           <div
-            className="relative mt-5 h-auto min-h-0 w-full flex-none overflow-hidden border-y border-[#444] bg-[#2c2c2c] after:absolute after:inset-x-0 after:bottom-0 after:z-0 after:h-[29%] after:rounded-t-2xl after:bg-[#111] max-[760px]:min-h-80"
+            className='relative mt-5 h-auto min-h-0 w-full flex-none overflow-hidden border-y border-[#444] bg-[#2c2c2c] after:absolute after:inset-x-0 after:bottom-0 after:z-0 after:h-[29%] after:rounded-t-2xl after:bg-[#111] max-[760px]:min-h-80'
             style={{
               aspectRatio: videoAspectRatio,
               backgroundImage:
-                "linear-gradient(rgba(57, 230, 0, 0.38) 1px, transparent 1px)",
-              backgroundPosition: "0 28px",
-              backgroundSize: "100% 82px",
+                'linear-gradient(rgba(57, 230, 0, 0.38) 1px, transparent 1px)',
+              backgroundPosition: '0 28px',
+              backgroundSize: '100% 82px'
             }}
           >
             <video
-              aria-label="Live gym camera preview"
-              className="absolute inset-0 z-[1] h-full w-full object-contain"
+              aria-label='Live gym camera preview'
+              className='absolute inset-0 z-[1] h-full w-full object-contain'
               muted
               onLoadedMetadata={updateVideoAspectRatio}
               playsInline
@@ -708,48 +723,48 @@ export default function CrowdDetectionPage({ isActive = true }) {
             ></video>
 
             <canvas
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 z-[2] h-full w-full object-contain"
+              aria-hidden='true'
+              className='pointer-events-none absolute inset-0 z-[2] h-full w-full object-contain'
               ref={canvasRef}
             ></canvas>
 
-            {(modelStatus === "loading" || sourceStatus === "loading") && (
-              <div className="absolute inset-0 z-[3] flex flex-col items-center justify-center gap-2.5 bg-[rgba(17,17,17,0.88)] p-7 text-center">
-                <strong className="text-[clamp(20px,2.2vw,30px)] leading-tight text-white">
-                  {modelStatus === "loading"
+            {(modelStatus === 'loading' || sourceStatus === 'loading') && (
+              <div className='absolute inset-0 z-[3] flex flex-col items-center justify-center gap-2.5 bg-[rgba(17,17,17,0.88)] p-7 text-center'>
+                <strong className='text-[clamp(20px,2.2vw,30px)] leading-tight text-white'>
+                  {modelStatus === 'loading'
                     ? `Loading ${modelName} detection model`
-                    : "Preparing source"}
+                    : 'Preparing source'}
                 </strong>
-                <span className="max-w-[360px] text-sm leading-normal text-[#b8b8b8]">
-                  {modelStatus === "loading"
-                    ? "YOLO11 ONNX is starting in the browser."
-                    : "Waiting for a usable frame."}
+                <span className='max-w-[360px] text-sm leading-normal text-[#b8b8b8]'>
+                  {modelStatus === 'loading'
+                    ? 'YOLO11 ONNX is starting in the browser.'
+                    : 'Waiting for a usable frame.'}
                 </span>
               </div>
             )}
 
-            {(modelStatus === "error" || sourceStatus === "error") && (
-              <div className="absolute inset-0 z-[3] flex flex-col items-center justify-center gap-2.5 bg-[rgba(17,17,17,0.88)] p-7 text-center">
-                <strong className="text-[clamp(20px,2.2vw,30px)] leading-tight text-[#d90429]">
+            {(modelStatus === 'error' || sourceStatus === 'error') && (
+              <div className='absolute inset-0 z-[3] flex flex-col items-center justify-center gap-2.5 bg-[rgba(17,17,17,0.88)] p-7 text-center'>
+                <strong className='text-[clamp(20px,2.2vw,30px)] leading-tight text-[#d90429]'>
                   Detection unavailable
                 </strong>
-                <span className="max-w-[360px] text-sm leading-normal text-[#b8b8b8]">
+                <span className='max-w-[360px] text-sm leading-normal text-[#b8b8b8]'>
                   {errorMessage}
                 </span>
               </div>
             )}
           </div>
 
-          <footer className="flex min-h-[42px] flex-none items-center justify-between gap-[18px] px-[23px] pb-[13px] pt-3 max-[760px]:items-stretch max-[760px]:flex-col">
+          <footer className='flex min-h-[42px] flex-none items-center justify-between gap-[18px] px-[23px] pb-[13px] pt-3 max-[760px]:items-stretch max-[760px]:flex-col'>
             <div
-              className="flex flex-none gap-2 max-[760px]:flex-wrap"
-              aria-label="Detection source controls"
+              className='flex flex-none gap-2 max-[760px]:flex-wrap'
+              aria-label='Detection source controls'
             >
               <button
                 className={`${sourceButtonClass} border-[#d90429] max-[760px]:flex-[1_1_140px]`}
-                disabled={modelStatus !== "ready"}
+                disabled={modelStatus !== 'ready'}
                 onClick={startCamera}
-                type="button"
+                type='button'
               >
                 Live camera
               </button>
@@ -757,9 +772,9 @@ export default function CrowdDetectionPage({ isActive = true }) {
           </footer>
         </section>
 
-        <aside className="admin-card mx-auto grid min-h-0 w-full max-w-[270px] content-start gap-4 rounded-[22px] border-[#424242] bg-[#252525] p-5 max-[1360px]:max-w-none max-[1360px]:grid-cols-3 max-[900px]:grid-cols-1">
-          <div className="flex items-center justify-between gap-3 max-[1360px]:col-span-full">
-            <h3 className="m-0 whitespace-nowrap text-xl leading-none">
+        <aside className='admin-card mx-auto grid min-h-0 w-full max-w-[270px] content-start gap-4 rounded-[22px] border-[#424242] bg-[#252525] p-5 max-[1360px]:max-w-none max-[1360px]:grid-cols-3 max-[900px]:grid-cols-1'>
+          <div className='flex items-center justify-between gap-3 max-[1360px]:col-span-full'>
+            <h3 className='m-0 whitespace-nowrap text-xl leading-none'>
               Live Status
             </h3>
             <span
@@ -772,43 +787,43 @@ export default function CrowdDetectionPage({ isActive = true }) {
             </span>
           </div>
 
-          <div className="grid min-h-[118px] place-items-center rounded-[18px] border border-[#373737] bg-[#202020] p-4 text-center">
-            <strong className="block whitespace-nowrap text-[42px] leading-none text-[#ffd54f]">
+          <div className='grid min-h-[118px] place-items-center rounded-[18px] border border-[#373737] bg-[#202020] p-4 text-center'>
+            <strong className='block whitespace-nowrap text-[42px] leading-none text-[#ffd54f]'>
               {people.length}
-              <span className="text-[26px] text-[#8f8f8f]">/{gymCapacity}</span>
+              <span className='text-[26px] text-[#8f8f8f]'>/{gymCapacity}</span>
             </strong>
-            <span className="mt-2 block text-xs font-bold text-[#b8b8b8]">
+            <span className='mt-2 block text-xs font-bold text-[#b8b8b8]'>
               people detected
             </span>
           </div>
 
-          <div className="rounded-[18px] border border-[#373737] bg-[#202020] p-4">
-            <label className="mb-3 flex items-center justify-between gap-3">
-              <span className="text-[11px] font-black uppercase text-[#b8b8b8]">
+          <div className='rounded-[18px] border border-[#373737] bg-[#202020] p-4'>
+            <label className='mb-3 flex items-center justify-between gap-3'>
+              <span className='text-[11px] font-black uppercase text-[#b8b8b8]'>
                 Gym capacity
               </span>
               <span className={stepperShellClass}>
                 <button
-                  aria-label="Decrease gym capacity"
+                  aria-label='Decrease gym capacity'
                   className={rangeStepperButtonClass}
                   onClick={() => stepGymCapacity(-1)}
-                  type="button"
+                  type='button'
                 >
                   -
                 </button>
                 <input
-                  aria-label="Gym capacity"
+                  aria-label='Gym capacity'
                   className={rangeInputClass}
-                  min="1"
+                  min='1'
                   onChange={(event) => updateGymCapacity(event.target.value)}
-                  type="text"
+                  type='text'
                   value={gymCapacity}
                 />
                 <button
-                  aria-label="Increase gym capacity"
+                  aria-label='Increase gym capacity'
                   className={rangeStepperButtonClass}
                   onClick={() => stepGymCapacity(1)}
-                  type="button"
+                  type='button'
                 >
                   +
                 </button>
@@ -816,99 +831,99 @@ export default function CrowdDetectionPage({ isActive = true }) {
             </label>
 
             <div
-              className="h-2.5 w-full overflow-hidden rounded-full bg-[#303030]"
+              className='h-2.5 w-full overflow-hidden rounded-full bg-[#303030]'
               aria-label={`${capacityPercent}% capacity`}
             >
               <span
-                className="block h-full rounded-[inherit] bg-[#ffd54f]"
+                className='block h-full rounded-[inherit] bg-[#ffd54f]'
                 style={{ width: `${capacityPercent}%` }}
               ></span>
             </div>
-            <b className="mt-3 block text-center text-sm text-[#ffd54f]">
+            <b className='mt-3 block text-center text-sm text-[#ffd54f]'>
               {capacityPercent}% capacity
             </b>
           </div>
 
-          <div className="grid gap-2 rounded-[18px] border border-[#373737] bg-[#202020] p-4">
-            <h4 className="mb-1 mt-0 text-xs font-black uppercase text-[#b8b8b8]">
+          <div className='grid gap-2 rounded-[18px] border border-[#373737] bg-[#202020] p-4'>
+            <h4 className='mb-1 mt-0 text-xs font-black uppercase text-[#b8b8b8]'>
               Alert ranges
             </h4>
-            <div className="grid grid-cols-[10px_minmax(64px,1fr)_92px] items-center gap-[9px]">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#39e600]"></span>
-              <strong className="text-[11px] text-white">Normal</strong>
-              <label className="flex items-center justify-end whitespace-nowrap text-[11px] text-[#b8b8b8]">
+            <div className='grid grid-cols-[10px_minmax(64px,1fr)_92px] items-center gap-[9px]'>
+              <span className='h-2.5 w-2.5 rounded-full bg-[#39e600]'></span>
+              <strong className='text-[11px] text-white'>Normal</strong>
+              <label className='flex items-center justify-end whitespace-nowrap text-[11px] text-[#b8b8b8]'>
                 0-
                 <span className={stepperShellClass}>
                   <button
-                    aria-label="Decrease normal range maximum"
+                    aria-label='Decrease normal range maximum'
                     className={rangeStepperButtonClass}
-                    onClick={() => stepRange("normalMax", -1)}
-                    type="button"
+                    onClick={() => stepRange('normalMax', -1)}
+                    type='button'
                   >
                     -
                   </button>
                   <input
-                    aria-label="Normal range maximum"
+                    aria-label='Normal range maximum'
                     className={rangeInputClass}
                     max={ranges.moderateMax - 1}
-                    min="0"
+                    min='0'
                     onChange={(event) =>
-                      updateRange("normalMax", event.target.value)
+                      updateRange('normalMax', event.target.value)
                     }
-                    type="text"
+                    type='text'
                     value={ranges.normalMax}
                   />
                   <button
-                    aria-label="Increase normal range maximum"
+                    aria-label='Increase normal range maximum'
                     className={rangeStepperButtonClass}
-                    onClick={() => stepRange("normalMax", 1)}
-                    type="button"
+                    onClick={() => stepRange('normalMax', 1)}
+                    type='button'
                   >
                     +
                   </button>
                 </span>
               </label>
             </div>
-            <div className="grid grid-cols-[10px_minmax(64px,1fr)_92px] items-center gap-[9px]">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#ffd54f]"></span>
-              <strong className="text-[11px] text-white">Moderate</strong>
-              <label className="flex items-center justify-end whitespace-nowrap text-[11px] text-[#b8b8b8]">
+            <div className='grid grid-cols-[10px_minmax(64px,1fr)_92px] items-center gap-[9px]'>
+              <span className='h-2.5 w-2.5 rounded-full bg-[#ffd54f]'></span>
+              <strong className='text-[11px] text-white'>Moderate</strong>
+              <label className='flex items-center justify-end whitespace-nowrap text-[11px] text-[#b8b8b8]'>
                 {moderateMin}-
                 <span className={stepperShellClass}>
                   <button
-                    aria-label="Decrease moderate range maximum"
+                    aria-label='Decrease moderate range maximum'
                     className={rangeStepperButtonClass}
-                    onClick={() => stepRange("moderateMax", -1)}
-                    type="button"
+                    onClick={() => stepRange('moderateMax', -1)}
+                    type='button'
                   >
                     -
                   </button>
                   <input
-                    aria-label="Moderate range maximum"
+                    aria-label='Moderate range maximum'
                     className={rangeInputClass}
                     max={gymCapacity - 1}
                     min={moderateMin}
                     onChange={(event) =>
-                      updateRange("moderateMax", event.target.value)
+                      updateRange('moderateMax', event.target.value)
                     }
-                    type="text"
+                    type='text'
                     value={ranges.moderateMax}
                   />
                   <button
-                    aria-label="Increase moderate range maximum"
+                    aria-label='Increase moderate range maximum'
                     className={rangeStepperButtonClass}
-                    onClick={() => stepRange("moderateMax", 1)}
-                    type="button"
+                    onClick={() => stepRange('moderateMax', 1)}
+                    type='button'
                   >
                     +
                   </button>
                 </span>
               </label>
             </div>
-            <div className="grid grid-cols-[10px_minmax(64px,1fr)_92px] items-center gap-[9px]">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#d90429]"></span>
-              <strong className="text-[11px] text-white">Crowded</strong>
-              <small className="text-right text-[11px] text-[#b8b8b8]">
+            <div className='grid grid-cols-[10px_minmax(64px,1fr)_92px] items-center gap-[9px]'>
+              <span className='h-2.5 w-2.5 rounded-full bg-[#d90429]'></span>
+              <strong className='text-[11px] text-white'>Crowded</strong>
+              <small className='text-right text-[11px] text-[#b8b8b8]'>
                 {crowdedMin}+
               </small>
             </div>
@@ -916,21 +931,21 @@ export default function CrowdDetectionPage({ isActive = true }) {
         </aside>
       </div>
 
-      <div className="mt-8 grid flex-none grid-cols-4 gap-6 max-[900px]:grid-cols-2 max-[760px]:grid-cols-1">
+      <div className='mt-8 grid flex-none grid-cols-4 gap-6 max-[900px]:grid-cols-2 max-[760px]:grid-cols-1'>
         <article className={summaryCardClass}>
-          <strong className="pb-6 text-[clamp(27px,2.7vw,32px)] leading-none text-[#ffd54f]">
+          <strong className='pb-6 text-[clamp(27px,2.7vw,32px)] leading-none text-[#ffd54f]'>
             {people.length}
           </strong>
-          <h3 className="mb-[9px] mt-4 text-sm leading-tight text-white">
+          <h3 className='mb-[9px] mt-4 text-sm leading-tight text-white'>
             Detected People
           </h3>
         </article>
 
         <article className={summaryCardClass}>
-          <strong className="pb-6 text-[clamp(27px,2.7vw,32px)] leading-none text-[#39e600]">
-            {people.length ? formatPercent(averageConfidence) : "0%"}
+          <strong className='pb-6 text-[clamp(27px,2.7vw,32px)] leading-none text-[#39e600]'>
+            {people.length ? formatPercent(averageConfidence) : '0%'}
           </strong>
-          <h3 className="mb-[9px] mt-4 text-sm leading-tight text-white">
+          <h3 className='mb-[9px] mt-4 text-sm leading-tight text-white'>
             {modelName}
           </h3>
         </article>
@@ -941,10 +956,10 @@ export default function CrowdDetectionPage({ isActive = true }) {
           >
             {cameraStatus.label}
           </strong>
-          <h3 className="mb-[9px] mt-4 text-sm leading-tight text-white">
+          <h3 className='mb-[9px] mt-4 text-sm leading-tight text-white'>
             Camera Status
           </h3>
-          <p className="m-0 text-xs leading-snug text-[#a7a7a7]">
+          <p className='m-0 text-xs leading-snug text-[#a7a7a7]'>
             {cameraStatus.note}
           </p>
         </article>
@@ -955,27 +970,27 @@ export default function CrowdDetectionPage({ isActive = true }) {
           >
             {crowdStatus.label}
           </strong>
-          <h3 className="mb-[9px] mt-4 text-sm leading-tight text-white">
+          <h3 className='mb-[9px] mt-4 text-sm leading-tight text-white'>
             Alert Level
           </h3>
-          <p className="m-0 text-xs leading-snug text-[#a7a7a7]">
+          <p className='m-0 text-xs leading-snug text-[#a7a7a7]'>
             {crowdStatus.note}
           </p>
         </article>
       </div>
 
-      <article className="admin-card hidden">
-        <label htmlFor="confidence-threshold">
+      <article className='admin-card hidden'>
+        <label htmlFor='confidence-threshold'>
           <span>Confidence threshold</span>
           <strong>{formatPercent(confidence)}</strong>
         </label>
         <input
-          id="confidence-threshold"
-          max="0.9"
-          min="0.25"
+          id='confidence-threshold'
+          max='0.9'
+          min='0.25'
           onChange={(event) => setConfidence(Number(event.target.value))}
           step={CONFIDENCE_STEP}
-          type="range"
+          type='range'
           value={confidence}
         />
       </article>
