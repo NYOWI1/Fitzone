@@ -9,9 +9,9 @@ src/
   app/                  App shell, route helpers, provider config, and Vite entry point
   assets/               Static images and media
   features/             Feature modules and page-level React components
-    admin-panel/        Admin dashboard shell, shared admin helpers, and page folders
-      pages/            One folder per admin page, with matching JSX and CSS
-    auth/               Login and sign-up flows
+    admin-panel/        Admin dashboard, separate admin login, and Clerk role guard
+      pages/            Admin login and one folder per admin dashboard page
+    auth/               Member login and sign-up flows
     home/               Public home page
     membership-flow/    Choose-plan and Stripe checkout flow
     trainer-detail/     Trainer profile pages
@@ -36,39 +36,36 @@ Admin pages follow this structure:
 
 ```txt
 src/features/admin-panel/
-  AdminPanel.jsx        Sidebar, mobile nav, and admin page routing
+  AdminPanel.jsx        Protected admin dashboard shell, sidebar, mobile nav, and page routing
   AdminPanel.css        Shared admin layout, form, modal, and responsive styles
+  adminAuth.js          Clerk metadata role check for admin access
   adminPanelUtils.js    Shared admin formatting, filtering, KPI, and form helpers
+  index.js              Admin feature exports
+  components/
+    AdminLoadingSkeleton.jsx  Shared loading skeletons for admin tables and cards
   pages/
+    admin-login/
+      AdminLoginPage.jsx  Separate Clerk login page for admins
     overview/
-      OverviewPage.jsx
-      OverviewPage.css
+      OverviewPage.jsx    Dashboard summary page
     members/
-      MembersPage.jsx
-      MembersPage.css
+      MembersPage.jsx     Member management page
     classes/
-      ClassesPage.jsx
-      ClassesPage.css
+      ClassesPage.jsx     Class schedule management page
     trainers/
-      TrainersPage.jsx
-      TrainersPage.css
+      TrainersPage.jsx    Trainer management page
     plans/
-      PlansPage.jsx
-      PlansPage.css
+      PlansPage.jsx       Membership plan management page
     payments/
-      PaymentsPage.jsx
-      PaymentsPage.css
+      PaymentsPage.jsx    Stripe payment and revenue page
     reports/
-      ReportsPage.jsx
-      ReportsPage.css
+      ReportsPage.jsx     Analytics and reporting page
     settings/
-      SettingsPage.jsx
-      SettingsPage.css
+      SettingsPage.jsx    Site and admin settings page
     crowd-detection/
-      CrowdDetectionPage.jsx
+      CrowdDetectionPage.jsx  Camera-based crowd detection page
     admin-placeholder/
-      AdminPlaceholderPage.jsx
-      AdminPlaceholderPage.css
+      AdminPlaceholderPage.jsx  Placeholder component for unfinished admin pages
 ```
 
 ## Commands
@@ -123,6 +120,42 @@ STRIPE_SECRET_KEY=sk_test_...
 
 Restart the dev server after changing `.env`.
 
+## Admin Authentication
+
+The admin panel uses a separate Clerk-based admin login page:
+
+```txt
+/admin/login
+```
+
+Opening `/admin` while signed out redirects directly to `/admin/login`. After login, `/admin` only renders for Clerk users with admin access in public metadata.
+
+Add one of these values to the Clerk user's **Public metadata**:
+
+```json
+{
+  "role": "admin"
+}
+```
+
+The app also accepts:
+
+```json
+{
+  "roles": ["admin"]
+}
+```
+
+or:
+
+```json
+{
+  "isAdmin": true
+}
+```
+
+The regular `/login` page remains the member login flow and still checks membership payment access before sending users to `/dashboard`.
+
 ## Stripe Sandbox
 
 The payment page uses Stripe.js Elements in the browser and a server-created PaymentIntent. FitZone does not store raw card numbers or CVC values.
@@ -154,4 +187,3 @@ siteSettings
 Members are intentionally not seeded because Clerk is the source of truth for users and member status.
 
 Payments are intentionally not seeded because Stripe is the source of truth for payment status, card details, PromptPay QR status, and revenue reporting.
-
