@@ -51,18 +51,22 @@ const menuItemActiveClass = 'border-[#d90429] bg-[#241216] text-white';
 const menuItemInactiveClass =
   'border-transparent text-[#b8b8b8] hover:border-[#d90429] hover:bg-[#241216] hover:text-white';
 
-function AdminAccessMessage({ action, brandInitial, brandName, message, title }) {
+function AdminAccessMessage({
+  action,
+  brandInitial,
+  brandName,
+  message,
+  title
+}) {
   return (
     <main
       className='relative grid min-h-screen place-items-center overflow-hidden bg-[#0f0f0f] p-5 font-sans text-white'
       style={adminThemeStyle}
     >
-      <div className='pointer-events-none absolute left-[-120px] top-20 h-100 w-100 rounded-full bg-[rgba(217,4,41,0.12)]'></div>
-      <div className='pointer-events-none absolute bottom-[-140px] right-[-110px] h-95 w-95 rounded-full bg-[rgba(77,163,255,0.06)]'></div>
+      <div className='pointer-events-none absolute -left-30 top-20 h-100 w-100 rounded-full bg-[rgba(217,4,41,0.12)]'></div>
+      <div className='pointer-events-none absolute -bottom-35 -right-27.5 h-95 w-95 rounded-full bg-[rgba(77,163,255,0.06)]'></div>
 
-      <section
-        className='relative z-[1] grid w-[min(100%,430px)] gap-5 rounded-[28px] border border-[#393939] bg-[#242424] p-7 shadow-[0_24px_70px_rgba(0,0,0,0.45)] max-[520px]:rounded-[22px] max-[520px]:p-5'
-      >
+      <section className='relative z-1 grid w-[min(100%,430px)] gap-5 rounded-[28px] border border-[#393939] bg-[#242424] p-7 shadow-[0_24px_70px_rgba(0,0,0,0.45)] max-[520px]:rounded-[22px] max-[520px]:p-5'>
         <div className={brandClass}>
           <div className={logoClass}>{brandInitial}</div>
           <div>
@@ -75,9 +79,7 @@ function AdminAccessMessage({ action, brandInitial, brandName, message, title })
           <h2 className='mb-2 mt-2 text-[30px] leading-none max-[520px]:text-[24px]'>
             {title}
           </h2>
-          <p className='m-0 text-sm leading-[1.45] text-[#b8b8b8]'>
-            {message}
-          </p>
+          <p className='m-0 text-sm leading-[1.45] text-[#b8b8b8]'>{message}</p>
         </div>
 
         {action}
