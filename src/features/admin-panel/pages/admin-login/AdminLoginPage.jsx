@@ -28,6 +28,52 @@ const primaryButtonClass =
 const secondaryButtonClass =
   'min-h-12 cursor-pointer rounded-[14px] border border-[#393939] bg-[#2b2b2b] text-sm font-black text-white transition hover:border-[#d90429] hover:bg-[#241216] disabled:cursor-not-allowed disabled:opacity-65';
 
+function getSecondFactor(resource) {
+  const factors = resource?.supportedSecondFactors || [];
+  const priority = ['totp', 'phone_code', 'email_code', 'backup_code'];
+
+  return (
+    priority
+      .map((strategy) =>
+        factors.find((factor) => factor.strategy === strategy)
+      )
+      .find(Boolean) || factors[0] || null
+  );
+}
+
+function getSecondFactorLabel(factor) {
+  if (factor?.strategy === 'backup_code') {
+    return 'Backup code';
+  }
+
+  if (factor?.strategy === 'phone_code') {
+    return 'Phone verification code';
+  }
+
+  if (factor?.strategy === 'email_code') {
+    return 'Email verification code';
+  }
+
+  return 'Authenticator code';
+}
+
+function getSecondFactorPayload(factor, code) {
+  return {
+    code,
+    strategy: factor?.strategy || 'totp'
+  };
+}
+
+function getSecondFactorPreparePayload(factor) {
+  return {
+    strategy: factor?.strategy || 'totp',
+    ...(factor?.phoneNumberId ? { phoneNumberId: factor.phoneNumberId } : {}),
+    ...(factor?.emailAddressId
+      ? { emailAddressId: factor.emailAddressId }
+      : {})
+  };
+}
+
 function AdminLoginShell({ children }) {
   return (
     <main
@@ -68,10 +114,13 @@ function AdminLoginForm() {
   const { isLoaded: isSignInLoaded, signIn, setActive } = useSignIn();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [secondFactorCode, setSecondFactorCode] = useState('');
+  const [secondFactor, setSecondFactor] = useState(null);
   const [formStatus, setFormStatus] = useState('idle');
   const [formMessage, setFormMessage] = useState('');
   const isBusy = formStatus === 'submitting' || formStatus === 'redirecting';
   const isSignedInAdmin = isSignedIn && hasAdminAccess(user);
+  const isSecondFactorStep = Boolean(secondFactor);
 
   useEffect(() => {
     if (isUserLoaded && isSignedInAdmin) {
@@ -122,19 +171,82 @@ function AdminLoginForm() {
       setFormMessage('');
 
       const signInAttempt = await signIn.create({
-        identifier: email,
-        password,
-        strategy: 'password'
+        identifier: email
       });
+      const passwordAttempt =
+        signInAttempt.status === 'needs_first_factor'
+          ? await signInAttempt.attemptFirstFactor({
+              strategy: 'password',
+              password
+            })
+          : signInAttempt;
 
-      if (signInAttempt.status === 'complete') {
-        await setActive({ session: signInAttempt.createdSessionId });
+      if (passwordAttempt.status === 'complete') {
+        await setActive({ session: passwordAttempt.createdSessionId });
+        window.location.href = '/admin';
+        return;
+      }
+
+      if (passwordAttempt.status === 'needs_second_factor') {
+        const factor = getSecondFactor(passwordAttempt);
+
+        if (!factor) {
+          setFormMessage(
+            'This admin account requires two-step verification, but Clerk did not return a supported second factor.'
+          );
+          return;
+        }
+
+        if (['phone_code', 'email_code'].includes(factor.strategy)) {
+          await passwordAttempt.prepareSecondFactor(
+            getSecondFactorPreparePayload(factor)
+          );
+        }
+
+        setSecondFactor({
+          ...factor,
+          resource: passwordAttempt
+        });
+        setSecondFactorCode('');
+        setFormMessage('');
+        return;
+      }
+
+      setFormMessage(
+        `Admin sign in could not finish. Clerk returned status: ${passwordAttempt.status}.`
+      );
+    } catch (error) {
+      console.error(error);
+      setFormMessage(getAuthErrorMessage(error));
+    } finally {
+      setFormStatus('idle');
+    }
+  };
+
+  const handleSecondFactorSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!isSignInLoaded || !secondFactor) {
+      return;
+    }
+
+    try {
+      setFormStatus('submitting');
+      setFormMessage('');
+
+      const resource = secondFactor.resource || signIn;
+      const secondFactorAttempt = await resource.attemptSecondFactor(
+        getSecondFactorPayload(secondFactor, secondFactorCode)
+      );
+
+      if (secondFactorAttempt.status === 'complete') {
+        await setActive({ session: secondFactorAttempt.createdSessionId });
         window.location.href = '/admin';
         return;
       }
 
       setFormMessage(
-        'This admin account needs another verification step before it can sign in.'
+        `Admin sign in could not finish. Clerk returned status: ${secondFactorAttempt.status}.`
       );
     } catch (error) {
       console.error(error);
@@ -147,7 +259,9 @@ function AdminLoginForm() {
   return (
     <form
       className='relative z-[1] grid w-[min(100%,430px)] gap-5 rounded-[28px] border border-[#393939] bg-[#242424] p-7 shadow-[0_24px_70px_rgba(0,0,0,0.45)] max-[520px]:rounded-[22px] max-[520px]:p-5'
-      onSubmit={handlePasswordSignIn}
+      onSubmit={
+        isSecondFactorStep ? handleSecondFactorSubmit : handlePasswordSignIn
+      }
     >
       <div className={brandClass}>
         <div className={logoClass}>F</div>
@@ -159,37 +273,61 @@ function AdminLoginForm() {
 
       <div>
         <h2 className='mb-2 mt-2 text-[30px] leading-none max-[520px]:text-[24px]'>
-          Admin login
+          {isSecondFactorStep ? 'Verify admin login' : 'Admin login'}
         </h2>
       </div>
 
-      <label className='grid gap-2 text-[13px] font-extrabold text-[#dedede]'>
-        Email
-        <input
-          autoComplete='email'
-          className={inputClass}
-          disabled={isBusy}
-          onChange={(event) => setEmail(event.target.value)}
-          placeholder='admin@email.com'
-          required
-          type='email'
-          value={email}
-        />
-      </label>
+      {isSecondFactorStep ? (
+        <>
+          <p className='m-0 text-sm leading-[1.45] text-[#b8b8b8]'>
+            Enter the {getSecondFactorLabel(secondFactor).toLowerCase()} for{' '}
+            {email}.
+          </p>
+          <label className='grid gap-2 text-[13px] font-extrabold text-[#dedede]'>
+            {getSecondFactorLabel(secondFactor)}
+            <input
+              autoComplete='one-time-code'
+              className={inputClass}
+              disabled={isBusy}
+              inputMode='numeric'
+              onChange={(event) => setSecondFactorCode(event.target.value)}
+              placeholder='Enter code'
+              required
+              value={secondFactorCode}
+            />
+          </label>
+        </>
+      ) : (
+        <>
+          <label className='grid gap-2 text-[13px] font-extrabold text-[#dedede]'>
+            Email
+            <input
+              autoComplete='email'
+              className={inputClass}
+              disabled={isBusy}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder='admin@email.com'
+              required
+              type='email'
+              value={email}
+            />
+          </label>
 
-      <label className='grid gap-2 text-[13px] font-extrabold text-[#dedede]'>
-        Password
-        <input
-          autoComplete='current-password'
-          className={inputClass}
-          disabled={isBusy}
-          onChange={(event) => setPassword(event.target.value)}
-          placeholder='Password'
-          required
-          type='password'
-          value={password}
-        />
-      </label>
+          <label className='grid gap-2 text-[13px] font-extrabold text-[#dedede]'>
+            Password
+            <input
+              autoComplete='current-password'
+              className={inputClass}
+              disabled={isBusy}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder='Password'
+              required
+              type='password'
+              value={password}
+            />
+          </label>
+        </>
+      )}
 
       {formMessage && (
         <p className='m-0 rounded-[14px] border border-[rgba(217,4,41,0.35)] bg-[rgba(217,4,41,0.12)] px-4 py-3 text-sm font-bold text-[#ff8ea2]'>
@@ -198,8 +336,30 @@ function AdminLoginForm() {
       )}
 
       <button className={primaryButtonClass} disabled={isBusy} type='submit'>
-        {formStatus === 'submitting' ? 'Signing in...' : 'Login'}
+        {formStatus === 'submitting'
+          ? isSecondFactorStep
+            ? 'Verifying...'
+            : 'Signing in...'
+          : isSecondFactorStep
+            ? 'Verify'
+            : 'Login'}
       </button>
+
+      {isSecondFactorStep && (
+        <button
+          className={secondaryButtonClass}
+          disabled={isBusy}
+          onClick={() => {
+            setSecondFactor(null);
+            setSecondFactorCode('');
+            setPassword('');
+            setFormMessage('');
+          }}
+          type='button'
+        >
+          Back to login
+        </button>
+      )}
     </form>
   );
 }

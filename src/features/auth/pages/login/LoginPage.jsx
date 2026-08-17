@@ -16,19 +16,101 @@ import { getStripePaymentAccess } from '../../../../shared/api';
 const authCard =
   'rounded-[30px] border border-[#3a3a3a] bg-[#242424] shadow-[0_24px_70px_rgba(0,0,0,0.5)] max-[640px]:rounded-[22px]';
 const headingClass =
-  'mb-0 mt-0 text-[clamp(32px,3.2vw,37px)] leading-[1.05] tracking-normal max-[640px]:text-[24px]';
+  'mb-0 mt-0 text-2xl leading-[1.05] tracking-normal sm:text-[32px] lg:text-[clamp(32px,3.2vw,37px)]';
 const headingText =
   'm-0 max-w-[420px] text-base leading-[1.18] text-[#bdbdbd] max-[640px]:hidden';
 const fieldClass = 'grid gap-2.5 max-[640px]:gap-2';
 const labelClass = 'text-[13px] font-black text-[#dedede]';
 const inputClass =
-  'min-h-[57px] w-full rounded-2xl border border-[#414141] bg-[#2d2d2d] px-[19px] font-[inherit] text-white placeholder:text-[#a8a8a8] focus:border-[#e6002e] focus:outline-none focus:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] disabled:cursor-not-allowed disabled:opacity-65 max-[640px]:min-h-11 max-[640px]:rounded-xl max-[640px]:px-3.5';
+  'min-h-11 w-full rounded-xl border border-[#414141] bg-[#2d2d2d] px-3.5 font-[inherit] text-white placeholder:text-[#a8a8a8] focus:border-[#e6002e] focus:outline-none focus:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] disabled:cursor-not-allowed disabled:opacity-65 sm:min-h-[57px] sm:rounded-2xl sm:px-[19px]';
 const messageClass =
   'mt-[-4px] rounded-[14px] border border-[rgba(230,0,46,0.35)] bg-[rgba(230,0,46,0.12)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#ff8ea2]';
 const primaryButton =
-  'min-h-14 w-full cursor-pointer rounded-2xl border-0 bg-[#e6002e] text-[15px] font-black text-white shadow-[0_18px_28px_rgba(230,0,46,0.2)] transition hover:-translate-y-px hover:bg-[#ff1744] disabled:cursor-not-allowed disabled:opacity-65 disabled:hover:translate-y-0 max-[640px]:min-h-11 max-[640px]:rounded-xl';
+  'min-h-11 w-full cursor-pointer rounded-xl border-0 bg-[#e6002e] text-[15px] font-black text-white shadow-[0_18px_28px_rgba(230,0,46,0.2)] transition hover:-translate-y-px hover:bg-[#ff1744] disabled:cursor-not-allowed disabled:opacity-65 disabled:hover:translate-y-0 sm:min-h-14 sm:rounded-2xl';
 const secondaryButton =
   'cursor-pointer rounded-[14px] border border-[#414141] bg-[#2d2d2d] text-sm font-black text-[#f0f0f0] transition hover:border-[#e6002e] hover:bg-[#32151b] disabled:cursor-not-allowed disabled:opacity-65 max-[640px]:rounded-xl max-[640px]:text-xs';
+const newMemberPaymentMessage =
+  'Complete your membership payment before logging in.';
+const expiredMembershipMessage =
+  'Your membership has expired. Please renew your plan to continue.';
+const newMemberPaymentAction = 'Choose a plan and complete payment';
+const expiredMembershipAction = 'Renew membership';
+
+function hasPreviousPayment(paymentAccess) {
+  return Boolean(
+    paymentAccess?.hasPaymentHistory ||
+      paymentAccess?.id ||
+      paymentAccess?.created ||
+      paymentAccess?.currentPeriodEnd ||
+      paymentAccess?.planName ||
+      paymentAccess?.planSlug
+  );
+}
+
+function savePendingPaymentEmail(email) {
+  const trimmedEmail = email.trim();
+
+  if (!trimmedEmail) {
+    return;
+  }
+
+  window.sessionStorage.setItem('fitzonePendingMemberEmail', trimmedEmail);
+}
+
+function getSecondFactor(resource) {
+  const factors = resource?.supportedSecondFactors || [];
+  const priority = ['totp', 'phone_code', 'email_code', 'backup_code'];
+
+  return (
+    priority
+      .map((strategy) =>
+        factors.find((factor) => factor.strategy === strategy)
+      )
+      .find(Boolean) || factors[0] || null
+  );
+}
+
+function getSecondFactorLabel(factor) {
+  if (factor?.strategy === 'backup_code') {
+    return 'Backup code';
+  }
+
+  if (factor?.strategy === 'phone_code') {
+    return 'Phone verification code';
+  }
+
+  if (factor?.strategy === 'email_code') {
+    return 'Email verification code';
+  }
+
+  return 'Authenticator code';
+}
+
+function getSecondFactorPayload(factor, code) {
+  return {
+    code,
+    strategy: factor?.strategy || 'totp'
+  };
+}
+
+function getSecondFactorPreparePayload(factor) {
+  return {
+    strategy: factor?.strategy || 'totp',
+    ...(factor?.phoneNumberId ? { phoneNumberId: factor.phoneNumberId } : {}),
+    ...(factor?.emailAddressId
+      ? { emailAddressId: factor.emailAddressId }
+      : {})
+  };
+}
+
+async function activateSessionAndOpenDashboard(setActive, sessionId) {
+  if (!sessionId) {
+    throw new Error('Clerk did not return a session after verification.');
+  }
+
+  await setActive({ session: sessionId });
+  window.location.assign(AUTH_REDIRECT_AFTER_LOGIN);
+}
 
 function SignedInLoginRedirect() {
   const { user } = useUser();
@@ -82,8 +164,14 @@ function LoginForm({ clerkEnabled }) {
   const [formStatus, setFormStatus] = useState('idle');
   const [formMessage, setFormMessage] = useState('');
   const [paymentRequired, setPaymentRequired] = useState(false);
+  const [secondFactor, setSecondFactor] = useState(null);
+  const [secondFactorCode, setSecondFactorCode] = useState('');
+  const [paymentActionLabel, setPaymentActionLabel] = useState(
+    newMemberPaymentAction
+  );
 
   const isBusy = formStatus === 'submitting' || formStatus === 'redirecting';
+  const isSecondFactorStep = Boolean(secondFactor);
 
   const handlePasswordSignIn = async (event) => {
     event.preventDefault();
@@ -103,29 +191,112 @@ function LoginForm({ clerkEnabled }) {
       setFormStatus('submitting');
       setFormMessage('');
       setPaymentRequired(false);
+      setSecondFactor(null);
+      setSecondFactorCode('');
+      setPaymentActionLabel(newMemberPaymentAction);
 
       const paymentAccess = await getStripePaymentAccess(email);
 
       if (!paymentAccess.paid) {
+        const isExpiredMembership = hasPreviousPayment(paymentAccess);
+
+        savePendingPaymentEmail(email);
         setPaymentRequired(true);
-        setFormMessage('Complete your membership payment before logging in.');
+        setPaymentActionLabel(
+          isExpiredMembership ? expiredMembershipAction : newMemberPaymentAction
+        );
+        setFormMessage(
+          isExpiredMembership
+            ? expiredMembershipMessage
+            : newMemberPaymentMessage
+        );
         return;
       }
 
       const signInAttempt = await signIn.create({
-        identifier: email,
-        password,
-        strategy: 'password'
+        identifier: email
       });
+      const passwordAttempt =
+        signInAttempt.status === 'needs_first_factor'
+          ? await signInAttempt.attemptFirstFactor({
+              strategy: 'password',
+              password
+            })
+          : signInAttempt;
 
-      if (signInAttempt.status === 'complete') {
-        await setActive({ session: signInAttempt.createdSessionId });
-        window.location.href = AUTH_REDIRECT_AFTER_LOGIN;
+      if (passwordAttempt.status === 'complete') {
+        setFormStatus('redirecting');
+        await activateSessionAndOpenDashboard(
+          setActive,
+          passwordAttempt.createdSessionId || signInAttempt.createdSessionId
+        );
+        return;
+      }
+
+      if (passwordAttempt.status === 'needs_second_factor') {
+        const factor = getSecondFactor(passwordAttempt);
+
+        if (!factor) {
+          setFormMessage(
+            'This account requires verification, but Clerk did not return a supported verification method.'
+          );
+          return;
+        }
+
+        if (['phone_code', 'email_code'].includes(factor.strategy)) {
+          await passwordAttempt.prepareSecondFactor(
+            getSecondFactorPreparePayload(factor)
+          );
+        }
+
+        setSecondFactor({
+          ...factor,
+          resource: passwordAttempt
+        });
+        setSecondFactorCode('');
+        setFormMessage('');
         return;
       }
 
       setFormMessage(
-        'This account needs another verification step. Use your Clerk dashboard settings to enable password login only, or continue in Clerk.'
+        `Sign in could not finish. Clerk returned status: ${passwordAttempt.status}.`
+      );
+    } catch (error) {
+      console.error(error);
+      setFormMessage(getAuthErrorMessage(error));
+    } finally {
+      setFormStatus('idle');
+    }
+  };
+
+  const handleSecondFactorSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!isLoaded || !secondFactor) {
+      return;
+    }
+
+    try {
+      setFormStatus('submitting');
+      setFormMessage('');
+
+      const resource = secondFactor.resource || signIn;
+      const secondFactorAttempt = await resource.attemptSecondFactor(
+        getSecondFactorPayload(secondFactor, secondFactorCode)
+      );
+
+      if (secondFactorAttempt.status === 'complete') {
+        setFormStatus('redirecting');
+        await activateSessionAndOpenDashboard(
+          setActive,
+          secondFactorAttempt.createdSessionId ||
+            secondFactor.resource?.createdSessionId
+        );
+        return;
+      }
+
+      setFormMessage(
+        `Sign in could not finish. Clerk returned status: ${secondFactorAttempt.status}.`
       );
     } catch (error) {
       console.error(error);
@@ -151,6 +322,7 @@ function LoginForm({ clerkEnabled }) {
       setFormStatus('redirecting');
       setFormMessage('');
       setPaymentRequired(false);
+      setPaymentActionLabel(newMemberPaymentAction);
       await signIn.authenticateWithRedirect({
         strategy,
         redirectUrl: '/login/sso-callback',
@@ -176,8 +348,8 @@ function LoginForm({ clerkEnabled }) {
 
   return (
     <form
-      className={`${authCard} grid w-[min(100%,532px)] gap-[18px] px-[35px] pb-[18px] pt-11 max-[640px]:gap-2.5 max-[640px]:rounded-[18px] max-[640px]:px-3.5 max-[640px]:pb-3.5 max-[640px]:pt-4`}
-      onSubmit={handlePasswordSignIn}
+      className={`${authCard} grid w-full max-w-[532px] gap-2.5 rounded-[18px] px-3.5 pb-3.5 pt-4 sm:gap-[18px] sm:rounded-[30px] sm:px-[35px] sm:pb-[18px] sm:pt-11`}
+      onSubmit={isSecondFactorStep ? handleSecondFactorSubmit : handlePasswordSignIn}
     >
       <div>
         <h2 className={`${headingClass} mb-2 max-[640px]:mb-0`}>
@@ -188,43 +360,60 @@ function LoginForm({ clerkEnabled }) {
         </p>
       </div>
 
-      <label className={fieldClass}>
-        <span className={labelClass}>Email</span>
-        <input
-          className={inputClass}
-          autoComplete='email'
-          disabled={isBusy}
-          onChange={(event) => setEmail(event.target.value)}
-          placeholder='yourname@email.com'
-          required
-          type='email'
-          value={email}
-        />
-      </label>
-
-      <label className={fieldClass}>
-        <span className={labelClass}>Password</span>
-        <div className='grid min-h-[57px] grid-cols-[minmax(0,1fr)_auto] items-center overflow-hidden rounded-2xl border border-[#414141] bg-[#2d2d2d] focus-within:border-[#e6002e] focus-within:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] max-[640px]:min-h-11 max-[640px]:rounded-xl'>
+      {isSecondFactorStep ? (
+        <label className={fieldClass}>
+          <span className={labelClass}>{getSecondFactorLabel(secondFactor)}</span>
           <input
-            className='min-h-[55px] w-full border-0 bg-transparent px-[19px] font-[inherit] text-white placeholder:text-[#a8a8a8] focus:outline-none disabled:cursor-not-allowed disabled:opacity-65 max-[640px]:min-h-[42px] max-[640px]:px-3.5'
-            autoComplete={remember ? 'current-password' : 'off'}
+            className={inputClass}
+            autoComplete='one-time-code'
             disabled={isBusy}
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder='••••••••'
+            onChange={(event) => setSecondFactorCode(event.target.value)}
+            placeholder='Enter verification code'
             required
-            type={showPassword ? 'text' : 'password'}
-            value={password}
+            value={secondFactorCode}
           />
-          <button
-            className='cursor-pointer bg-transparent px-[18px] text-[13px] font-black text-[#e6002e] disabled:cursor-not-allowed disabled:opacity-65'
-            disabled={isBusy}
-            onClick={() => setShowPassword((currentValue) => !currentValue)}
-            type='button'
-          >
-            {showPassword ? 'Hide' : 'Show'}
-          </button>
-        </div>
-      </label>
+        </label>
+      ) : (
+        <>
+          <label className={fieldClass}>
+            <span className={labelClass}>Email</span>
+            <input
+              className={inputClass}
+              autoComplete='email'
+              disabled={isBusy}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder='yourname@email.com'
+              required
+              type='email'
+              value={email}
+            />
+          </label>
+
+          <label className={fieldClass}>
+            <span className={labelClass}>Password</span>
+            <div className='grid min-h-11 grid-cols-[minmax(0,1fr)_auto] items-center overflow-hidden rounded-xl border border-[#414141] bg-[#2d2d2d] focus-within:border-[#e6002e] focus-within:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] sm:min-h-[57px] sm:rounded-2xl'>
+              <input
+                className='min-h-[42px] w-full border-0 bg-transparent px-3.5 font-[inherit] text-white placeholder:text-[#a8a8a8] focus:outline-none disabled:cursor-not-allowed disabled:opacity-65 sm:min-h-[55px] sm:px-[19px]'
+                autoComplete={remember ? 'current-password' : 'off'}
+                disabled={isBusy}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder='••••••••'
+                required
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+              />
+              <button
+                className='cursor-pointer bg-transparent px-[18px] text-[13px] font-black text-[#e6002e] disabled:cursor-not-allowed disabled:opacity-65'
+                disabled={isBusy}
+                onClick={() => setShowPassword((currentValue) => !currentValue)}
+                type='button'
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </label>
+        </>
+      )}
 
       <div className='my-1.5 mb-3 flex items-center justify-between gap-4 max-[640px]:my-0 max-[640px]:mb-0 max-[640px]:items-center max-[640px]:flex-row'>
         <label className='inline-flex items-center gap-3 text-[13px] text-[#bdbdbd]'>
@@ -253,12 +442,18 @@ function LoginForm({ clerkEnabled }) {
           className='inline-flex min-h-11 items-center justify-center rounded-[13px] border border-[#414141] bg-[#2d2d2d] text-[13px] font-black text-white no-underline transition hover:border-[#e6002e]'
           href='/choose-plan'
         >
-          Choose a plan and complete payment
+          {paymentActionLabel}
         </a>
       )}
 
       <button className={primaryButton} disabled={isBusy} type='submit'>
-        {formStatus === 'submitting' ? 'Signing in...' : 'Login'}
+        {formStatus === 'submitting'
+          ? isSecondFactorStep
+            ? 'Verifying...'
+            : 'Signing in...'
+          : isSecondFactorStep
+            ? 'Verify'
+            : 'Login'}
       </button>
 
       <div className='my-[13px] mb-1.5 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-[18px] text-[#bdbdbd] max-[640px]:my-0 max-[640px]:gap-3'>
@@ -302,11 +497,11 @@ function LoginPage({ clerkEnabled }) {
   }
 
   return (
-    <main className='relative min-h-screen overflow-hidden bg-[#0d0d0d] font-[Inter,Arial,sans-serif] text-white max-[1060px]:overflow-auto max-[640px]:h-[100svh] max-[640px]:min-h-0 max-[640px]:overflow-hidden'>
+    <main className='relative min-h-screen overflow-x-hidden overflow-y-auto bg-[#0d0d0d] font-[Inter,Arial,sans-serif] text-white'>
       <div className='pointer-events-none absolute left-[-210px] top-[70px] h-[480px] w-[560px] rounded-full bg-[rgba(230,0,46,0.15)]'></div>
       <div className='pointer-events-none absolute bottom-[-150px] right-[-110px] h-[430px] w-[430px] rounded-full bg-[rgba(230,0,46,0.15)]'></div>
 
-      <section className='relative z-[1] grid min-h-screen grid-cols-[minmax(430px,520px)_minmax(430px,532px)] items-center justify-center gap-[clamp(46px,6vw,86px)] p-[clamp(28px,5vw,70px)] max-[1060px]:grid-cols-[minmax(0,620px)] max-[640px]:h-[100svh] max-[640px]:min-h-0 max-[640px]:content-center max-[640px]:gap-2.5 max-[640px]:p-2.5'>
+      <section className='relative z-[1] grid min-h-screen grid-cols-1 items-center justify-center gap-2.5 p-2.5 sm:p-6 lg:grid-cols-[minmax(430px,520px)_minmax(430px,532px)] lg:gap-[clamp(46px,6vw,86px)] lg:p-[clamp(28px,5vw,70px)] max-[1060px]:grid-cols-[minmax(0,620px)]'>
         <aside
           className={`${authCard} relative flex min-h-[692px] flex-col overflow-hidden rounded-[30px] bg-[#181818] px-[42px] pb-14 pt-[46px] before:absolute before:left-0 before:right-0 before:top-0 before:h-[5px] before:bg-[#e6002e] max-[1060px]:min-h-[560px] max-[640px]:hidden`}
         >
@@ -388,7 +583,7 @@ function LoginPage({ clerkEnabled }) {
 
           {!clerkEnabled && (
             <div
-              className={`${authCard} grid w-[min(100%,532px)] gap-[18px] px-[35px] pb-[18px] pt-11`}
+              className={`${authCard} grid w-full max-w-[532px] gap-[18px] px-4 pb-[18px] pt-6 sm:px-[35px] sm:pt-11`}
             >
               <div>
                 <h2 className={headingClass}>Connect Clerk</h2>

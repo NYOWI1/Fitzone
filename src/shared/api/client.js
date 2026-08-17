@@ -101,6 +101,15 @@ export function createStripePaymentIntent(payload) {
   );
 }
 
+export function createStripeCardSubscription(payload) {
+  return sendJson(
+    '/api/stripe/subscriptions',
+    'POST',
+    payload,
+    'Unable to create Stripe subscription.'
+  );
+}
+
 export function getStripePaymentAccess(email, memberName = '') {
   const params = new URLSearchParams({
     email: email || '',
@@ -134,6 +143,31 @@ export function updateTrainer(payload) {
 
 export function getClassSchedule() {
   return getJson('/api/class-schedule', 'Unable to load class schedule.');
+}
+
+export function getClassBookings(email) {
+  const params = new URLSearchParams({ email: email || '' });
+
+  return getJson(
+    `/api/class-bookings?${params.toString()}`,
+    'Unable to load class bookings.'
+  );
+}
+
+export function getClassBookingCounts() {
+  return getObject(
+    '/api/class-booking-counts',
+    'Unable to load class booking counts.'
+  );
+}
+
+export function toggleClassBooking(payload) {
+  return sendJson(
+    '/api/class-bookings',
+    'POST',
+    payload,
+    'Unable to update class booking.'
+  );
 }
 
 export function addClassScheduleItem(payload) {

@@ -10,13 +10,13 @@ const pageContent = 'relative z-[1] mx-auto max-w-[1140px]';
 const authCard =
   'rounded-[30px] border border-[#3a3a3a] bg-[#242424] shadow-[0_24px_70px_rgba(0,0,0,0.48)] max-[640px]:rounded-[18px]';
 const headingClass =
-  'mb-1.5 mt-0 text-[clamp(32px,3.2vw,38px)] leading-[1.06] tracking-normal max-[640px]:mb-1 max-[640px]:text-[23px]';
+  'mb-1 mt-0 text-[23px] leading-[1.06] tracking-normal sm:mb-1.5 sm:text-[32px] lg:text-[clamp(32px,3.2vw,38px)]';
 const headingText =
   'm-0 max-w-[480px] text-base leading-[1.18] text-[#bdbdbd] max-[640px]:text-[11px] max-[640px]:leading-[1.3]';
 const fieldClass = 'grid gap-2.5 max-[640px]:gap-1';
 const labelClass = 'text-xs font-black text-[#dedede] max-[640px]:text-[11px]';
 const inputClass =
-  'min-h-[52px] w-full rounded-2xl border border-[#414141] bg-[#2d2d2d] px-[18px] font-[inherit] text-white placeholder:text-[#a8a8a8] focus:border-[#e6002e] focus:outline-none focus:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] disabled:cursor-not-allowed disabled:opacity-65 max-[640px]:min-h-10 max-[640px]:rounded-xl max-[640px]:px-3 max-[640px]:text-sm';
+  'min-h-10 w-full rounded-xl border border-[#414141] bg-[#2d2d2d] px-3 font-[inherit] text-sm text-white placeholder:text-[#a8a8a8] focus:border-[#e6002e] focus:outline-none focus:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] disabled:cursor-not-allowed disabled:opacity-65 sm:min-h-[52px] sm:rounded-2xl sm:px-[18px] sm:text-base';
 const messageClass =
   'm-0 rounded-[14px] border border-[rgba(230,0,46,0.35)] bg-[rgba(230,0,46,0.12)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#ff8ea2] max-[640px]:px-3 max-[640px]:py-2 max-[640px]:text-xs';
 const primaryButton =
@@ -139,7 +139,7 @@ function SignUpForm({ clerkEnabled }) {
   if (formMode === 'verify') {
     return (
       <form
-        className={`${authCard} grid w-full gap-[18px] px-10 pb-[22px] pt-[38px] max-[640px]:gap-2.5 max-[640px]:px-3 max-[640px]:pb-3 max-[640px]:pt-4`}
+        className={`${authCard} grid w-full gap-2.5 px-3 pb-3 pt-4 sm:gap-[18px] sm:px-10 sm:pb-[22px] sm:pt-[38px]`}
         onSubmit={verifyEmail}
       >
         <div>
@@ -183,7 +183,7 @@ function SignUpForm({ clerkEnabled }) {
 
   return (
     <form
-      className={`${authCard} grid w-full gap-[18px] px-10 pb-[22px] pt-[38px] max-[640px]:gap-2 max-[640px]:px-3 max-[640px]:pb-3 max-[640px]:pt-3.5`}
+      className={`${authCard} grid w-full gap-2 px-3 pb-3 pt-3.5 sm:gap-[18px] sm:px-10 sm:pb-[22px] sm:pt-[38px]`}
       onSubmit={createAccount}
     >
       <div>
@@ -194,7 +194,7 @@ function SignUpForm({ clerkEnabled }) {
         </p>
       </div>
 
-      <div className='grid grid-cols-2 gap-[30px] max-[640px]:grid-cols-2 max-[640px]:gap-2.5'>
+      <div className='grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-[30px]'>
         <label className={fieldClass}>
           <span className={labelClass}>First Name</span>
           <input
@@ -254,7 +254,7 @@ function SignUpForm({ clerkEnabled }) {
         />
       </label>
 
-      <div className='grid grid-cols-2 gap-[30px] max-[640px]:grid-cols-2 max-[640px]:gap-2.5'>
+      <div className='grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-[30px]'>
         <label className={fieldClass}>
           <span className={labelClass}>Password</span>
           <input
@@ -310,7 +310,7 @@ function SignUpForm({ clerkEnabled }) {
 
 function SignUpPage({ clerkEnabled }) {
   return (
-    <main className='relative min-h-screen overflow-hidden bg-[#0d0d0d] px-[clamp(28px,5vw,70px)] py-[38px] font-[Inter,Arial,sans-serif] text-white max-[1080px]:overflow-auto max-[640px]:h-[100svh] max-[640px]:min-h-0 max-[640px]:overflow-hidden max-[640px]:p-2'>
+    <main className='relative min-h-screen overflow-x-hidden overflow-y-auto bg-[#0d0d0d] p-2 font-[Inter,Arial,sans-serif] text-white sm:px-6 sm:py-6 lg:px-[clamp(28px,5vw,70px)] lg:py-[38px]'>
       <div className='pointer-events-none absolute -left-[130px] -top-[94px] h-[470px] w-[470px] rounded-full bg-[rgba(230,0,46,0.16)]'></div>
       <div className='pointer-events-none absolute -right-[90px] -top-[126px] h-[340px] w-[340px] rounded-full bg-[rgba(230,0,46,0.15)]'></div>
       <div className='pointer-events-none absolute -bottom-[145px] -right-[22px] h-[430px] w-[430px] rounded-full bg-[rgba(255,213,79,0.09)]'></div>
@@ -343,7 +343,7 @@ function SignUpPage({ clerkEnabled }) {
       </header>
 
       <section
-        className={`${pageContent} grid grid-cols-[minmax(390px,470px)_minmax(520px,600px)] items-center justify-between gap-[clamp(48px,6vw,70px)] pt-[30px] max-[1080px]:grid-cols-[minmax(0,680px)] max-[1080px]:justify-center max-[640px]:h-[calc(100svh-64px)] max-[640px]:content-center max-[640px]:gap-0 max-[640px]:pt-2`}
+        className={`${pageContent} grid grid-cols-1 items-center justify-center gap-0 pt-2 sm:pt-6 lg:grid-cols-[minmax(390px,470px)_minmax(520px,600px)] lg:justify-between lg:gap-[clamp(48px,6vw,70px)] lg:pt-[30px] max-[1080px]:grid-cols-[minmax(0,680px)] max-[1080px]:justify-center`}
       >
         <aside
           className={`${authCard} relative min-h-[626px] overflow-hidden rounded-[30px] bg-[#181818] px-9 pb-7 pt-[46px] before:absolute before:left-0 before:right-0 before:top-0 before:h-[5px] before:bg-[#e6002e] max-[640px]:hidden`}
@@ -409,7 +409,7 @@ function SignUpPage({ clerkEnabled }) {
         <section className='min-w-0 max-[640px]:order-1'>
           {!clerkEnabled && (
             <div
-              className={`${authCard} grid w-full gap-[18px] px-10 pb-[22px] pt-[38px]`}
+              className={`${authCard} grid w-full gap-[18px] px-3 pb-3 pt-4 sm:px-10 sm:pb-[22px] sm:pt-[38px]`}
             >
               <div>
                 <h2 className={headingClass}>Connect Clerk</h2>

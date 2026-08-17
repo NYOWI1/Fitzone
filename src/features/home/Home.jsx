@@ -95,7 +95,7 @@ function ScheduleBlock({
   return (
     <section
       id={title === 'Class Schedule' ? 'schedule' : undefined}
-      className='mx-auto mb-[72px] w-[calc(100%-72px)] rounded-lg border border-[#343434] border-t-[6px] border-t-[#e6002e] bg-[#1c1c1c] px-6 pb-[34px] pt-9 shadow-[0_22px_44px_rgba(0,0,0,0.32)] last:mb-0 max-[980px]:mb-[42px] max-[980px]:w-[calc(100%-28px)] max-[980px]:px-4 max-[980px]:pb-[26px] max-[980px]:pt-7 max-[560px]:mb-8 max-[560px]:w-[calc(100%-20px)] max-[560px]:rounded-lg max-[560px]:px-3.5 max-[560px]:pb-5 max-[560px]:pt-5'
+      className='mx-auto mb-[72px] w-[calc(100%_-_72px)] rounded-lg border border-[#343434] border-t-[6px] border-t-[#e6002e] bg-[#1c1c1c] px-6 pb-[34px] pt-9 shadow-[0_22px_44px_rgba(0,0,0,0.32)] last:mb-0 max-[980px]:mb-[42px] max-[980px]:w-[calc(100%_-_28px)] max-[980px]:px-4 max-[980px]:pb-[26px] max-[980px]:pt-7 max-[560px]:mb-8 max-[560px]:w-[calc(100%_-_20px)] max-[560px]:rounded-lg max-[560px]:px-3.5 max-[560px]:pb-5 max-[560px]:pt-5'
     >
       <div className='mb-12 grid grid-cols-2 items-end gap-[60px] max-[980px]:mb-[30px] max-[980px]:grid-cols-1 max-[980px]:gap-3.5 max-[560px]:mb-5'>
         <div>
@@ -420,7 +420,7 @@ function Home({ clerkEnabled }) {
 
   return (
     <div className='min-h-screen w-full overflow-x-hidden bg-[#0f0f0f] font-sans text-white'>
-      <nav className='fixed left-1/2 top-5 z-10 flex h-16 w-[min(1240px,calc(100%-56px))] -translate-x-1/2 items-center justify-between rounded-[18px] border border-[#303030] border-b-4 border-b-[#e6002e] bg-[rgba(13,13,13,0.92)] px-[18px] shadow-[0_12px_30px_rgba(0,0,0,0.45)] backdrop-blur-md max-[980px]:sticky max-[980px]:left-0 max-[980px]:top-0 max-[980px]:h-auto max-[980px]:w-full max-[980px]:translate-x-0 max-[980px]:flex-col max-[980px]:gap-3 max-[980px]:rounded-none max-[980px]:p-3 max-[640px]:items-stretch max-[640px]:gap-0 max-[640px]:border-b-2 max-[640px]:bg-[rgba(13,13,13,0.98)] max-[640px]:p-0'>
+      <nav className='fixed left-1/2 top-5 z-10 flex h-16 w-[min(1240px,calc(100%_-_56px))] -translate-x-1/2 items-center justify-between rounded-[18px] border border-[#303030] border-b-4 border-b-[#e6002e] bg-[rgba(13,13,13,0.92)] px-[18px] shadow-[0_12px_30px_rgba(0,0,0,0.45)] backdrop-blur-md max-[980px]:sticky max-[980px]:left-0 max-[980px]:top-0 max-[980px]:h-auto max-[980px]:w-full max-[980px]:translate-x-0 max-[980px]:flex-col max-[980px]:gap-3 max-[980px]:rounded-none max-[980px]:p-3 max-[640px]:items-stretch max-[640px]:gap-0 max-[640px]:border-b-2 max-[640px]:bg-[rgba(13,13,13,0.98)] max-[640px]:p-0'>
         <div className='hidden min-h-[58px] grid-cols-[48px_1fr_auto] items-center border-b border-[#272727] px-3 max-[640px]:grid'>
           <button
             aria-controls='home-mobile-menu'

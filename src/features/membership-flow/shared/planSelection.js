@@ -1,4 +1,10 @@
 const selectedPlanStorageKey = 'fitzone:selected-plan';
+const paidMembershipAccessStorageKey = 'fitzone:paid-membership-access';
+const paidAccessDurationMs = 31 * 24 * 60 * 60 * 1000;
+
+function normalizeEmail(email = '') {
+  return String(email).trim().toLowerCase();
+}
 
 export function getPlanPriceValue(plan) {
   return Number(String(plan?.price || '').replace(/[^\d.]/g, '')) || 0;
@@ -34,6 +40,54 @@ export function getSavedSelectedPlan() {
     return JSON.parse(
       window.localStorage.getItem(selectedPlanStorageKey) || 'null'
     );
+  } catch {
+    return null;
+  }
+}
+
+export function savePaidMembershipAccess({
+  email = '',
+  memberName = '',
+  paymentIntentId = '',
+  plan = null
+}) {
+  const memberEmail = normalizeEmail(email);
+
+  if (!memberEmail) {
+    return;
+  }
+
+  window.localStorage.setItem(
+    paidMembershipAccessStorageKey,
+    JSON.stringify({
+      email: memberEmail,
+      memberName,
+      paid: true,
+      paymentIntentId,
+      planName: plan?.name || '',
+      planSlug: plan?.slug || '',
+      savedAt: Date.now(),
+      expiresAt: Date.now() + paidAccessDurationMs
+    })
+  );
+}
+
+export function getSavedPaidMembershipAccess(email = '') {
+  try {
+    const access = JSON.parse(
+      window.localStorage.getItem(paidMembershipAccessStorageKey) || 'null'
+    );
+
+    if (!access?.paid || access.email !== normalizeEmail(email)) {
+      return null;
+    }
+
+    if (Number(access.expiresAt || 0) < Date.now()) {
+      window.localStorage.removeItem(paidMembershipAccessStorageKey);
+      return null;
+    }
+
+    return access;
   } catch {
     return null;
   }

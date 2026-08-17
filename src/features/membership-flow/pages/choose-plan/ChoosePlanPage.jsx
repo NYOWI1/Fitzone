@@ -11,11 +11,11 @@ const pageContent = 'relative z-[1] mx-auto max-w-[1140px]';
 const flowNav = `${pageContent} flex min-h-[66px] items-center justify-between rounded-[22px] border border-[#3a3a3a] bg-[#181818] py-3 pl-6 pr-7 max-[640px]:items-start max-[640px]:flex-col max-[640px]:gap-3.5 max-[640px]:p-[18px]`;
 const flowBrand = 'inline-flex items-center gap-3.5 text-white no-underline';
 const baseCard =
-  'relative flex min-h-[545px] flex-col overflow-hidden rounded-[22px] border border-[#3a3a3a] bg-[#252525] px-7 pb-6 pt-[52px] shadow-[0_24px_70px_rgba(0,0,0,0.48)] before:absolute before:left-0 before:right-0 before:top-0 before:h-[5px] before:bg-[#e6002e] max-[1020px]:min-h-0 max-[640px]:rounded-[20px] max-[640px]:px-[22px] max-[640px]:pb-[22px] max-[640px]:pt-9';
+  'relative flex min-h-0 flex-col overflow-hidden rounded-[20px] border border-[#3a3a3a] bg-[#252525] px-[22px] pb-[22px] pt-9 shadow-[0_24px_70px_rgba(0,0,0,0.48)] before:absolute before:left-0 before:right-0 before:top-0 before:h-[5px] before:bg-[#e6002e] md:rounded-[22px] lg:min-h-[545px] lg:px-7 lg:pb-6 lg:pt-[52px]';
 
 function getPlanCardClass(variant) {
   if (variant === 'standard') {
-    return `${baseCard} min-h-[570px] border-[3px] border-[#e6002e] bg-[#271014] pt-[66px] shadow-[0_24px_70px_rgba(230,0,46,0.18)] max-[1020px]:min-h-0`;
+    return `${baseCard} border-[3px] border-[#e6002e] bg-[#271014] pt-[58px] shadow-[0_24px_70px_rgba(230,0,46,0.18)] lg:min-h-[570px] lg:pt-[66px]`;
   }
 
   if (variant === 'premium') {
@@ -122,7 +122,7 @@ function ChoosePlanPage() {
   };
 
   return (
-    <main className='relative min-h-screen overflow-hidden bg-[#0d0d0d] px-[clamp(28px,5vw,70px)] pb-6 pt-[38px] font-[Inter,Arial,sans-serif] text-white max-[1020px]:overflow-auto max-[640px]:p-4'>
+    <main className='relative min-h-screen overflow-x-hidden overflow-y-auto bg-[#0d0d0d] p-4 font-[Inter,Arial,sans-serif] text-white sm:px-6 sm:pb-6 sm:pt-7 lg:px-[clamp(28px,5vw,70px)] lg:pt-[38px]'>
       <div className='pointer-events-none absolute -left-[130px] -top-[100px] h-[470px] w-[470px] rounded-full bg-[rgba(230,0,46,0.16)]'></div>
       <div className='pointer-events-none absolute -bottom-[140px] -right-5 h-[430px] w-[430px] rounded-full bg-[rgba(255,213,79,0.09)]'></div>
 
@@ -144,7 +144,7 @@ function ChoosePlanPage() {
         <span className='mb-[3px] block text-[13px] font-black uppercase text-[#e6002e]'>
           Membership Setup
         </span>
-        <h1 className='mb-1 mt-0 text-[clamp(42px,4.4vw,48px)] leading-[1.05] tracking-normal'>
+        <h1 className='mb-1 mt-0 text-3xl leading-[1.05] tracking-normal sm:text-[42px] lg:text-[clamp(42px,4.4vw,48px)]'>
           Choose Your Plan
         </h1>
         <p className='m-0 text-[17px] text-[#bdbdbd]'>
@@ -177,7 +177,7 @@ function ChoosePlanPage() {
 
       {status === 'ready' && plans.length > 0 && (
         <section
-          className={`${pageContent} grid grid-cols-3 items-center gap-[clamp(32px,5vw,76px)] pt-0 max-[1020px]:grid-cols-[minmax(0,520px)] max-[1020px]:justify-center`}
+          className={`${pageContent} grid grid-cols-1 items-stretch gap-5 pt-0 sm:gap-7 lg:grid-cols-3 lg:items-center lg:gap-[clamp(32px,5vw,76px)]`}
         >
           {plans.map((plan) => (
             <PlanCard

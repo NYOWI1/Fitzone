@@ -31,13 +31,13 @@ scripts/                Local dev and database seed scripts
 ```
 
 Feature modules own their page components and styles. Cross-feature logic belongs in `src/shared`, and app-wide bootstrapping belongs in `src/app`.
+Styling is Tailwind-based through component `className` utilities and the global `src/styles.css` Tailwind entry. There are no feature-level CSS files.
 
 Admin pages follow this structure:
 
 ```txt
 src/features/admin-panel/
   AdminPanel.jsx        Protected admin dashboard shell, sidebar, mobile nav, and page routing
-  AdminPanel.css        Shared admin layout, form, modal, and responsive styles
   adminAuth.js          Clerk metadata role check for admin access
   adminPanelUtils.js    Shared admin formatting, filtering, KPI, and form helpers
   index.js              Admin feature exports
@@ -104,6 +104,9 @@ MongoDB stores membership plans, trainers, class schedules, and site settings. M
 
 The schedule is stored as a fixed Sunday-to-Saturday weekly pattern in MongoDB. The frontend generates the visible dates for the current week and marks the current weekday as `Today`.
 
+Local JSON files under `server/data/local-*.json` are only development fallback
+files. Normal admin and member data uses MongoDB, Clerk, and Stripe directly.
+
 ## Environment
 
 Create a `.env` file in the project root:
@@ -119,6 +122,17 @@ STRIPE_SECRET_KEY=sk_test_...
 ```
 
 Restart the dev server after changing `.env`.
+
+If MongoDB Atlas is not loading, test DNS first:
+
+```bash
+node -e "require('node:dns').resolveSrv('_mongodb._tcp.cluster0.1ly7rxu.mongodb.net', console.log)"
+```
+
+If that returns `ECONNREFUSED querySrv`, the app cannot reach the Atlas SRV
+record from your current network/DNS setup. Change DNS/network access or use a
+standard `mongodb://host:port` connection string. The admin pages need a working
+MongoDB connection for database-backed content.
 
 ## Admin Authentication
 

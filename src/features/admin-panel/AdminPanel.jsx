@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useClerk, useUser } from '@clerk/clerk-react';
-import './AdminPanel.css';
 import ClassesPage from './pages/classes/ClassesPage';
 import CrowdDetectionPage from './pages/crowd-detection/CrowdDetectionPage';
 import MembersPage from './pages/members/MembersPage';
@@ -34,22 +33,41 @@ const adminThemeStyle = {
 };
 const brandClass = 'flex items-center gap-3.5';
 const logoClass =
-  'flex h-[46px] w-[46px] items-center justify-center rounded-2xl bg-[#d90429] text-[23px] font-extrabold text-white';
-const brandTitleClass = 'm-0 mb-[5px] text-[23px] leading-none text-white';
+  'flex h-11.5 w-11.5 items-center justify-center rounded-2xl bg-[#d90429] text-[23px] font-extrabold text-white';
+const brandTitleClass = 'm-0 mb-1.25 text-[23px] leading-none text-white';
 const brandLabelClass = 'block text-[10px] font-extrabold text-[#d90429]';
 const mobileBarClass =
-  'sticky top-3 z-[12] mb-6 hidden items-center justify-between gap-4 rounded-[22px] border border-[#393939] bg-[rgba(15,15,15,0.92)] p-3 max-[980px]:flex';
+  'sticky top-3 z-12 mb-6 hidden items-center justify-between gap-4 rounded-[22px] border border-[#393939] bg-[rgba(15,15,15,0.92)] p-3 max-[980px]:flex';
 const mobileMenuButtonClass =
-  'hidden h-[46px] w-[46px] flex-[0_0_46px] flex-col items-center justify-center gap-[5px] rounded-[14px] border border-[#393939] bg-[#242424] p-0 max-[980px]:flex';
+  'hidden h-11.5 w-11.5 flex-[0_0_46px] flex-col items-center justify-center gap-1.25 rounded-[14px] border border-[#393939] bg-[#242424] p-0 max-[980px]:flex';
 const mobileMenuLineClass = 'block h-0.5 w-5 rounded-full bg-white';
 const sidebarBaseClass =
-  'fixed left-8 top-8 z-[2] flex h-[calc(100vh_-_64px)] w-[250px] flex-col gap-[34px] rounded-[28px] border border-[#393939] bg-[rgba(24,24,24,0.98)] px-[19px] py-[27px] max-[1360px]:static max-[1360px]:h-auto max-[1360px]:w-full max-[980px]:fixed max-[980px]:left-0 max-[980px]:top-0 max-[980px]:z-[15] max-[980px]:h-[100svh] max-[980px]:w-[min(330px,88vw)] max-[980px]:max-w-[88vw] max-[980px]:overflow-y-auto max-[980px]:rounded-r-3xl max-[980px]:rounded-l-none max-[980px]:px-[18px] max-[980px]:py-[22px] max-[980px]:transition-transform max-[980px]:duration-[180ms]';
-const menuClass = 'grid gap-3 max-[1360px]:grid-cols-3 max-[980px]:grid-cols-1';
+  'fixed left-8 top-8 z-2 flex h-[calc(100vh_-_64px)] w-62.5 flex-col gap-8.5 rounded-[28px] border border-[#393939] bg-[rgba(24,24,24,0.98)] px-4.75 py-6.75 max-[1359px]:static max-[1359px]:h-auto max-[1359px]:w-full max-[980px]:fixed max-[980px]:left-0 max-[980px]:top-0 max-[980px]:z-15 max-[980px]:h-[100svh] max-[980px]:w-[min(330px,88vw)] max-[980px]:max-w-[88vw] max-[980px]:overflow-y-auto max-[980px]:rounded-r-3xl max-[980px]:rounded-l-none max-[980px]:px-4.5 max-[980px]:py-5.5 max-[980px]:transition-transform max-[980px]:duration-[180ms]';
+const menuClass = 'grid gap-3 max-[1359px]:grid-cols-3 max-[980px]:grid-cols-1';
 const menuItemBaseClass =
   'flex min-h-10 items-center gap-3.5 rounded-[14px] border px-3.5 text-sm font-bold no-underline transition';
 const menuItemActiveClass = 'border-[#d90429] bg-[#241216] text-white';
 const menuItemInactiveClass =
   'border-transparent text-[#b8b8b8] hover:border-[#d90429] hover:bg-[#241216] hover:text-white';
+
+function getAdminProfile(user) {
+  const email =
+    user?.primaryEmailAddress?.emailAddress ||
+    user?.emailAddresses?.[0]?.emailAddress ||
+    'Admin account';
+  const name =
+    user?.fullName ||
+    [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
+    user?.username ||
+    email;
+  const initial = (name || email || 'A').trim().charAt(0).toUpperCase() || 'A';
+
+  return {
+    email,
+    initial,
+    name
+  };
+}
 
 function AdminAccessMessage({
   action,
@@ -139,12 +157,13 @@ function ClerkAdminGate({ brandInitial, brandName, children }) {
 }
 
 function AdminPanelShell({ onAdminSignOut }) {
+  const { user } = useUser();
   const [activePage, setActivePage] = useState(() => getActiveAdminPage());
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [siteSettings, setSiteSettings] = useState({});
   const brandName = siteSettings.brand?.name || 'Gym';
   const brandInitial = brandName.trim().charAt(0).toUpperCase() || 'G';
-  const adminContact = siteSettings.contact?.email || 'Admin account';
+  const adminProfile = getAdminProfile(user);
 
   useEffect(() => {
     const updateActivePage = () => {
@@ -284,13 +303,15 @@ function AdminPanelShell({ onAdminSignOut }) {
 
         <div className='mt-auto flex min-h-20.5 items-center gap-3 rounded-[20px] border border-[#393939] bg-[#242424] p-3.75'>
           <div className='flex h-11 w-11 flex-[0_0_44px] items-center justify-center rounded-full bg-[#d90429] text-xl font-extrabold text-white'>
-            {adminContact.charAt(0).toUpperCase()}
+            {adminProfile.initial}
           </div>
-          <div>
-            <strong className='mb-1.75 block text-sm text-white'>
-              {adminContact}
+          <div className='min-w-0'>
+            <strong className='mb-1.75 block truncate text-sm text-white'>
+              {adminProfile.name}
             </strong>
-            <span className='block text-xs text-[#b8b8b8]'>Site contact</span>
+            <span className='block truncate text-xs text-[#b8b8b8]'>
+              {adminProfile.email}
+            </span>
           </div>
         </div>
 
@@ -309,7 +330,7 @@ function AdminPanelShell({ onAdminSignOut }) {
       {activePage === 'payments' && <PaymentsPage />}
       {activePage === 'members' && <MembersPage />}
       {activePage === 'reports' && <ReportsPage />}
-      <CrowdDetectionPage isActive={activePage === 'crowd-detection'} />
+      <CrowdDetectionPage isVisible={activePage === 'crowd-detection'} />
       {activePage === 'settings' && <SettingsPage />}
       {activePage === 'overview' && <OverviewPage />}
     </main>

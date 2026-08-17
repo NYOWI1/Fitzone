@@ -47,6 +47,27 @@ const stepperShellClass =
 const summaryCardClass =
   'admin-card flex min-h-[140px] flex-col justify-center rounded-[20px] border-[#424242] bg-[#252525] px-[23px] py-7';
 
+const hiddenCameraPageStyle = {
+  height: 1,
+  inset: 0,
+  opacity: 0,
+  overflow: 'hidden',
+  pointerEvents: 'none',
+  position: 'fixed',
+  width: 1,
+  zIndex: -1
+};
+
+function isLocalCameraOrigin() {
+  return ['localhost', '127.0.0.1', '[::1]'].includes(
+    window.location.hostname
+  );
+}
+
+function canRequestCameraPermission() {
+  return window.isSecureContext || isLocalCameraOrigin();
+}
+
 function loadScript({ id, src }) {
   return new Promise((resolve, reject) => {
     const existingScript = document.getElementById(id);
@@ -363,7 +384,7 @@ function drawPredictions(canvas, source, people) {
   });
 }
 
-export default function CrowdDetectionPage({ isActive = true }) {
+export default function CrowdDetectionPage({ isVisible = true }) {
   const modelRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -544,6 +565,14 @@ export default function CrowdDetectionPage({ isActive = true }) {
   );
 
   const startCamera = useCallback(async () => {
+    if (!canRequestCameraPermission()) {
+      setErrorMessage(
+        `Camera permission only appears on HTTPS or localhost. Open http://localhost:${window.location.port || '5173'}/admin/crowd-detection on this Mac, or serve the network URL with HTTPS.`
+      );
+      setSourceStatus('error');
+      return;
+    }
+
     if (!navigator.mediaDevices?.getUserMedia) {
       setErrorMessage('Camera access is not available in this browser.');
       setSourceStatus('error');
@@ -559,14 +588,27 @@ export default function CrowdDetectionPage({ isActive = true }) {
     try {
       const cameraSession = cameraSessionRef.current + 1;
       cameraSessionRef.current = cameraSession;
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: {
-          facingMode: 'environment',
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        }
-      });
+      let stream;
+
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }
+        });
+      } catch (cameraError) {
+        console.warn(
+          'Preferred camera constraints failed. Retrying default camera.',
+          cameraError
+        );
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: true
+        });
+      }
 
       if (!isMountedRef.current || cameraSessionRef.current !== cameraSession) {
         stream.getTracks().forEach((track) => track.stop());
@@ -588,11 +630,16 @@ export default function CrowdDetectionPage({ isActive = true }) {
         }
 
         lastDetectionRef.current = 0;
+        setSourceStatus('ready');
         animationRef.current = requestAnimationFrame(detectVideoFrame);
       }
     } catch (error) {
       console.error(error);
-      setErrorMessage('Camera permission was blocked or no camera was found.');
+      setErrorMessage(
+        error?.name === 'NotAllowedError'
+          ? 'Camera permission was blocked. Allow camera access in the browser and try again.'
+          : 'No usable camera was found. Connect a camera and try again.'
+      );
       setSourceStatus('error');
     }
   }, [clearCanvas, detectVideoFrame, stopCamera]);
@@ -633,10 +680,10 @@ export default function CrowdDetectionPage({ isActive = true }) {
   }, [stopCamera]);
 
   useEffect(() => {
-    if (modelStatus === 'ready' && sourceStatus === 'idle') {
+    if (sourceStatus === 'idle') {
       startCamera();
     }
-  }, [modelStatus, sourceStatus, startCamera]);
+  }, [sourceStatus, startCamera]);
 
   useEffect(() => {
     const source = videoRef.current;
@@ -664,13 +711,9 @@ export default function CrowdDetectionPage({ isActive = true }) {
 
   return (
     <section
-      className={
-        isActive
-          ? 'admin-content min-h-[calc(100vh_-_64px)] overflow-visible pt-5 max-[1360px]:h-auto'
-          : 'admin-content min-h-[calc(100vh_-_64px)] overflow-visible pt-5'
-      }
+      className='admin-content min-h-[calc(100vh_-_64px)] overflow-visible pt-5 max-[1360px]:h-auto'
       id='crowd-detection'
-      style={isActive ? undefined : { display: 'none' }}
+      style={isVisible ? undefined : hiddenCameraPageStyle}
     >
       <header className='admin-header mb-7 flex-none items-start max-[760px]:items-stretch max-[760px]:flex-col'>
         <div>
@@ -728,7 +771,8 @@ export default function CrowdDetectionPage({ isActive = true }) {
               ref={canvasRef}
             ></canvas>
 
-            {(modelStatus === 'loading' || sourceStatus === 'loading') && (
+            {((modelStatus === 'loading' && sourceStatus !== 'ready') ||
+              sourceStatus === 'loading') && (
               <div className='absolute inset-0 z-[3] flex flex-col items-center justify-center gap-2.5 bg-[rgba(17,17,17,0.88)] p-7 text-center'>
                 <strong className='text-[clamp(20px,2.2vw,30px)] leading-tight text-white'>
                   {modelStatus === 'loading'
@@ -743,7 +787,8 @@ export default function CrowdDetectionPage({ isActive = true }) {
               </div>
             )}
 
-            {(modelStatus === 'error' || sourceStatus === 'error') && (
+            {(sourceStatus === 'error' ||
+              (modelStatus === 'error' && sourceStatus !== 'ready')) && (
               <div className='absolute inset-0 z-[3] flex flex-col items-center justify-center gap-2.5 bg-[rgba(17,17,17,0.88)] p-7 text-center'>
                 <strong className='text-[clamp(20px,2.2vw,30px)] leading-tight text-[#d90429]'>
                   Detection unavailable
@@ -762,7 +807,7 @@ export default function CrowdDetectionPage({ isActive = true }) {
             >
               <button
                 className={`${sourceButtonClass} border-[#d90429] max-[760px]:flex-[1_1_140px]`}
-                disabled={modelStatus !== 'ready'}
+                disabled={sourceStatus === 'loading'}
                 onClick={startCamera}
                 type='button'
               >

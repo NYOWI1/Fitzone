@@ -80,19 +80,24 @@ export default function OverviewPage() {
 
     async function loadOverviewData() {
       try {
-        const [members, schedule, trainers, stripeRevenue] = await Promise.all([
-          getMembers(),
-          getClassSchedule(),
-          getTrainers(),
-          getStripeRevenueOverview()
-        ]);
+        const [membersResult, scheduleResult, trainersResult, revenueResult] =
+          await Promise.allSettled([
+            getMembers(),
+            getClassSchedule(),
+            getTrainers(),
+            getStripeRevenueOverview()
+          ]);
 
         if (isCurrent) {
           setOverviewData({
-            members,
-            schedule,
-            trainers,
-            stripeRevenue
+            members:
+              membersResult.status === 'fulfilled' ? membersResult.value : [],
+            schedule:
+              scheduleResult.status === 'fulfilled' ? scheduleResult.value : [],
+            trainers:
+              trainersResult.status === 'fulfilled' ? trainersResult.value : [],
+            stripeRevenue:
+              revenueResult.status === 'fulfilled' ? revenueResult.value : {}
           });
           setStatus('ready');
         }
@@ -151,7 +156,7 @@ export default function OverviewPage() {
             ))}
           </div>
 
-          <div className='grid min-h-0 min-w-0 flex-1 items-start gap-x-7 gap-y-4 [grid-template-columns:minmax(520px,1.55fr)_minmax(280px,0.85fr)] max-[1360px]:grid-cols-[minmax(0,1fr)_minmax(260px,0.65fr)] max-[980px]:grid-cols-1'>
+          <div className='grid min-h-0 min-w-0 flex-1 items-start gap-x-7 gap-y-4 [grid-template-columns:minmax(520px,1.55fr)_minmax(280px,0.85fr)] max-[1360px]:[grid-template-columns:minmax(0,1fr)_minmax(260px,0.65fr)] max-[980px]:grid-cols-1'>
             <section
               className={`${overviewCardClass} !h-[360px] max-[1360px]:col-span-full max-[980px]:col-auto`}
             >

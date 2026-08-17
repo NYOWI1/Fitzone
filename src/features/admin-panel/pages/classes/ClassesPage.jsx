@@ -38,6 +38,170 @@ const classColorClasses = {
   teal: 'bg-[#05735e]',
   yellow: 'bg-[#ffd54f]'
 };
+const durationOptions = [30, 45, 60, 75];
+const timePickerHours = Array.from({ length: 24 }, (_, index) => index);
+const timePickerMinutes = Array.from({ length: 60 }, (_, index) => index);
+
+function getPeriodFromTime(time) {
+  const match = String(time || '').match(/^(\d{1,2}):\d{2}\s*(AM|PM)/i);
+
+  if (!match) {
+    return 'morning';
+  }
+
+  const hour = Number(match[1]);
+  const meridiem = match[2].toUpperCase();
+  const hour24 =
+    meridiem === 'PM' && hour !== 12
+      ? hour + 12
+      : meridiem === 'AM' && hour === 12
+        ? 0
+        : hour;
+
+  return hour24 < 12 ? 'morning' : 'evening';
+}
+
+function getPeriodLabel(period) {
+  return period === 'morning' ? 'Morning' : 'Evening';
+}
+
+function getDurationMinutes(duration) {
+  return Number(String(duration || '').replace(/\D/g, '')) || 45;
+}
+
+function formatTimePart(value) {
+  return String(value).padStart(2, '0');
+}
+
+function formatDisplayTime(hour, minute) {
+  const meridiem = hour >= 12 ? 'PM' : 'AM';
+  const displayHour = hour % 12 || 12;
+
+  return `${formatTimePart(displayHour)}:${formatTimePart(minute)} ${meridiem}`;
+}
+
+function getClassTimeRange(hour, minute, durationMinutes) {
+  const startTotalMinutes = hour * 60 + minute;
+  const endTotalMinutes = startTotalMinutes + durationMinutes;
+  const endHour = Math.floor((endTotalMinutes % (24 * 60)) / 60);
+  const endMinute = endTotalMinutes % 60;
+
+  return `${formatDisplayTime(hour, minute)} - ${formatDisplayTime(endHour, endMinute)}`;
+}
+
+function getTimePartsFromClassTime(time, duration) {
+  const match = String(time || '').match(/^(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+
+  if (!match) {
+    return {
+      durationMinutes: getDurationMinutes(duration),
+      hour: 5,
+      minute: 30
+    };
+  }
+
+  const rawHour = Number(match[1]);
+  const minute = Number(match[2]);
+  const meridiem = match[3].toUpperCase();
+  const hour =
+    meridiem === 'PM' && rawHour !== 12
+      ? rawHour + 12
+      : meridiem === 'AM' && rawHour === 12
+        ? 0
+        : rawHour;
+
+  return {
+    durationMinutes: getDurationMinutes(duration),
+    hour,
+    minute
+  };
+}
+
+function buildTimeValues({ durationMinutes, hour, minute }) {
+  const time = getClassTimeRange(hour, minute, durationMinutes);
+
+  return {
+    duration: `${durationMinutes} min`,
+    period: getPeriodFromTime(time),
+    time
+  };
+}
+
+function TimeWheelPicker({ duration, onChange, time }) {
+  const timeParts = getTimePartsFromClassTime(time, duration);
+  const pickerColumns = [
+    ['Hour', timePickerHours, timeParts.hour, 'hour'],
+    ['Minute', timePickerMinutes, timeParts.minute, 'minute']
+  ];
+
+  const updateTimePart = (field, value) => {
+    onChange(
+      buildTimeValues({
+        ...timeParts,
+        [field]: value
+      })
+    );
+  };
+
+  const updateDuration = (durationMinutes) => {
+    onChange(
+      buildTimeValues({
+        ...timeParts,
+        durationMinutes
+      })
+    );
+  };
+
+  return (
+    <div className='wide grid gap-3'>
+      <span className='text-xs font-extrabold text-[#b8b8b8]'>Time</span>
+      <div className='relative grid grid-cols-2 gap-3 overflow-hidden rounded-[22px] border border-[#393939] bg-[#171717] p-3'>
+        <div className='pointer-events-none absolute left-3 right-3 top-1/2 h-11 -translate-y-1/2 rounded-full bg-[#302f34]'></div>
+        {pickerColumns.map(([label, values, selectedValue, field]) => (
+          <div className='relative z-1' key={field}>
+            <span className='mb-1 block text-center text-[10px] font-black uppercase text-[#6f6f73]'>
+              {label}
+            </span>
+            <div className='h-40 overflow-y-auto py-[54px]'>
+              <div className='grid gap-1'>
+                {values.map((value) => (
+                  <button
+                    className={
+                      value === selectedValue
+                        ? 'min-h-10 rounded-full bg-transparent text-3xl font-black text-white'
+                        : 'min-h-10 rounded-full bg-transparent text-2xl font-black text-[#68686d] transition hover:text-[#b8b8b8]'
+                    }
+                    key={value}
+                    onClick={() => updateTimePart(field, value)}
+                    type='button'
+                  >
+                    {formatTimePart(value)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className='grid grid-cols-4 gap-2 max-[560px]:grid-cols-2'>
+        {durationOptions.map((durationMinutes) => (
+          <button
+            className={
+              durationMinutes === timeParts.durationMinutes
+                ? 'min-h-10 rounded-full border border-[#d90429] bg-[#241216] text-xs font-black text-white'
+                : 'min-h-10 rounded-full border border-[#393939] bg-[#2b2b2b] text-xs font-black text-[#b8b8b8]'
+            }
+            key={durationMinutes}
+            onClick={() => updateDuration(durationMinutes)}
+            type='button'
+          >
+            {durationMinutes} min
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function ClassesPage() {
   const [schedule, setSchedule] = useState([]);
@@ -108,10 +272,19 @@ export default function ClassesPage() {
   }, []);
 
   const openAddClassForm = () => {
+    const defaultTimeValues = buildTimeValues({
+      durationMinutes: 45,
+      hour: 5,
+      minute: 30
+    });
+
     setFormError('');
     setClassForm({
       mode: 'add',
-      values: getEmptyClassForm(activeDay)
+      values: {
+        ...getEmptyClassForm(activeDay),
+        ...defaultTimeValues
+      }
     });
   };
 
@@ -132,7 +305,8 @@ export default function ClassesPage() {
         duration: classItem.duration,
         trainerIndex: classItem.trainerIndex ?? 0,
         category: classItem.category,
-        color: classItem.color || 'gray'
+        color: classItem.color || 'gray',
+        capacity: classItem.capacity || 10
       }
     });
   };
@@ -143,6 +317,16 @@ export default function ClassesPage() {
       values: {
         ...currentForm.values,
         [field]: value
+      }
+    }));
+  };
+
+  const updateClassFormTime = (timeValues) => {
+    setClassForm((currentForm) => ({
+      ...currentForm,
+      values: {
+        ...currentForm.values,
+        ...timeValues
       }
     }));
   };
@@ -170,11 +354,13 @@ export default function ClassesPage() {
       duration: values.duration,
       trainerIndex: Number(values.trainerIndex),
       category: values.category,
-      color: values.color
+      color: values.color,
+      capacity: Number(values.capacity)
     };
     const payload = {
       weekday: Number(values.weekday),
       period: values.period,
+      nextPeriod: values.period,
       classItem
     };
 
@@ -482,20 +668,6 @@ export default function ClassesPage() {
                 </select>
               </label>
 
-              <label>
-                <span>Period</span>
-                <select
-                  disabled={classForm.mode === 'edit'}
-                  onChange={(event) =>
-                    updateClassFormValue('period', event.target.value)
-                  }
-                  value={classForm.values.period}
-                >
-                  <option value='morning'>Morning</option>
-                  <option value='evening'>Evening</option>
-                </select>
-              </label>
-
               <label className='wide'>
                 <span>Class Name</span>
                 <input
@@ -507,25 +679,32 @@ export default function ClassesPage() {
                 />
               </label>
 
-              <label className='wide'>
-                <span>Time</span>
-                <input
-                  onChange={(event) =>
-                    updateClassFormValue('time', event.target.value)
-                  }
-                  required
-                  value={classForm.values.time}
-                />
-              </label>
+              <TimeWheelPicker
+                duration={classForm.values.duration}
+                onChange={updateClassFormTime}
+                time={classForm.values.time}
+              />
 
               <label>
                 <span>Duration</span>
+                <input readOnly value={classForm.values.duration} />
+              </label>
+
+              <label>
+                <span>Period</span>
+                <input readOnly value={getPeriodLabel(classForm.values.period)} />
+              </label>
+
+              <label>
+                <span>Capacity</span>
                 <input
+                  min='1'
                   onChange={(event) =>
-                    updateClassFormValue('duration', event.target.value)
+                    updateClassFormValue('capacity', Number(event.target.value))
                   }
                   required
-                  value={classForm.values.duration}
+                  type='number'
+                  value={classForm.values.capacity}
                 />
               </label>
 

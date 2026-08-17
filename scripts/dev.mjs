@@ -1,56 +1,78 @@
-import { spawn } from "node:child_process";
+import { spawn } from 'node:child_process';
 
-const commands = [
-  ["server", "npm", ["run", "server:dev"]],
-  ["client", "npm", ["run", "client:dev"]],
-];
+const API_PORT = Number(process.env.PORT || process.env.API_PORT || 3001);
+const shouldExposeHost = process.argv.includes('--host');
 
-const children = commands.map(([name, command, args]) => {
+let isStopping = false;
+const children = [];
+
+function spawnCommand(name, command, args, env = {}) {
   const child = spawn(command, args, {
-    stdio: "pipe",
-    shell: process.platform === "win32",
+    env: {
+      ...process.env,
+      ...env
+    },
+    stdio: 'inherit',
+    shell: process.platform === 'win32'
   });
 
-  child.stdout.on("data", (data) => {
-    process.stdout.write(`[${name}] ${data}`);
+  children.push(child);
+
+  child.on('error', (error) => {
+    console.error(`[${name}] Failed to start: ${error.message}`);
+    stopChildren();
   });
 
-  child.stderr.on("data", (data) => {
-    process.stderr.write(`[${name}] ${data}`);
-  });
+  child.on('exit', (code, signal) => {
+    if (isStopping) return;
 
-  child.on("exit", (code) => {
-    if (code) {
-      process.exitCode = code;
-      stopChildren();
-    }
+    console.error(
+      `[${name}] exited${signal ? ` from ${signal}` : ` with code ${code}`}`
+    );
+
+    stopChildren();
   });
 
   return child;
-});
-
-let isStopping = false;
+}
 
 function stopChildren() {
-  if (isStopping) {
-    return;
-  }
+  if (isStopping) return;
 
   isStopping = true;
 
   children.forEach((child) => {
     if (!child.killed) {
-      child.kill("SIGTERM");
+      child.kill('SIGTERM');
     }
   });
 }
 
-process.on("SIGINT", () => {
+// Start backend
+spawnCommand('server', 'node', ['server/index.js'], {
+  PORT: String(API_PORT),
+  FITZONE_API_ONLY: 'true'
+});
+
+// Start Vite
+spawnCommand(
+  'client',
+  'node',
+  [
+    './node_modules/vite/bin/vite.js',
+    ...(shouldExposeHost ? ['--host', '0.0.0.0'] : [])
+  ],
+  {
+    API_PORT: String(API_PORT)
+  }
+);
+
+process.on('SIGINT', () => {
   stopChildren();
   process.exit(0);
 });
 
-process.on("SIGTERM", () => {
+process.on('SIGTERM', () => {
   stopChildren();
   process.exit(0);
 });

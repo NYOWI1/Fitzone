@@ -40,7 +40,8 @@ export function getEmptyClassForm(activeDay = new Date().getDay()) {
     duration: '',
     trainerIndex: 0,
     category: classCategories[0],
-    color: classColors[0]
+    color: classColors[0],
+    capacity: 10
   };
 }
 
