@@ -22,7 +22,7 @@
 
 @layer components {
   .admin-content {
-    @apply relative z-1 flex min-h-[calc(100svh-64px)] min-w-0 flex-col pt-7 pb-5 lg:ml-0 lg:w-full min-[1360px]:ml-72 min-[1360px]:w-[calc(100%_-_288px)] min-[1360px]:pt-2.5;
+    @apply relative z-1 flex min-h-[calc(100svh-64px)] min-w-0 flex-col pt-7 pb-5 lg:ml-0 lg:w-full min-[1360px]:ml-72 min-[1360px]:w-[calc(100%-288px)] min-[1360px]:pt-2.5;
   }
 
   .admin-header {
@@ -184,7 +184,7 @@
   }
 
   .admin-attendance-form {
-    @apply max-w-[460px];
+    @apply max-w-115;
   }
 
   .admin-form-header {
