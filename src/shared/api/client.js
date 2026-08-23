@@ -92,6 +92,24 @@ export function getPayments() {
   return getJson('/api/stripe/payments', 'Unable to load Stripe payments.');
 }
 
+export function getMemberPayments(email) {
+  const params = new URLSearchParams({ email: email || '' });
+
+  return getJson(
+    `/api/member-payments?${params.toString()}`,
+    'Unable to load your payment history.'
+  );
+}
+
+export function createStripeBillingPortal(email) {
+  return sendJson(
+    '/api/stripe/billing-portal',
+    'POST',
+    { email },
+    'Unable to open Stripe billing settings.'
+  );
+}
+
 export function createStripePaymentIntent(payload) {
   return sendJson(
     '/api/stripe/payment-intents',
@@ -139,6 +157,36 @@ export function addTrainer(payload) {
 
 export function updateTrainer(payload) {
   return sendJson('/api/trainers', 'PUT', payload, 'Unable to update trainer.');
+}
+
+export function getTrainerBookings(email) {
+  const params = new URLSearchParams({ email: email || '' });
+
+  return getJson(
+    `/api/trainer-bookings?${params.toString()}`,
+    'Unable to load trainer bookings.'
+  );
+}
+
+export function updateTrainerBooking(payload) {
+  return sendJson(
+    '/api/trainer-bookings',
+    'POST',
+    payload,
+    'Unable to update trainer booking.'
+  );
+}
+
+export function getMemberProgress(email, memberId = '') {
+  const params = new URLSearchParams({
+    email: email || '',
+    memberId: memberId || ''
+  });
+
+  return getObject(
+    `/api/member-progress?${params.toString()}`,
+    'Unable to load member progress.'
+  );
 }
 
 export function getClassSchedule() {
@@ -198,5 +246,18 @@ export function updateSiteSettings(payload) {
     'PUT',
     payload,
     'Unable to update site settings.'
+  );
+}
+
+export function getCrowdStatus() {
+  return getObject('/api/crowd-status', 'Unable to load live crowd status.');
+}
+
+export function updateCrowdStatus(payload) {
+  return sendJson(
+    '/api/crowd-status',
+    'PUT',
+    payload,
+    'Unable to publish live crowd status.'
   );
 }

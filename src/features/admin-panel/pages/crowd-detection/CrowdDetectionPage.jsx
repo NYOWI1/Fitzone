@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { updateCrowdStatus } from '../../../../shared/api';
 
 const CONFIDENCE_STEP = 0.05;
 const INITIAL_CONFIDENCE = 0.45;
 const DETECTION_INTERVAL_MS = 700;
+const STATUS_PUBLISH_INTERVAL_MS = 1800;
 const PERSON_CLASS = 'person';
 const INITIAL_GYM_CAPACITY = 70;
 const INITIAL_RANGES = {
@@ -59,9 +61,7 @@ const hiddenCameraPageStyle = {
 };
 
 function isLocalCameraOrigin() {
-  return ['localhost', '127.0.0.1', '[::1]'].includes(
-    window.location.hostname
-  );
+  return ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
 }
 
 function canRequestCameraPermission() {
@@ -391,6 +391,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
   const streamRef = useRef(null);
   const animationRef = useRef(null);
   const lastDetectionRef = useRef(0);
+  const crowdStatusPayloadRef = useRef(null);
   const cameraSessionRef = useRef(0);
   const isMountedRef = useRef(false);
 
@@ -419,6 +420,29 @@ export default function CrowdDetectionPage({ isVisible = true }) {
     : 0;
   const moderateMin = ranges.normalMax + 1;
   const crowdedMin = ranges.moderateMax + 1;
+  crowdStatusPayloadRef.current = {
+    active: modelStatus === 'ready' && sourceStatus === 'ready',
+    peopleCount: people.length,
+    capacity: gymCapacity,
+    normalMax: ranges.normalMax,
+    moderateMax: ranges.moderateMax
+  };
+
+  useEffect(() => {
+    const publishStatus = () => {
+      updateCrowdStatus(crowdStatusPayloadRef.current).catch((error) => {
+        console.warn('Live crowd status could not be published.', error);
+      });
+    };
+
+    publishStatus();
+    const intervalId = window.setInterval(
+      publishStatus,
+      STATUS_PUBLISH_INTERVAL_MS
+    );
+
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   const updateRange = (key, value) => {
     const nextValue = Math.max(

@@ -33,9 +33,22 @@ const localDbPaths = {
     process.cwd(),
     "server/data/local-trainers.json",
   ),
+  trainerBookings: require("node:path").join(
+    process.cwd(),
+    "server/data/local-trainer-bookings.json",
+  ),
 };
 const localDbDefaults = {
   classSchedule: defaultClassSchedule,
+  crowdStatus: {
+    active: false,
+    peopleCount: 0,
+    capacity: 70,
+    capacityPercent: 0,
+    label: "Offline",
+    tone: "yellow",
+    updatedAt: null,
+  },
   membershipPlans: defaultMembershipPlans,
   attendanceHistory: [],
   members: [
@@ -76,14 +89,23 @@ const localDbDefaults = {
   ],
   siteSettings: defaultSiteSettings,
   trainers: defaultTrainers,
+  trainerBookings: [],
 };
 
 const ADMIN_ROLE = "admin";
 const MEMBERSHIP_PERIOD_SECONDS = 30 * 24 * 60 * 60;
+const STANDARD_CLASS_BOOKING_LIMIT = 3;
+const TRAINER_BOOKING_LIMITS = {
+  basic: 0,
+  standard: 2,
+  premium: 4,
+};
 const PUBLIC_API_TIMEOUT_MS = 3000;
 const USER_ACTION_API_TIMEOUT_MS = 1500;
 const DB_READ_CACHE_TTL_MS = 30_000;
+const CROWD_STATUS_FRESHNESS_MS = 12_000;
 const dbReadCache = new Map();
+let liveCrowdStatus = structuredClone(localDbDefaults.crowdStatus);
 
 function sendJson(response, statusCode, payload) {
   response.writeHead(statusCode, {
@@ -141,8 +163,14 @@ function logApiError(label, error) {
     return;
   }
 
-  if (error?.statusCode === 401 || error?.statusCode === 403 || error?.statusCode === 404) {
-    console.warn(`${label}: external service unavailable; using local fallback data.`);
+  if (
+    error?.statusCode === 401 ||
+    error?.statusCode === 403 ||
+    error?.statusCode === 404
+  ) {
+    console.warn(
+      `${label}: external service unavailable; using local fallback data.`,
+    );
     return;
   }
 
@@ -193,12 +221,16 @@ function writeLocalCollection(collectionName, value) {
 function getLocalMembershipPlans(options = {}) {
   const plans = readLocalCollection("membershipPlans");
 
-  return (options.includeInactive
-    ? plans
-    : plans.filter((plan) => plan.active !== false)
+  return (
+    options.includeInactive
+      ? plans
+      : plans.filter((plan) => plan.active !== false)
   ).sort((firstPlan, secondPlan) => {
-    const sortDelta = Number(firstPlan.sortOrder || 0) - Number(secondPlan.sortOrder || 0);
-    return sortDelta || String(firstPlan.name).localeCompare(String(secondPlan.name));
+    const sortDelta =
+      Number(firstPlan.sortOrder || 0) - Number(secondPlan.sortOrder || 0);
+    return (
+      sortDelta || String(firstPlan.name).localeCompare(String(secondPlan.name))
+    );
   });
 }
 
@@ -207,15 +239,22 @@ function getLocalTrainers() {
     .filter((trainer) => trainer.active !== false)
     .sort((firstTrainer, secondTrainer) => {
       const sortDelta =
-        Number(firstTrainer.sortOrder || 0) - Number(secondTrainer.sortOrder || 0);
-      return sortDelta || String(firstTrainer.name).localeCompare(String(secondTrainer.name));
+        Number(firstTrainer.sortOrder || 0) -
+        Number(secondTrainer.sortOrder || 0);
+      return (
+        sortDelta ||
+        String(firstTrainer.name).localeCompare(String(secondTrainer.name))
+      );
     });
 }
 
 function getLocalClassSchedule() {
   return readLocalCollection("classSchedule")
     .filter((daySchedule) => daySchedule.active !== false)
-    .sort((firstDay, secondDay) => Number(firstDay.weekday) - Number(secondDay.weekday));
+    .sort(
+      (firstDay, secondDay) =>
+        Number(firstDay.weekday) - Number(secondDay.weekday),
+    );
 }
 
 function getLocalSiteSettings() {
@@ -272,7 +311,12 @@ function getLocalAttendanceHistoryByMember(memberIds) {
   }, new Map());
 }
 
-function updateLocalMemberAttendance({ memberId, visits, todayVisits, attendanceDate }) {
+function updateLocalMemberAttendance({
+  memberId,
+  visits,
+  todayVisits,
+  attendanceDate,
+}) {
   const members = readLocalCollection("members");
   const memberIndex = members.findIndex(
     (member) =>
@@ -286,7 +330,9 @@ function updateLocalMemberAttendance({ memberId, visits, todayVisits, attendance
   }
 
   const resolvedMemberId =
-    members[memberIndex].memberId || members[memberIndex].clerkUserId || memberId;
+    members[memberIndex].memberId ||
+    members[memberIndex].clerkUserId ||
+    memberId;
   const nextMembers = [...members];
   nextMembers[memberIndex] = {
     ...nextMembers[memberIndex],
@@ -339,7 +385,9 @@ function getActiveBookingsForMember(bookings, memberEmail) {
         `${secondBooking.classDate} ${secondBooking.classTime}`,
       ),
     )
-    .map(({ active, createdAt, updatedAt, cancelledAt, ...booking }) => booking);
+    .map(
+      ({ active, createdAt, updatedAt, cancelledAt, ...booking }) => booking,
+    );
 }
 
 function getBookingCountsByClassId(bookings) {
@@ -634,7 +682,9 @@ function sanitizeClassBooking(payload) {
   const classTime = String(payload.classTime || "").trim();
   const classDate = String(payload.classDate || "").trim();
   const trainerName = String(payload.trainerName || "").trim();
-  const category = String(payload.category || "").trim().toUpperCase();
+  const category = String(payload.category || "")
+    .trim()
+    .toUpperCase();
   const capacity = Number(payload.capacity);
 
   if (
@@ -659,6 +709,36 @@ function sanitizeClassBooking(payload) {
     trainerName,
     category,
     capacity,
+  };
+}
+
+function sanitizeTrainerBooking(payload) {
+  const memberEmail = sanitizeEmail(payload.memberEmail);
+  const memberName = String(payload.memberName || "Member").trim();
+  const trainerSlug = makeSlug(payload.trainerSlug);
+  const trainerName = String(payload.trainerName || "").trim();
+  const sessionDate = String(payload.sessionDate || "").trim();
+  const sessionTime = String(payload.sessionTime || "").trim();
+  const action = payload.action === "cancel" ? "cancel" : "book";
+
+  if (
+    !memberEmail ||
+    !trainerSlug ||
+    !trainerName ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(sessionDate) ||
+    !/^([01]\d|2[0-3]):[0-5]\d$/.test(sessionTime)
+  ) {
+    return null;
+  }
+
+  return {
+    action,
+    memberEmail,
+    memberName: memberName || "Member",
+    trainerSlug,
+    trainerName,
+    sessionDate,
+    sessionTime,
   };
 }
 
@@ -721,6 +801,9 @@ function getStripePaymentMethod(paymentIntent, charge) {
     card: {
       brand: card.brand || "",
       last4: card.last4 || "",
+      funding: card.funding || "",
+      expMonth: card.exp_month || null,
+      expYear: card.exp_year || null,
       authorizationCode:
         charge?.payment_method_details?.card?.network_transaction_id || "",
     },
@@ -806,11 +889,13 @@ function getPriceValue(plan) {
 }
 
 async function inferPlanFromAmount(amount) {
-  const localPlan = getLocalMembershipPlans({ includeInactive: true }).find((item) => {
-    const price = getPriceValue(item);
+  const localPlan = getLocalMembershipPlans({ includeInactive: true }).find(
+    (item) => {
+      const price = getPriceValue(item);
 
-    return Math.round(price * 100) === amount || Math.round(price) === amount;
-  });
+      return Math.round(price * 100) === amount || Math.round(price) === amount;
+    },
+  );
 
   if (localPlan) {
     return {
@@ -911,6 +996,7 @@ async function mapStripePaymentAccess(paymentIntent, memberEmail) {
     hasPaymentHistory: true,
     paid: access.paid && isCurrentPeriodActive,
     memberEmail: access.memberEmail || memberEmail,
+    currentPeriodStart: access.created || null,
     currentPeriodEnd,
   };
 }
@@ -1075,6 +1161,17 @@ async function mapStripeSubscriptionAccess(subscription, memberEmail) {
   const item = subscription?.items?.data?.[0] || null;
   const price = item?.price || null;
   const plan = await getPlanFromStripePrice(price);
+  const currentPeriodStart =
+    subscription?.current_period_start ||
+    item?.current_period_start ||
+    subscription?.created ||
+    null;
+  const currentPeriodEnd =
+    subscription?.current_period_end ||
+    item?.current_period_end ||
+    (currentPeriodStart
+      ? currentPeriodStart + MEMBERSHIP_PERIOD_SECONDS
+      : null);
 
   return {
     id: subscription?.id || "",
@@ -1087,7 +1184,8 @@ async function mapStripeSubscriptionAccess(subscription, memberEmail) {
     planSlug: plan?.planSlug || "",
     memberEmail,
     created: subscription?.created || null,
-    currentPeriodEnd: subscription?.current_period_end || null,
+    currentPeriodStart,
+    currentPeriodEnd,
   };
 }
 
@@ -1262,6 +1360,100 @@ async function getStripePaymentAccessForEmail(memberEmail, memberName = "") {
   }
 
   return mapStripePaymentAccess(paymentIntent, memberEmail);
+}
+
+function getLocalBookingMembershipAccess(memberEmail) {
+  const member = readLocalCollection("members").find(
+    (item) => sanitizeEmail(item.email) === memberEmail,
+  );
+
+  if (!member) {
+    return null;
+  }
+
+  return {
+    paid: String(member.status || "").toLowerCase() === "active",
+    planName: member.plan || "",
+    planSlug: makeSlug(member.planSlug || member.plan),
+    memberEmail,
+    currentPeriodStartDate: member.joined || "",
+    currentPeriodEndDate: member.renewal || "",
+  };
+}
+
+async function getClassBookingMembershipAccess(memberEmail, memberName) {
+  const cacheKey = `class-booking-membership:${memberEmail}`;
+
+  try {
+    const stripeAccess = await getCachedDbRead(
+      cacheKey,
+      () => getStripePaymentAccessForEmail(memberEmail, memberName),
+      60_000,
+    );
+
+    if (stripeAccess.paid || stripeAccess.hasPaymentHistory) {
+      return stripeAccess;
+    }
+  } catch (error) {
+    logApiError("Class booking membership lookup error", error);
+  }
+
+  return (
+    getLocalBookingMembershipAccess(memberEmail) || {
+      paid: false,
+      planName: "",
+      planSlug: "",
+      memberEmail,
+    }
+  );
+}
+
+function getClassBookingPeriod(access) {
+  const startDate =
+    access.currentPeriodStartDate ||
+    formatIsoDate(access.currentPeriodStart * 1000);
+  const endDate =
+    access.currentPeriodEndDate ||
+    formatIsoDate(access.currentPeriodEnd * 1000);
+
+  return { startDate, endDate };
+}
+
+function getClassBookingRuleError(access, booking, periodBookingCount) {
+  if (!access?.paid) {
+    return "An active membership is required to book classes.";
+  }
+
+  const planSlug = makeSlug(access.planSlug || access.planName);
+
+  if (planSlug === "basic") {
+    return "Basic membership does not include class bookings.";
+  }
+
+  if (planSlug === "premium") {
+    return "";
+  }
+
+  if (planSlug !== "standard") {
+    return "Your membership plan does not include class booking access.";
+  }
+
+  const { startDate, endDate } = getClassBookingPeriod(access);
+
+  if (
+    !startDate ||
+    !endDate ||
+    booking.classDate < startDate ||
+    booking.classDate >= endDate
+  ) {
+    return "This class is outside your current membership month.";
+  }
+
+  if (periodBookingCount >= STANDARD_CLASS_BOOKING_LIMIT) {
+    return "Standard membership includes 3 class bookings per membership month.";
+  }
+
+  return "";
 }
 
 async function mapClerkUserToMember(user, index) {
@@ -1838,6 +2030,91 @@ async function getStripePayments(response) {
   }
 }
 
+async function getMemberStripePayments(request, response) {
+  const requestUrl = new URL(request.url, "http://localhost");
+  const memberEmail = sanitizeEmail(requestUrl.searchParams.get("email"));
+
+  if (!memberEmail) {
+    sendJson(response, 400, { message: "A valid member email is required." });
+    return;
+  }
+
+  try {
+    const params = new URLSearchParams({ limit: "100" });
+    const stripeResponse = await fetchStripeJson(
+      `/v1/payment_intents?${params.toString()}`,
+    );
+    const matchingPaymentIntents = [];
+
+    for (const paymentIntent of stripeResponse.data || []) {
+      if (paymentIntentMatchesEmail(paymentIntent, memberEmail)) {
+        matchingPaymentIntents.push(paymentIntent);
+        continue;
+      }
+
+      const charge = paymentIntent.latest_charge
+        ? await getStripeCharge(paymentIntent.latest_charge).catch(() => null)
+        : null;
+      const chargeEmail = sanitizeEmail(
+        charge?.billing_details?.email || charge?.receipt_email,
+      );
+
+      if (chargeEmail === memberEmail) {
+        matchingPaymentIntents.push(paymentIntent);
+      }
+    }
+
+    const payments = await Promise.all(
+      matchingPaymentIntents.map(mapStripePaymentIntentToAdminPayment),
+    );
+
+    payments.sort((left, right) => String(right.date).localeCompare(left.date));
+    sendJson(response, 200, payments);
+  } catch (error) {
+    logApiError("Member Stripe payments API error", error);
+    sendJson(response, 200, []);
+  }
+}
+
+async function createStripeBillingPortalSession(request, response) {
+  try {
+    const body = await readJsonBody(request);
+    const memberEmail = sanitizeEmail(body?.email);
+
+    if (!memberEmail) {
+      sendJson(response, 400, { message: "A valid member email is required." });
+      return;
+    }
+
+    const customer = await findStripeCustomerByEmail(memberEmail);
+
+    if (!customer?.id) {
+      sendJson(response, 404, {
+        message: "No Stripe customer was found for this account.",
+      });
+      return;
+    }
+
+    const host = request.headers.host || "localhost:5173";
+    const protocol = request.headers["x-forwarded-proto"] || "http";
+    const params = new URLSearchParams({
+      customer: customer.id,
+      return_url: `${protocol}://${host}/dashboard#Payments`,
+    });
+    const session = await fetchStripeJson("/v1/billing_portal/sessions", {
+      method: "POST",
+      params,
+    });
+
+    sendJson(response, 200, { url: session.url || "" });
+  } catch (error) {
+    logApiError("Stripe billing portal API error", error);
+    sendJson(response, error.statusCode || 500, {
+      message: error.message || "Unable to open Stripe billing settings.",
+    });
+  }
+}
+
 async function addMembershipPlan(request, response) {
   let plan = null;
 
@@ -1891,7 +2168,11 @@ async function addMembershipPlan(request, response) {
         updatedAt: new Date().toISOString(),
       });
       writeLocalCollection("membershipPlans", plans);
-      sendJson(response, 200, getLocalMembershipPlans({ includeInactive: true }));
+      sendJson(
+        response,
+        200,
+        getLocalMembershipPlans({ includeInactive: true }),
+      );
       return;
     }
 
@@ -1979,7 +2260,11 @@ async function updateMembershipPlan(request, response) {
         updatedAt: new Date().toISOString(),
       };
       writeLocalCollection("membershipPlans", plans);
-      sendJson(response, 200, getLocalMembershipPlans({ includeInactive: true }));
+      sendJson(
+        response,
+        200,
+        getLocalMembershipPlans({ includeInactive: true }),
+      );
       return;
     }
 
@@ -2042,7 +2327,11 @@ async function addTrainer(request, response) {
     const trainers = readLocalCollection("trainers");
 
     if (trainer) {
-      if (trainers.some((existingTrainer) => existingTrainer.slug === trainer.slug)) {
+      if (
+        trainers.some(
+          (existingTrainer) => existingTrainer.slug === trainer.slug,
+        )
+      ) {
         sendJson(response, 409, {
           message: "A trainer with this slug already exists.",
         });
@@ -2116,7 +2405,9 @@ async function updateTrainer(request, response) {
     if (originalSlug && trainer) {
       if (
         trainer.slug !== originalSlug &&
-        trainers.some((existingTrainer) => existingTrainer.slug === trainer.slug)
+        trainers.some(
+          (existingTrainer) => existingTrainer.slug === trainer.slug,
+        )
       ) {
         sendJson(response, 409, {
           message: "A trainer with this slug already exists.",
@@ -2163,6 +2454,420 @@ async function getClassSchedule(response) {
   } catch (error) {
     logApiError("Class schedule API error", error);
     sendJson(response, 200, getLocalClassSchedule());
+  }
+}
+
+function getActiveLocalTrainerBookings(memberEmail) {
+  return readLocalCollection("trainerBookings")
+    .filter(
+      (booking) =>
+        booking.memberEmail === memberEmail && booking.active !== false,
+    )
+    .sort((left, right) =>
+      `${left.sessionDate} ${left.sessionTime}`.localeCompare(
+        `${right.sessionDate} ${right.sessionTime}`,
+      ),
+    );
+}
+
+function getProgressStreak(attendanceHistory, todayIso) {
+  const attendedDates = new Set(
+    attendanceHistory
+      .filter((record) => Number(record.visits || 0) > 0)
+      .map((record) => record.attendanceDate),
+  );
+  const cursor = new Date(`${todayIso}T00:00:00`);
+
+  if (!attendedDates.has(todayIso)) {
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  let streak = 0;
+
+  while (attendedDates.has(formatIsoDate(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  return streak;
+}
+
+function buildMemberProgress(
+  attendanceHistory,
+  classBookings,
+  trainerBookings,
+) {
+  const now = new Date();
+  const todayIso = formatIsoDate(now);
+  const monthKey = todayIso.slice(0, 7);
+  const monthlyAttendance = attendanceHistory.filter(
+    (record) =>
+      String(record.attendanceDate || "").startsWith(monthKey) &&
+      Number(record.visits || 0) > 0,
+  );
+  const normalizedAttendance = [...attendanceHistory]
+    .filter((record) => Number(record.visits || 0) > 0)
+    .sort((left, right) =>
+      String(right.attendanceDate).localeCompare(left.attendanceDate),
+    )
+    .map((record) => ({
+      attendanceDate: record.attendanceDate,
+      visits: Number(record.visits || 0),
+    }));
+
+  return {
+    summary: {
+      workoutStreak: getProgressStreak(attendanceHistory, todayIso),
+      visitsThisMonth: monthlyAttendance.reduce(
+        (total, record) => total + Number(record.visits || 0),
+        0,
+      ),
+      activeDaysThisMonth: monthlyAttendance.length,
+      classesBookedThisMonth: classBookings.filter(
+        (booking) =>
+          booking.active !== false &&
+          String(booking.classDate || "").startsWith(monthKey),
+      ).length,
+      trainerSessionsThisMonth: trainerBookings.filter(
+        (booking) =>
+          booking.active !== false &&
+          String(booking.sessionDate || "").startsWith(monthKey),
+      ).length,
+    },
+    attendanceHistory: normalizedAttendance,
+    recentAttendance: normalizedAttendance.slice(0, 5),
+  };
+}
+
+async function getMemberProgress(request, response) {
+  const requestUrl = new URL(request.url, "http://localhost");
+  const memberEmail = sanitizeEmail(requestUrl.searchParams.get("email"));
+  const requestedMemberId = String(
+    requestUrl.searchParams.get("memberId") || "",
+  ).trim();
+  const localMember = readLocalCollection("members").find(
+    (member) => sanitizeEmail(member.email) === memberEmail,
+  );
+  const memberId = requestedMemberId || localMember?.memberId || "";
+  const memberIds = [
+    requestedMemberId,
+    localMember?.memberId,
+    localMember?.clerkUserId,
+  ].filter((value, index, values) => value && values.indexOf(value) === index);
+
+  if (!memberEmail || !memberId) {
+    sendJson(response, 400, {
+      message: "A valid member email and member ID are required.",
+    });
+    return;
+  }
+
+  try {
+    const db = await getDbWithTimeout();
+    const [attendanceHistory, classBookings, trainerBookings] =
+      await Promise.all([
+        db
+          .collection("attendanceHistory")
+          .find({ memberId: { $in: memberIds } })
+          .project({ _id: 0, attendanceDate: 1, visits: 1 })
+          .toArray(),
+        db
+          .collection("classBookings")
+          .find({ memberEmail, active: { $ne: false } })
+          .project({ _id: 0, classDate: 1, active: 1 })
+          .toArray(),
+        db
+          .collection("trainerBookings")
+          .find({ memberEmail, active: { $ne: false } })
+          .project({ _id: 0, sessionDate: 1, active: 1 })
+          .toArray(),
+      ]);
+    sendJson(
+      response,
+      200,
+      buildMemberProgress(attendanceHistory, classBookings, trainerBookings),
+    );
+  } catch (error) {
+    logApiError("Member progress API error", error);
+    const attendanceHistory = readLocalCollection("attendanceHistory").filter(
+      (record) => memberIds.includes(record.memberId),
+    );
+    const classBookings = readLocalClassBookings().filter(
+      (booking) => booking.memberEmail === memberEmail,
+    );
+    const trainerBookings = readLocalCollection("trainerBookings").filter(
+      (booking) => booking.memberEmail === memberEmail,
+    );
+    sendJson(
+      response,
+      200,
+      buildMemberProgress(attendanceHistory, classBookings, trainerBookings),
+    );
+  }
+}
+
+function getTrainerBookingLimit(access) {
+  const planSlug = makeSlug(access?.planSlug || access?.planName);
+  return TRAINER_BOOKING_LIMITS[planSlug] ?? 0;
+}
+
+function getTrainerBookingRuleError(access, booking, periodBookingCount) {
+  if (!access?.paid) {
+    return "An active membership is required to book trainer sessions.";
+  }
+
+  const limit = getTrainerBookingLimit(access);
+
+  if (limit === 0) {
+    return "Basic membership does not include personal trainer sessions.";
+  }
+
+  const { startDate, endDate } = getClassBookingPeriod(access);
+
+  if (
+    !startDate ||
+    !endDate ||
+    booking.sessionDate < startDate ||
+    booking.sessionDate >= endDate
+  ) {
+    return "This session is outside your current membership month.";
+  }
+
+  if (periodBookingCount >= limit) {
+    return `Your membership includes ${limit} trainer sessions per membership month.`;
+  }
+
+  return "";
+}
+
+async function getTrainerBookings(request, response) {
+  const requestUrl = new URL(request.url, "http://localhost");
+  const memberEmail = sanitizeEmail(requestUrl.searchParams.get("email"));
+
+  if (!memberEmail) {
+    sendJson(response, 400, { message: "A valid member email is required." });
+    return;
+  }
+
+  try {
+    const db = await getDbWithTimeout();
+    const bookings = await db
+      .collection("trainerBookings")
+      .find({ memberEmail, active: { $ne: false } })
+      .sort({ sessionDate: 1, sessionTime: 1 })
+      .project({ _id: 0 })
+      .toArray();
+    sendJson(response, 200, bookings);
+  } catch (error) {
+    logApiError("Trainer bookings API error", error);
+    sendJson(response, 200, getActiveLocalTrainerBookings(memberEmail));
+  }
+}
+
+function updateLocalTrainerBooking(booking, membershipAccess) {
+  const bookings = readLocalCollection("trainerBookings");
+  const match = (storedBooking) =>
+    storedBooking.memberEmail === booking.memberEmail &&
+    storedBooking.trainerSlug === booking.trainerSlug &&
+    storedBooking.sessionDate === booking.sessionDate &&
+    storedBooking.sessionTime === booking.sessionTime;
+  const existingIndex = bookings.findIndex(
+    (storedBooking) => match(storedBooking) && storedBooking.active !== false,
+  );
+
+  if (booking.action === "cancel") {
+    if (existingIndex !== -1) {
+      bookings[existingIndex] = {
+        ...bookings[existingIndex],
+        active: false,
+        cancelledAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      writeLocalCollection("trainerBookings", bookings);
+    }
+  } else {
+    const { startDate, endDate } = getClassBookingPeriod(membershipAccess);
+    const periodBookingCount = bookings.filter(
+      (storedBooking) =>
+        storedBooking.memberEmail === booking.memberEmail &&
+        storedBooking.active !== false &&
+        storedBooking.sessionDate >= startDate &&
+        storedBooking.sessionDate < endDate,
+    ).length;
+    const ruleError = getTrainerBookingRuleError(
+      membershipAccess,
+      booking,
+      periodBookingCount,
+    );
+
+    if (ruleError) {
+      return { statusCode: 403, payload: { message: ruleError } };
+    }
+
+    const slotTaken = bookings.some(
+      (storedBooking) =>
+        storedBooking.trainerSlug === booking.trainerSlug &&
+        storedBooking.sessionDate === booking.sessionDate &&
+        storedBooking.sessionTime === booking.sessionTime &&
+        storedBooking.active !== false,
+    );
+
+    if (slotTaken) {
+      return {
+        statusCode: 409,
+        payload: { message: "This trainer time is already booked." },
+      };
+    }
+
+    const reusableIndex = bookings.findIndex(match);
+    const nextBooking = {
+      ...booking,
+      active: true,
+      updatedAt: new Date().toISOString(),
+    };
+
+    delete nextBooking.action;
+
+    if (reusableIndex === -1) {
+      bookings.push({
+        ...nextBooking,
+        createdAt: new Date().toISOString(),
+      });
+    } else {
+      bookings[reusableIndex] = {
+        ...bookings[reusableIndex],
+        ...nextBooking,
+        cancelledAt: null,
+      };
+    }
+    writeLocalCollection("trainerBookings", bookings);
+  }
+
+  const activeBookings = getActiveLocalTrainerBookings(booking.memberEmail);
+  const limit = getTrainerBookingLimit(membershipAccess);
+
+  return {
+    statusCode: 200,
+    payload: {
+      bookings: activeBookings,
+      limit,
+    },
+  };
+}
+
+async function updateTrainerBooking(request, response) {
+  let booking = null;
+  let membershipAccess = null;
+
+  try {
+    booking = sanitizeTrainerBooking(await readJsonBody(request));
+
+    if (!booking) {
+      sendJson(response, 400, { message: "Invalid trainer booking payload." });
+      return;
+    }
+
+    membershipAccess = await getClassBookingMembershipAccess(
+      booking.memberEmail,
+      booking.memberName,
+    );
+    const db = await getDbWithTimeout();
+    const collection = db.collection("trainerBookings");
+    const bookingKey = {
+      memberEmail: booking.memberEmail,
+      trainerSlug: booking.trainerSlug,
+      sessionDate: booking.sessionDate,
+      sessionTime: booking.sessionTime,
+    };
+
+    if (booking.action === "cancel") {
+      await collection.updateOne(bookingKey, {
+        $set: {
+          active: false,
+          cancelledAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+    } else {
+      const { startDate, endDate } = getClassBookingPeriod(membershipAccess);
+      const periodBookingCount = await collection.countDocuments({
+        memberEmail: booking.memberEmail,
+        active: { $ne: false },
+        sessionDate: { $gte: startDate, $lt: endDate },
+      });
+      const ruleError = getTrainerBookingRuleError(
+        membershipAccess,
+        booking,
+        periodBookingCount,
+      );
+
+      if (ruleError) {
+        sendJson(response, 403, { message: ruleError });
+        return;
+      }
+
+      const slotTaken = await collection.findOne({
+        trainerSlug: booking.trainerSlug,
+        sessionDate: booking.sessionDate,
+        sessionTime: booking.sessionTime,
+        active: { $ne: false },
+      });
+
+      if (slotTaken) {
+        sendJson(response, 409, {
+          message: "This trainer time is already booked.",
+        });
+        return;
+      }
+
+      const { action, ...bookingDocument } = booking;
+      await collection.updateOne(
+        bookingKey,
+        {
+          $set: {
+            ...bookingDocument,
+            active: true,
+            cancelledAt: null,
+            updatedAt: new Date(),
+          },
+          $setOnInsert: { createdAt: new Date() },
+        },
+        { upsert: true },
+      );
+    }
+
+    const bookings = await collection
+      .find({ memberEmail: booking.memberEmail, active: { $ne: false } })
+      .sort({ sessionDate: 1, sessionTime: 1 })
+      .project({ _id: 0 })
+      .toArray();
+    sendJson(response, 200, {
+      bookings,
+      limit: getTrainerBookingLimit(membershipAccess),
+    });
+  } catch (error) {
+    if (error?.code === 11000) {
+      sendJson(response, 409, {
+        message: "This trainer time is already booked.",
+      });
+      return;
+    }
+
+    if (booking) {
+      logApiError("Update trainer booking API error", error);
+      membershipAccess =
+        membershipAccess ||
+        (await getClassBookingMembershipAccess(
+          booking.memberEmail,
+          booking.memberName,
+        ));
+      const result = updateLocalTrainerBooking(booking, membershipAccess);
+      sendJson(response, result.statusCode, result.payload);
+      return;
+    }
+
+    console.error("Update trainer booking API error:", error);
+    sendJson(response, 500, { message: "Unable to update trainer booking." });
   }
 }
 
@@ -2218,11 +2923,15 @@ async function getClassBookingCounts(response) {
     sendJson(response, 200, countsByClassId);
   } catch (error) {
     logApiError("Class booking counts API error", error);
-    sendJson(response, 200, getBookingCountsByClassId(readLocalClassBookings()));
+    sendJson(
+      response,
+      200,
+      getBookingCountsByClassId(readLocalClassBookings()),
+    );
   }
 }
 
-function toggleLocalClassBooking(booking) {
+function toggleLocalClassBooking(booking, membershipAccess) {
   const bookings = readLocalClassBookings();
   const existingIndex = bookings.findIndex(
     (storedBooking) =>
@@ -2239,6 +2948,27 @@ function toggleLocalClassBooking(booking) {
       updatedAt: new Date().toISOString(),
     };
   } else {
+    const { startDate, endDate } = getClassBookingPeriod(membershipAccess);
+    const periodBookingCount = bookings.filter(
+      (storedBooking) =>
+        storedBooking.memberEmail === booking.memberEmail &&
+        storedBooking.active !== false &&
+        storedBooking.classDate >= startDate &&
+        storedBooking.classDate < endDate,
+    ).length;
+    const bookingRuleError = getClassBookingRuleError(
+      membershipAccess,
+      booking,
+      periodBookingCount,
+    );
+
+    if (bookingRuleError) {
+      return {
+        statusCode: 403,
+        payload: { message: bookingRuleError },
+      };
+    }
+
     const activeBookingCount = bookings.filter(
       (storedBooking) =>
         storedBooking.classId === booking.classId &&
@@ -2274,6 +3004,7 @@ function toggleLocalClassBooking(booking) {
 
 async function toggleClassBooking(request, response) {
   let booking = null;
+  let membershipAccess = null;
 
   try {
     const body = await readJsonBody(request);
@@ -2304,6 +3035,27 @@ async function toggleClassBooking(request, response) {
         },
       );
     } else {
+      membershipAccess = await getClassBookingMembershipAccess(
+        booking.memberEmail,
+        booking.memberName,
+      );
+      const { startDate, endDate } = getClassBookingPeriod(membershipAccess);
+      const periodBookingCount = await bookingsCollection.countDocuments({
+        memberEmail: booking.memberEmail,
+        active: { $ne: false },
+        classDate: { $gte: startDate, $lt: endDate },
+      });
+      const bookingRuleError = getClassBookingRuleError(
+        membershipAccess,
+        booking,
+        periodBookingCount,
+      );
+
+      if (bookingRuleError) {
+        sendJson(response, 403, { message: bookingRuleError });
+        return;
+      }
+
       const activeBookingCount = await bookingsCollection.countDocuments({
         classId: booking.classId,
         active: { $ne: false },
@@ -2356,7 +3108,13 @@ async function toggleClassBooking(request, response) {
   } catch (error) {
     if (booking) {
       logApiError("Toggle class booking API error", error);
-      const result = toggleLocalClassBooking(booking);
+      membershipAccess =
+        membershipAccess ||
+        (await getClassBookingMembershipAccess(
+          booking.memberEmail,
+          booking.memberName,
+        ));
+      const result = toggleLocalClassBooking(booking, membershipAccess);
       sendJson(response, result.statusCode, result.payload);
       return;
     }
@@ -2537,7 +3295,9 @@ async function updateClassScheduleItem(request, response) {
 
       const sourceClasses = [...(daySchedule[period] || [])];
       const targetClasses =
-        period === nextPeriod ? sourceClasses : [...(daySchedule[nextPeriod] || [])];
+        period === nextPeriod
+          ? sourceClasses
+          : [...(daySchedule[nextPeriod] || [])];
 
       if (period === nextPeriod) {
         sourceClasses[index] = classItem;
@@ -2668,10 +3428,7 @@ async function updateSiteSettings(request, response) {
         { key: "site", active: { $ne: false } },
         { projection: { _id: 0 } },
       );
-    const settings = sanitizeSiteSettings(
-      settingsPayload,
-      existing || {},
-    );
+    const settings = sanitizeSiteSettings(settingsPayload, existing || {});
 
     if (!settings) {
       sendJson(response, 400, { message: "Invalid site settings payload." });
@@ -2694,7 +3451,10 @@ async function updateSiteSettings(request, response) {
 
     sendJson(response, 200, nextSettings);
   } catch (error) {
-    const settings = sanitizeSiteSettings(settingsPayload || {}, getLocalSiteSettings());
+    const settings = sanitizeSiteSettings(
+      settingsPayload || {},
+      getLocalSiteSettings(),
+    );
 
     if (settings) {
       const nextSettings = {
@@ -2709,6 +3469,64 @@ async function updateSiteSettings(request, response) {
 
     console.error("Update site settings API error:", error);
     sendJson(response, 500, { message: "Unable to update site settings." });
+  }
+}
+
+function normalizeCrowdStatus(payload = {}) {
+  const peopleCount = Math.max(
+    0,
+    Math.min(10_000, Math.round(Number(payload.peopleCount) || 0)),
+  );
+  const capacity = Math.max(
+    1,
+    Math.min(10_000, Math.round(Number(payload.capacity) || 70)),
+  );
+  const normalMax = Math.max(0, Number(payload.normalMax) || 0);
+  const moderateMax = Math.max(normalMax + 1, Number(payload.moderateMax) || 1);
+  let label = "Normal";
+  let tone = "green";
+
+  if (peopleCount > moderateMax) {
+    label = "Crowded";
+    tone = "red";
+  } else if (peopleCount > normalMax) {
+    label = "Moderate";
+    tone = "yellow";
+  }
+
+  return {
+    active: payload.active === true,
+    peopleCount,
+    capacity,
+    capacityPercent: Math.min(100, Math.round((peopleCount / capacity) * 100)),
+    label,
+    tone,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+function getCrowdStatus(response) {
+  const updatedAt = Date.parse(liveCrowdStatus.updatedAt || "");
+  const isFresh =
+    Number.isFinite(updatedAt) &&
+    Date.now() - updatedAt <= CROWD_STATUS_FRESHNESS_MS;
+
+  sendJson(response, 200, {
+    ...localDbDefaults.crowdStatus,
+    ...liveCrowdStatus,
+    active: liveCrowdStatus.active === true && isFresh,
+    stale: !isFresh,
+  });
+}
+
+async function updateCrowdStatus(request, response) {
+  try {
+    const status = normalizeCrowdStatus(await readJsonBody(request));
+    liveCrowdStatus = status;
+    sendJson(response, 200, status);
+  } catch (error) {
+    logApiError("Update crowd status API error", error);
+    sendJson(response, 400, { message: "Invalid crowd status payload." });
   }
 }
 
@@ -2740,6 +3558,19 @@ function handleApiRequest(request, response) {
 
   if (request.method === "GET" && requestPath === "/api/stripe/payments") {
     getStripePayments(response);
+    return true;
+  }
+
+  if (request.method === "GET" && requestPath === "/api/member-payments") {
+    getMemberStripePayments(request, response);
+    return true;
+  }
+
+  if (
+    request.method === "POST" &&
+    requestPath === "/api/stripe/billing-portal"
+  ) {
+    createStripeBillingPortalSession(request, response);
     return true;
   }
 
@@ -2800,6 +3631,21 @@ function handleApiRequest(request, response) {
     return true;
   }
 
+  if (request.method === "GET" && requestPath === "/api/trainer-bookings") {
+    getTrainerBookings(request, response);
+    return true;
+  }
+
+  if (request.method === "POST" && requestPath === "/api/trainer-bookings") {
+    updateTrainerBooking(request, response);
+    return true;
+  }
+
+  if (request.method === "GET" && requestPath === "/api/member-progress") {
+    getMemberProgress(request, response);
+    return true;
+  }
+
   if (request.method === "GET" && requestPath === "/api/class-schedule") {
     getClassSchedule(response);
     return true;
@@ -2843,6 +3689,16 @@ function handleApiRequest(request, response) {
 
   if (request.method === "PUT" && requestPath === "/api/site-settings") {
     updateSiteSettings(request, response);
+    return true;
+  }
+
+  if (request.method === "GET" && requestPath === "/api/crowd-status") {
+    getCrowdStatus(response);
+    return true;
+  }
+
+  if (request.method === "PUT" && requestPath === "/api/crowd-status") {
+    updateCrowdStatus(request, response);
     return true;
   }
 

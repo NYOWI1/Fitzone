@@ -61,6 +61,18 @@ async function ensureMongoIndexes(db) {
     db.collection("membershipPlans").createIndex({ sortOrder: 1, name: 1 }),
     db.collection("trainers").createIndex({ sortOrder: 1, name: 1 }),
     db.collection("classSchedule").createIndex({ weekday: 1 }),
+    db.collection("trainerBookings").createIndex(
+      { trainerSlug: 1, sessionDate: 1, sessionTime: 1 },
+      {
+        unique: true,
+        partialFilterExpression: { active: true },
+      },
+    ),
+    db.collection("trainerBookings").createIndex({
+      memberEmail: 1,
+      sessionDate: 1,
+      active: 1,
+    }),
     db.collection("attendanceHistory").createIndex(
       { memberId: 1, attendanceDate: -1 },
       { unique: true },
