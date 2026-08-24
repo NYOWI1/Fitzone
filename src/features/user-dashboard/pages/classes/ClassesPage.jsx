@@ -342,7 +342,7 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
 
       {status !== 'ready' && (
         <p
-          className={`mt-7 rounded-[24px] border border-[#414141] bg-[#252525] px-5 py-6 text-sm font-black ${status === 'error' ? 'text-[#ff8ea2]' : 'text-white'}`}
+          className={`mt-7 rounded-3xl border border-[#414141] bg-[#252525] px-5 py-6 text-sm font-black ${status === 'error' ? 'text-[#ff8ea2]' : 'text-white'}`}
         >
           {status === 'error'
             ? 'Class schedule is unavailable.'
@@ -350,7 +350,7 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
         </p>
       )}
       {status === 'ready' && visibleClasses.length === 0 && (
-        <p className='mt-7 rounded-[24px] border border-[#414141] bg-[#252525] px-5 py-6 text-sm font-black'>
+        <p className='mt-7 rounded-3xl border border-[#414141] bg-[#252525] px-5 py-6 text-sm font-black'>
           No classes match this view.
         </p>
       )}
@@ -437,7 +437,7 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
 
       {message && (
         <p
-          className='fixed right-4 top-4 z-50 m-0 w-[calc(100%_-_32px)] max-w-sm rounded-[18px] border border-[#555] bg-[#252525] px-5 py-4 text-sm font-black text-white shadow-[0_20px_60px_rgba(0,0,0,0.55)] sm:right-6 sm:top-6'
+          className='fixed right-4 top-4 z-50 m-0 w-[calc(100%-32px)] max-w-sm rounded-[18px] border border-[#555] bg-[#252525] px-5 py-4 text-sm font-black text-white shadow-[0_20px_60px_rgba(0,0,0,0.55)] sm:right-6 sm:top-6'
           role='status'
           aria-live='polite'
         >
