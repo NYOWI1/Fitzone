@@ -1,34 +1,25 @@
 {
+  "name": "fitzone",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
-    "clean:mac-attrs": "node scripts/cleanMacAttrs.mjs",
     "dev": "node scripts/dev.mjs",
-    "vite:dev": "npm run clean:mac-attrs && node scripts/dev.mjs",
-    "client:dev": "node ./node_modules/vite/bin/vite.js --host 0.0.0.0",
-    "server:dev": "node server/index.js",
-    "static": "PORT=5173 node server/index.js",
-    "api:smoke": "node scripts/smokeApi.js",
-    "seed:membership-plans": "node scripts/seedMembershipPlans.js",
-    "seed:trainers": "node scripts/seedTrainers.js",
-    "seed:class-schedule": "node scripts/seedClassSchedule.js",
-    "seed:site-settings": "node scripts/seedSiteSettings.js",
-    "seed:all": "npm run seed:membership-plans && npm run seed:trainers && npm run seed:class-schedule && npm run seed:site-settings",
-    "build": "npm run clean:mac-attrs && node ./node_modules/vite/bin/vite.js build",
-    "format": "npm exec prettier -- --write .",
-    "preview": "node ./node_modules/vite/bin/vite.js preview"
-  },
-  "dependencies": {
-    "@clerk/clerk-react": "^5.61.8",
-    "mongodb": "6.18.0",
-    "react": "latest",
-    "react-dom": "latest"
+    "client:dev": "npm run dev --workspace frontend",
+    "server:dev": "npm run dev --workspace backend",
+    "build": "npm run build --workspace frontend",
+    "api:smoke": "npm run smoke --workspace backend",
+    "seed:membership-plans": "npm run seed:membership-plans --workspace backend",
+    "seed:trainers": "npm run seed:trainers --workspace backend",
+    "seed:class-schedule": "npm run seed:class-schedule --workspace backend",
+    "seed:site-settings": "npm run seed:site-settings --workspace backend",
+    "seed:all": "npm run seed:all --workspace backend",
+    "format": "prettier --write .",
+    "preview": "npm run preview --workspace frontend"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.3.3",
-    "@vitejs/plugin-react": "^5.1.0",
-    "autoprefixer": "^10.5.4",
-    "postcss": "^8.5.22",
-    "prettier": "^3.9.6",
-    "tailwindcss": "^4.3.3",
-    "vite": "^6.4.1"
+    "prettier": "^3.9.6"
   }
 }

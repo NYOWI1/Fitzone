@@ -1,0 +1,21 @@
+{
+  "name": "fitzone-backend",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js",
+    "smoke": "node scripts/smokeApi.js",
+    "seed:membership-plans": "node scripts/seedMembershipPlans.js",
+    "seed:trainers": "node scripts/seedTrainers.js",
+    "seed:class-schedule": "node scripts/seedClassSchedule.js",
+    "seed:site-settings": "node scripts/seedSiteSettings.js",
+    "seed:all": "npm run seed:membership-plans && npm run seed:trainers && npm run seed:class-schedule && npm run seed:site-settings"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "mongodb": "6.18.0"
+  }
+}

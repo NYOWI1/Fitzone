@@ -6,8 +6,9 @@ const shouldExposeHost = process.argv.includes('--host');
 let isStopping = false;
 const children = [];
 
-function spawnCommand(name, command, args, env = {}) {
+function spawnCommand(name, command, args, env = {}, cwd = process.cwd()) {
   const child = spawn(command, args, {
+    cwd,
     env: {
       ...process.env,
       ...env
@@ -49,22 +50,26 @@ function stopChildren() {
 }
 
 // Start backend
-spawnCommand('server', 'node', ['server/index.js'], {
-  PORT: String(API_PORT),
-  FITZONE_API_ONLY: 'true'
-});
+spawnCommand(
+  'server',
+  'npm',
+  ['run', 'dev'],
+  {
+    PORT: String(API_PORT),
+    FITZONE_API_ONLY: 'true'
+  },
+  new URL('../backend', import.meta.url)
+);
 
 // Start Vite
 spawnCommand(
   'client',
-  'node',
-  [
-    './node_modules/vite/bin/vite.js',
-    ...(shouldExposeHost ? ['--host', '0.0.0.0'] : [])
-  ],
+  'npm',
+  ['run', 'dev', '--', ...(shouldExposeHost ? ['--host', '0.0.0.0'] : [])],
   {
     API_PORT: String(API_PORT)
-  }
+  },
+  new URL('../frontend', import.meta.url)
 );
 
 process.on('SIGINT', () => {
