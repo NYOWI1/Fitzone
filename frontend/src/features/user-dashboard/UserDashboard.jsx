@@ -23,15 +23,15 @@ const navItems = [
   'Settings'
 ];
 const dashboardShellClass =
-  'relative grid min-h-screen grid-cols-1 overflow-x-hidden bg-[#0d0d0d] p-4 font-[Inter,Arial,sans-serif] text-white md:p-6 xl:h-screen xl:grid-cols-[238px_minmax(0,1fr)] xl:overflow-hidden xl:p-8';
+  'relative grid min-h-screen grid-cols-1 overflow-x-hidden bg-[#0d0d0d] p-3 font-[Inter,Arial,sans-serif] text-white sm:p-4 md:p-6 xl:h-screen xl:grid-cols-[238px_minmax(0,1fr)] xl:overflow-hidden xl:p-8';
 const sidebarClass =
-  'relative z-1 flex min-h-[calc(100vh_-_64px)] flex-col rounded-[34px] border border-[#414141] bg-[#181818] px-4.75 py-6.75 shadow-[0_24px_70px_rgba(0,0,0,0.32)] max-[1120px]:min-h-0 max-[680px]:rounded-[28px] xl:h-[calc(100vh_-_64px)] xl:min-h-0 xl:overflow-hidden';
+  'relative z-1 flex min-h-[calc(100vh_-_64px)] flex-col rounded-[34px] border border-[#414141] bg-[#181818] px-4.75 py-6.75 shadow-[0_24px_70px_rgba(0,0,0,0.32)] max-[1120px]:min-h-0 max-[680px]:rounded-[22px] max-[680px]:px-3 max-[680px]:py-3 xl:h-[calc(100vh_-_64px)] xl:min-h-0 xl:overflow-hidden';
 const navClass =
-  'mt-11.75 grid gap-2.5 max-[1120px]:grid-cols-4 max-[680px]:grid-cols-2';
+  'mt-11.75 grid gap-2.5 max-[1120px]:mt-7 max-[1120px]:grid-cols-4 max-[680px]:mt-4 max-[680px]:flex max-[680px]:overflow-x-auto max-[680px]:pb-1';
 const navItemClass =
-  'flex min-h-11 items-center gap-3.5 rounded-full border border-transparent px-4 text-sm font-black text-[#a7a7a7] no-underline transition hover:bg-[#252525] hover:text-white';
+  'flex min-h-11 items-center gap-3.5 rounded-full border border-transparent px-4 text-sm font-black text-[#a7a7a7] no-underline transition hover:bg-[#252525] hover:text-white max-[680px]:min-h-10 max-[680px]:flex-none max-[680px]:gap-2 max-[680px]:px-3 max-[680px]:text-xs';
 const mainContentClass =
-  'relative z-1 min-w-0 pt-5 pl-8.5 max-[1120px]:pt-7 max-[1120px]:pl-0 xl:h-[calc(100vh_-_64px)] xl:overflow-y-auto xl:pr-1';
+  'relative z-1 min-w-0 pt-5 pl-8.5 max-[1120px]:pt-7 max-[1120px]:pl-0 max-[680px]:pt-5 xl:h-[calc(100vh_-_64px)] xl:overflow-y-auto xl:pr-1';
 const authShellClass =
   'relative grid min-h-screen place-items-center bg-[#0d0d0d] p-8 font-[Inter,Arial,sans-serif] text-white max-[680px]:p-4';
 const authCardClass =
@@ -65,14 +65,14 @@ function DashboardLayout({ activePage, children, membershipAccess, user }) {
 
       <aside className={sidebarClass}>
         <a
-          className='flex items-center gap-3.5 px-2 text-white no-underline'
+          className='flex items-center gap-3.5 px-2 text-white no-underline max-[680px]:gap-2.5 max-[680px]:px-1'
           href='/'
         >
-          <span className='grid h-11.75 w-11.75 flex-none place-items-center rounded-[18px] bg-[#e6002e] text-2xl font-black shadow-[0_14px_28px_rgba(230,0,46,0.24)]'>
+          <span className='grid h-11.75 w-11.75 flex-none place-items-center rounded-[18px] bg-[#e6002e] text-2xl font-black shadow-[0_14px_28px_rgba(230,0,46,0.24)] max-[680px]:h-10 max-[680px]:w-10 max-[680px]:rounded-[14px] max-[680px]:text-xl'>
             F
           </span>
           <div>
-            <strong className='block text-[25px] leading-none'>FITZONE</strong>
+            <strong className='block text-[25px] leading-none max-[680px]:text-xl'>FITZONE</strong>
             <small className='mt-1.25 block text-[10px] font-black text-[#e6002e]'>
               MEMBER APP
             </small>
@@ -98,24 +98,26 @@ function DashboardLayout({ activePage, children, membershipAccess, user }) {
           })}
         </nav>
 
-        <div className='mt-auto flex min-h-21 items-center gap-3.5 rounded-[24px] border border-[#414141] bg-[#252525] p-3.5 shadow-[0_16px_34px_rgba(0,0,0,0.24)] max-[1120px]:mt-7'>
-          <span className='grid h-11.5 w-11.5 flex-none place-items-center rounded-[18px] bg-[#e6002e] text-[21px] font-black'>
-            {fullName.charAt(0).toUpperCase()}
-          </span>
-          <div className='min-w-0'>
-            <strong className='block truncate text-sm'>{fullName}</strong>
-            <small className='mt-1.25 block truncate text-xs text-[#bdbdbd]'>
-              {planName} Member
-            </small>
+        <div className='mt-auto max-[1120px]:mt-7 max-[680px]:mt-4 max-[680px]:grid max-[680px]:grid-cols-[minmax(0,1fr)_auto] max-[680px]:gap-2'>
+          <div className='flex min-h-21 items-center gap-3.5 rounded-[24px] border border-[#414141] bg-[#252525] p-3.5 shadow-[0_16px_34px_rgba(0,0,0,0.24)] max-[680px]:min-h-14 max-[680px]:gap-2.5 max-[680px]:rounded-[18px] max-[680px]:p-2.5'>
+            <span className='grid h-11.5 w-11.5 flex-none place-items-center rounded-[18px] bg-[#e6002e] text-[21px] font-black max-[680px]:h-9 max-[680px]:w-9 max-[680px]:rounded-[13px] max-[680px]:text-base'>
+              {fullName.charAt(0).toUpperCase()}
+            </span>
+            <div className='min-w-0'>
+              <strong className='block truncate text-sm'>{fullName}</strong>
+              <small className='mt-1.25 block truncate text-xs text-[#bdbdbd] max-[680px]:mt-0.5 max-[680px]:text-[10px]'>
+                {planName} Member
+              </small>
+            </div>
           </div>
+          <button
+            className='mt-3 flex min-h-11 w-full cursor-pointer items-center justify-center rounded-full border border-[#414141] bg-[#252525] px-5 text-sm font-black text-white transition hover:border-[#e6002e] hover:bg-[rgba(230,0,46,0.12)] max-[680px]:mt-0 max-[680px]:min-h-14 max-[680px]:w-auto max-[680px]:rounded-[18px] max-[680px]:px-4 max-[680px]:text-xs'
+            onClick={() => signOut({ redirectUrl: '/' })}
+            type='button'
+          >
+            Logout
+          </button>
         </div>
-        <button
-          className='mt-3 flex min-h-11 w-full cursor-pointer items-center justify-center rounded-full border border-[#414141] bg-[#252525] px-5 text-sm font-black text-white transition hover:border-[#e6002e] hover:bg-[rgba(230,0,46,0.12)]'
-          onClick={() => signOut({ redirectUrl: '/' })}
-          type='button'
-        >
-          Logout
-        </button>
       </aside>
 
       <section className={mainContentClass}>{children}</section>
