@@ -113,7 +113,7 @@ async function activateSessionAndOpenDashboard(setActive, sessionId) {
 }
 
 function SignedInLoginRedirect() {
-  const { user } = useUser();
+  const { isLoaded, user } = useUser();
   const [redirectTo, setRedirectTo] = useState('');
   const email =
     user?.primaryEmailAddress?.emailAddress ||
@@ -123,6 +123,10 @@ function SignedInLoginRedirect() {
     let isCurrent = true;
 
     async function verifyPaymentAccess() {
+      if (!isLoaded) {
+        return;
+      }
+
       if (!email) {
         setRedirectTo('/choose-plan');
         return;
@@ -150,7 +154,7 @@ function SignedInLoginRedirect() {
     return () => {
       isCurrent = false;
     };
-  }, [email]);
+  }, [email, isLoaded]);
 
   return redirectTo ? <RedirectSignedInUser to={redirectTo} /> : null;
 }

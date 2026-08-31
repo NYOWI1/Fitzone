@@ -176,7 +176,7 @@ function DashboardState({ title, message, action = null }) {
 }
 
 function AuthenticatedDashboard() {
-  const { user } = useUser();
+  const { isLoaded, user } = useUser();
   const [accessStatus, setAccessStatus] = useState('loading');
   const [membershipAccess, setMembershipAccess] = useState(null);
   const email =
@@ -190,6 +190,10 @@ function AuthenticatedDashboard() {
     let isCurrent = true;
 
     async function verifyPaymentAccess() {
+      if (!isLoaded) {
+        return;
+      }
+
       if (!email) {
         setAccessStatus('unpaid');
         return;
@@ -229,7 +233,7 @@ function AuthenticatedDashboard() {
     return () => {
       isCurrent = false;
     };
-  }, [email, memberName]);
+  }, [email, isLoaded, memberName]);
 
   if (accessStatus === 'loading') {
     return (
