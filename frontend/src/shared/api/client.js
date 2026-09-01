@@ -1,4 +1,7 @@
-const apiBaseUrl = String(import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const apiBaseUrl = String(import.meta.env.VITE_API_URL || '').replace(
+  /\/$/,
+  ''
+);
 
 function getApiUrl(path) {
   return `${apiBaseUrl}${path}`;
@@ -172,6 +175,10 @@ export function getTrainerBookings(email) {
     `/api/trainer-bookings?${params.toString()}`,
     'Unable to load trainer bookings.'
   );
+}
+
+export function getAdminTrainerBookings() {
+  return getJson('/api/admin/trainer-bookings', 'Unable to load PT bookings.');
 }
 
 export function updateTrainerBooking(payload) {

@@ -5,6 +5,7 @@ export const menuItems = [
   'Members',
   'Classes',
   'Trainers',
+  'PT Bookings',
   'Plans',
   'Payments',
   'Reports',

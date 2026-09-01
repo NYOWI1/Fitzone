@@ -4,6 +4,7 @@ const checks = [
   ["GET", "/api/membership-plans", 200],
   ["GET", "/api/admin/membership-plans", 200],
   ["GET", "/api/trainers", 200],
+  ["GET", "/api/admin/trainer-bookings", 200],
   ["GET", "/api/class-schedule", 200],
   ["GET", "/api/site-settings", 200],
   ["GET", "/api/members", 200],

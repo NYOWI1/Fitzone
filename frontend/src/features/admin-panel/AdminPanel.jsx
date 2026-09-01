@@ -6,6 +6,7 @@ import MembersPage from './pages/members/MembersPage';
 import OverviewPage from './pages/overview/OverviewPage';
 import PaymentsPage from './pages/payments/PaymentsPage';
 import PlansPage from './pages/plans/PlansPage';
+import PTBookingsPage from './pages/pt-bookings/PTBookingsPage';
 import ReportsPage from './pages/reports/ReportsPage';
 import SettingsPage from './pages/settings/SettingsPage';
 import TrainersPage from './pages/trainers/TrainersPage';
@@ -42,7 +43,7 @@ const mobileMenuButtonClass =
   'hidden h-11.5 w-11.5 flex-[0_0_46px] flex-col items-center justify-center gap-1.25 rounded-[14px] border border-[#393939] bg-[#242424] p-0 max-[980px]:flex';
 const mobileMenuLineClass = 'block h-0.5 w-5 rounded-full bg-white';
 const sidebarBaseClass =
-  'fixed left-8 top-8 z-2 flex h-[calc(100vh_-_64px)] w-62.5 flex-col gap-8.5 rounded-[28px] border border-[#393939] bg-[rgba(24,24,24,0.98)] px-4.75 py-6.75 max-[1359px]:static max-[1359px]:h-auto max-[1359px]:w-full max-[980px]:fixed max-[980px]:left-0 max-[980px]:top-0 max-[980px]:z-15 max-[980px]:h-[100svh] max-[980px]:w-[min(330px,88vw)] max-[980px]:max-w-[88vw] max-[980px]:overflow-y-auto max-[980px]:rounded-r-3xl max-[980px]:rounded-l-none max-[980px]:px-4.5 max-[980px]:py-5.5 max-[980px]:transition-transform max-[980px]:duration-[180ms]';
+  'fixed left-8 top-8 z-2 flex h-[calc(100vh_-_64px)] w-62.5 flex-col gap-8.5 overflow-y-auto rounded-[28px] border border-[#393939] bg-[rgba(24,24,24,0.98)] px-4.75 py-6.75 max-[1359px]:static max-[1359px]:h-auto max-[1359px]:w-full max-[980px]:fixed max-[980px]:left-0 max-[980px]:top-0 max-[980px]:z-15 max-[980px]:h-[100svh] max-[980px]:w-[min(330px,88vw)] max-[980px]:max-w-[88vw] max-[980px]:rounded-r-3xl max-[980px]:rounded-l-none max-[980px]:px-4.5 max-[980px]:py-5.5 max-[980px]:transition-transform max-[980px]:duration-[180ms]';
 const menuClass = 'grid gap-3 max-[1359px]:grid-cols-3 max-[980px]:grid-cols-1';
 const menuItemBaseClass =
   'flex min-h-10 items-center gap-3.5 rounded-[14px] border px-3.5 text-sm font-bold no-underline transition';
@@ -326,6 +327,7 @@ function AdminPanelShell({ onAdminSignOut }) {
 
       {activePage === 'classes' && <ClassesPage />}
       {activePage === 'trainers' && <TrainersPage />}
+      {activePage === 'pt-bookings' && <PTBookingsPage />}
       {activePage === 'plans' && <PlansPage />}
       {activePage === 'payments' && <PaymentsPage />}
       {activePage === 'members' && <MembersPage />}

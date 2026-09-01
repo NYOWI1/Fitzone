@@ -2470,6 +2470,14 @@ function getActiveLocalTrainerBookings(memberEmail) {
     );
 }
 
+function getAllLocalTrainerBookings() {
+  return readLocalCollection("trainerBookings").sort((left, right) =>
+    `${left.sessionDate} ${left.sessionTime}`.localeCompare(
+      `${right.sessionDate} ${right.sessionTime}`,
+    ),
+  );
+}
+
 function getProgressStreak(attendanceHistory, todayIso) {
   const attendedDates = new Set(
     attendanceHistory
@@ -2661,6 +2669,22 @@ async function getTrainerBookings(request, response) {
   } catch (error) {
     logApiError("Trainer bookings API error", error);
     sendJson(response, 200, getActiveLocalTrainerBookings(memberEmail));
+  }
+}
+
+async function getAdminTrainerBookings(response) {
+  try {
+    const db = await getDbWithTimeout();
+    const bookings = await db
+      .collection("trainerBookings")
+      .find({})
+      .sort({ sessionDate: 1, sessionTime: 1 })
+      .project({ _id: 0 })
+      .toArray();
+    sendJson(response, 200, bookings);
+  } catch (error) {
+    logApiError("Admin trainer bookings API error", error);
+    sendJson(response, 200, getAllLocalTrainerBookings());
   }
 }
 
@@ -3623,6 +3647,14 @@ function handleApiRequest(request, response) {
 
   if (request.method === "GET" && requestPath === "/api/trainers") {
     getTrainers(response);
+    return true;
+  }
+
+  if (
+    request.method === "GET" &&
+    requestPath === "/api/admin/trainer-bookings"
+  ) {
+    getAdminTrainerBookings(response);
     return true;
   }
 
