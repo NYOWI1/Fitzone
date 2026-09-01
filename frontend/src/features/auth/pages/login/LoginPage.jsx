@@ -12,6 +12,7 @@ import {
   getAuthErrorMessage
 } from '../../authConfig';
 import { getStripePaymentAccess } from '../../../../shared/api';
+import { getSavedPaidMembershipAccess } from '../../../membership-flow/shared/planSelection';
 
 const authCard =
   'rounded-[30px] border border-[#3a3a3a] bg-[#242424] shadow-[0_24px_70px_rgba(0,0,0,0.5)] max-[640px]:rounded-[22px]';
@@ -39,11 +40,11 @@ const expiredMembershipAction = 'Renew membership';
 function hasPreviousPayment(paymentAccess) {
   return Boolean(
     paymentAccess?.hasPaymentHistory ||
-      paymentAccess?.id ||
-      paymentAccess?.created ||
-      paymentAccess?.currentPeriodEnd ||
-      paymentAccess?.planName ||
-      paymentAccess?.planSlug
+    paymentAccess?.id ||
+    paymentAccess?.created ||
+    paymentAccess?.currentPeriodEnd ||
+    paymentAccess?.planName ||
+    paymentAccess?.planSlug
   );
 }
 
@@ -63,10 +64,10 @@ function getSecondFactor(resource) {
 
   return (
     priority
-      .map((strategy) =>
-        factors.find((factor) => factor.strategy === strategy)
-      )
-      .find(Boolean) || factors[0] || null
+      .map((strategy) => factors.find((factor) => factor.strategy === strategy))
+      .find(Boolean) ||
+    factors[0] ||
+    null
   );
 }
 
@@ -97,10 +98,15 @@ function getSecondFactorPreparePayload(factor) {
   return {
     strategy: factor?.strategy || 'totp',
     ...(factor?.phoneNumberId ? { phoneNumberId: factor.phoneNumberId } : {}),
-    ...(factor?.emailAddressId
-      ? { emailAddressId: factor.emailAddressId }
-      : {})
+    ...(factor?.emailAddressId ? { emailAddressId: factor.emailAddressId } : {})
   };
+}
+
+function getSignInMemberName(resource) {
+  return [resource?.userData?.firstName, resource?.userData?.lastName]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
 }
 
 async function activateSessionAndOpenDashboard(setActive, sessionId) {
@@ -118,6 +124,9 @@ function SignedInLoginRedirect() {
   const email =
     user?.primaryEmailAddress?.emailAddress ||
     user?.emailAddresses?.[0]?.emailAddress;
+  const memberName =
+    user?.fullName ||
+    [user?.firstName, user?.lastName].filter(Boolean).join(' ');
 
   useEffect(() => {
     let isCurrent = true;
@@ -132,19 +141,23 @@ function SignedInLoginRedirect() {
         return;
       }
 
+      const savedAccess = getSavedPaidMembershipAccess(email);
+
       try {
-        const access = await getStripePaymentAccess(email);
+        const access = await getStripePaymentAccess(email, memberName);
 
         if (isCurrent) {
           setRedirectTo(
-            access.paid ? AUTH_REDIRECT_AFTER_LOGIN : '/choose-plan'
+            access.paid || savedAccess?.paid
+              ? AUTH_REDIRECT_AFTER_LOGIN
+              : '/choose-plan'
           );
         }
       } catch (error) {
         console.error(error);
 
         if (isCurrent) {
-          setRedirectTo('/choose-plan');
+          setRedirectTo(AUTH_REDIRECT_AFTER_LOGIN);
         }
       }
     }
@@ -154,7 +167,7 @@ function SignedInLoginRedirect() {
     return () => {
       isCurrent = false;
     };
-  }, [email, isLoaded]);
+  }, [email, isLoaded, memberName]);
 
   return redirectTo ? <RedirectSignedInUser to={redirectTo} /> : null;
 }
@@ -177,10 +190,12 @@ function LoginForm({ clerkEnabled }) {
   const isBusy = formStatus === 'submitting' || formStatus === 'redirecting';
   const isSecondFactorStep = Boolean(secondFactor);
 
-  const finishAuthenticatedSignIn = async (sessionId) => {
-    const paymentAccess = await getStripePaymentAccess(email);
+  const finishAuthenticatedSignIn = async (sessionId, resource) => {
+    const memberName = getSignInMemberName(resource);
+    const savedAccess = getSavedPaidMembershipAccess(email);
+    const paymentAccess = await getStripePaymentAccess(email, memberName);
 
-    if (!paymentAccess.paid) {
+    if (!paymentAccess.paid && !savedAccess?.paid) {
       const isExpiredMembership = hasPreviousPayment(paymentAccess);
 
       savePendingPaymentEmail(email);
@@ -189,9 +204,7 @@ function LoginForm({ clerkEnabled }) {
         isExpiredMembership ? expiredMembershipAction : newMemberPaymentAction
       );
       setFormMessage(
-        isExpiredMembership
-          ? expiredMembershipMessage
-          : newMemberPaymentMessage
+        isExpiredMembership ? expiredMembershipMessage : newMemberPaymentMessage
       );
       return;
     }
@@ -235,7 +248,8 @@ function LoginForm({ clerkEnabled }) {
 
       if (passwordAttempt.status === 'complete') {
         await finishAuthenticatedSignIn(
-          passwordAttempt.createdSessionId || signInAttempt.createdSessionId
+          passwordAttempt.createdSessionId || signInAttempt.createdSessionId,
+          passwordAttempt
         );
         return;
       }
@@ -295,7 +309,8 @@ function LoginForm({ clerkEnabled }) {
       if (secondFactorAttempt.status === 'complete') {
         await finishAuthenticatedSignIn(
           secondFactorAttempt.createdSessionId ||
-            secondFactor.resource?.createdSessionId
+            secondFactor.resource?.createdSessionId,
+          secondFactorAttempt
         );
         return;
       }
@@ -354,7 +369,9 @@ function LoginForm({ clerkEnabled }) {
   return (
     <form
       className={`${authCard} grid w-full max-w-[532px] gap-2.5 rounded-[18px] px-3.5 pb-3.5 pt-4 sm:gap-[18px] sm:rounded-[30px] sm:px-[35px] sm:pb-[18px] sm:pt-11`}
-      onSubmit={isSecondFactorStep ? handleSecondFactorSubmit : handlePasswordSignIn}
+      onSubmit={
+        isSecondFactorStep ? handleSecondFactorSubmit : handlePasswordSignIn
+      }
     >
       <div>
         <h2 className={`${headingClass} mb-2 max-[640px]:mb-0`}>
@@ -367,7 +384,9 @@ function LoginForm({ clerkEnabled }) {
 
       {isSecondFactorStep ? (
         <label className={fieldClass}>
-          <span className={labelClass}>{getSecondFactorLabel(secondFactor)}</span>
+          <span className={labelClass}>
+            {getSecondFactorLabel(secondFactor)}
+          </span>
           <input
             className={inputClass}
             autoComplete='one-time-code'

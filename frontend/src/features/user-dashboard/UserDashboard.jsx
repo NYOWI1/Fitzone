@@ -72,7 +72,9 @@ function DashboardLayout({ activePage, children, membershipAccess, user }) {
             F
           </span>
           <div>
-            <strong className='block text-[25px] leading-none max-[680px]:text-xl'>FITZONE</strong>
+            <strong className='block text-[25px] leading-none max-[680px]:text-xl'>
+              FITZONE
+            </strong>
             <small className='mt-1.25 block text-[10px] font-black text-[#e6002e]'>
               MEMBER APP
             </small>
@@ -224,7 +226,7 @@ function AuthenticatedDashboard() {
         console.error(error);
         if (isCurrent) {
           setMembershipAccess(savedAccess);
-          setAccessStatus(savedAccess?.paid ? 'paid' : 'unpaid');
+          setAccessStatus(savedAccess?.paid ? 'paid' : 'error');
         }
       }
     }
@@ -245,13 +247,26 @@ function AuthenticatedDashboard() {
   }
 
   if (accessStatus !== 'paid') {
+    const verificationFailed = accessStatus === 'error';
+
     return (
       <DashboardState
-        title='Payment required'
-        message='Complete your membership payment before opening the member dashboard.'
+        title={
+          verificationFailed
+            ? 'Unable to verify membership'
+            : 'Payment required'
+        }
+        message={
+          verificationFailed
+            ? 'We could not check your membership right now. Refresh the page to try again.'
+            : 'Complete your membership payment before opening the member dashboard.'
+        }
         action={
-          <a className={authLinkClass} href='/choose-plan'>
-            Choose a plan
+          <a
+            className={authLinkClass}
+            href={verificationFailed ? '/dashboard' : '/choose-plan'}
+          >
+            {verificationFailed ? 'Try again' : 'Choose a plan'}
           </a>
         }
       />
