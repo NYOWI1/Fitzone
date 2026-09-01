@@ -26,6 +26,10 @@ const inputClass =
   'min-h-11 w-full rounded-xl border border-[#414141] bg-[#2d2d2d] px-3.5 font-[inherit] text-white placeholder:text-[#a8a8a8] focus:border-[#e6002e] focus:outline-none focus:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] disabled:cursor-not-allowed disabled:opacity-65 sm:min-h-[57px] sm:rounded-2xl sm:px-[19px]';
 const messageClass =
   'mt-[-4px] rounded-[14px] border border-[rgba(230,0,46,0.35)] bg-[rgba(230,0,46,0.12)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#ff8ea2]';
+const successMessageClass =
+  'mt-[-4px] rounded-[14px] border border-[rgba(48,230,0,0.32)] bg-[rgba(48,230,0,0.1)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#a6ff8f]';
+const infoMessageClass =
+  'mt-[-4px] rounded-[14px] border border-[rgba(77,163,255,0.32)] bg-[rgba(77,163,255,0.1)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#9dc8ff]';
 const primaryButton =
   'min-h-11 w-full cursor-pointer rounded-xl border-0 bg-[#e6002e] text-[15px] font-black text-white shadow-[0_18px_28px_rgba(230,0,46,0.2)] transition hover:-translate-y-px hover:bg-[#ff1744] disabled:cursor-not-allowed disabled:opacity-65 disabled:hover:translate-y-0 sm:min-h-14 sm:rounded-2xl';
 const secondaryButton =
@@ -176,19 +180,25 @@ function LoginForm({ clerkEnabled }) {
   const { isLoaded, signIn, setActive } = useSignIn();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formStatus, setFormStatus] = useState('idle');
   const [formMessage, setFormMessage] = useState('');
+  const [formMessageKind, setFormMessageKind] = useState('error');
   const [paymentRequired, setPaymentRequired] = useState(false);
   const [secondFactor, setSecondFactor] = useState(null);
   const [secondFactorCode, setSecondFactorCode] = useState('');
+  const [resetMode, setResetMode] = useState('idle');
+  const [resetCode, setResetCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [resetResource, setResetResource] = useState(null);
   const [paymentActionLabel, setPaymentActionLabel] = useState(
     newMemberPaymentAction
   );
 
   const isBusy = formStatus === 'submitting' || formStatus === 'redirecting';
   const isSecondFactorStep = Boolean(secondFactor);
+  const isResetFlow = resetMode !== 'idle';
 
   const finishAuthenticatedSignIn = async (sessionId, resource) => {
     const memberName = getSignInMemberName(resource);
@@ -230,6 +240,7 @@ function LoginForm({ clerkEnabled }) {
     try {
       setFormStatus('submitting');
       setFormMessage('');
+      setFormMessageKind('error');
       setPaymentRequired(false);
       setSecondFactor(null);
       setSecondFactorCode('');
@@ -300,6 +311,7 @@ function LoginForm({ clerkEnabled }) {
     try {
       setFormStatus('submitting');
       setFormMessage('');
+      setFormMessageKind('error');
 
       const resource = secondFactor.resource || signIn;
       const secondFactorAttempt = await resource.attemptSecondFactor(
@@ -341,6 +353,7 @@ function LoginForm({ clerkEnabled }) {
     try {
       setFormStatus('redirecting');
       setFormMessage('');
+      setFormMessageKind('error');
       setPaymentRequired(false);
       setPaymentActionLabel(newMemberPaymentAction);
       await signIn.authenticateWithRedirect({
@@ -360,29 +373,262 @@ function LoginForm({ clerkEnabled }) {
     }
   };
 
-  const handleForgotPassword = () => {
-    setFormMessage(
-      'Password reset can be added next. For now, use your Clerk dashboard account recovery options.'
-    );
+  const openForgotPassword = () => {
+    setResetMode('request');
+    setResetCode('');
+    setNewPassword('');
+    setConfirmNewPassword('');
+    setResetResource(null);
+    setSecondFactor(null);
+    setPaymentRequired(false);
+    setFormMessage('');
+    setFormMessageKind('error');
   };
+
+  const closeForgotPassword = () => {
+    if (isBusy) {
+      return;
+    }
+
+    setResetMode('idle');
+    setResetCode('');
+    setNewPassword('');
+    setConfirmNewPassword('');
+    setResetResource(null);
+    setFormMessage('');
+    setFormMessageKind('error');
+  };
+
+  const handleResetRequest = async (event) => {
+    event.preventDefault();
+
+    if (!clerkEnabled) {
+      setFormMessage(
+        'Add VITE_CLERK_PUBLISHABLE_KEY to .env and restart the dev server.'
+      );
+      return;
+    }
+
+    if (!isLoaded) {
+      return;
+    }
+
+    try {
+      setFormStatus('submitting');
+      setFormMessage('');
+      setFormMessageKind('error');
+
+      const attempt = await signIn.create({
+        identifier: email,
+        strategy: 'reset_password_email_code'
+      });
+
+      setResetResource(attempt);
+      setResetMode('code');
+      setFormMessage('Enter the password reset code sent to your email.');
+      setFormMessageKind('info');
+    } catch (error) {
+      console.error(error);
+      setFormMessage(getAuthErrorMessage(error));
+      setFormMessageKind('error');
+    } finally {
+      setFormStatus('idle');
+    }
+  };
+
+  const handleResetCode = async (event) => {
+    event.preventDefault();
+
+    if (!isLoaded || !resetResource) {
+      return;
+    }
+
+    try {
+      setFormStatus('submitting');
+      setFormMessage('');
+      setFormMessageKind('error');
+
+      const attempt = await resetResource.attemptFirstFactor({
+        code: resetCode,
+        strategy: 'reset_password_email_code'
+      });
+
+      if (attempt.status !== 'needs_new_password') {
+        setFormMessage(
+          `Password reset could not continue. Clerk returned status: ${attempt.status}.`
+        );
+        return;
+      }
+
+      setResetResource(attempt);
+      setResetMode('password');
+      setFormMessage('Code verified. Create your new password.');
+      setFormMessageKind('info');
+    } catch (error) {
+      console.error(error);
+      setFormMessage(getAuthErrorMessage(error));
+      setFormMessageKind('error');
+    } finally {
+      setFormStatus('idle');
+    }
+  };
+
+  const handleNewPassword = async (event) => {
+    event.preventDefault();
+
+    if (!isLoaded || !resetResource) {
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      setFormMessage('Passwords do not match.');
+      setFormMessageKind('error');
+      return;
+    }
+
+    try {
+      setFormStatus('submitting');
+      setFormMessage('');
+      setFormMessageKind('error');
+
+      const attempt = await resetResource.resetPassword({
+        password: newPassword,
+        signOutOfOtherSessions: true
+      });
+
+      if (attempt.status !== 'complete') {
+        setFormMessage(
+          `Password reset could not finish. Clerk returned status: ${attempt.status}.`
+        );
+        return;
+      }
+
+      setResetMode('idle');
+      setResetCode('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+      setResetResource(null);
+      setPassword('');
+      setShowPassword(false);
+      setFormMessage(
+        'Password reset successfully. Sign in with your new password.'
+      );
+      setFormMessageKind('success');
+    } catch (error) {
+      console.error(error);
+      setFormMessage(getAuthErrorMessage(error));
+      setFormMessageKind('error');
+    } finally {
+      setFormStatus('idle');
+    }
+  };
+
+  const handleSubmit = isResetFlow
+    ? resetMode === 'request'
+      ? handleResetRequest
+      : resetMode === 'code'
+        ? handleResetCode
+        : handleNewPassword
+    : isSecondFactorStep
+      ? handleSecondFactorSubmit
+      : handlePasswordSignIn;
 
   return (
     <form
       className={`${authCard} grid w-full max-w-[532px] gap-2.5 rounded-[18px] px-3.5 pb-3.5 pt-4 sm:gap-[18px] sm:rounded-[30px] sm:px-[35px] sm:pb-[18px] sm:pt-11`}
-      onSubmit={
-        isSecondFactorStep ? handleSecondFactorSubmit : handlePasswordSignIn
-      }
+      onSubmit={handleSubmit}
     >
       <div>
         <h2 className={`${headingClass} mb-2 max-[640px]:mb-0`}>
-          Login to your account
+          {resetMode === 'request'
+            ? 'Reset your password'
+            : resetMode === 'code'
+              ? 'Check your email'
+              : resetMode === 'password'
+                ? 'Create a new password'
+                : 'Login to your account'}
         </h2>
         <p className={headingText}>
-          Enter your details below to access your FitZone dashboard.
+          {resetMode === 'request'
+            ? 'Enter your account email and we will send you a reset code.'
+            : resetMode === 'code'
+              ? `Enter the verification code sent to ${email}.`
+              : resetMode === 'password'
+                ? 'Choose a secure new password for your FitZone account.'
+                : 'Enter your details below to access your FitZone dashboard.'}
         </p>
       </div>
 
-      {isSecondFactorStep ? (
+      {resetMode === 'request' ? (
+        <label className={fieldClass}>
+          <span className={labelClass}>Email</span>
+          <input
+            className={inputClass}
+            autoComplete='email'
+            disabled={isBusy}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder='yourname@email.com'
+            required
+            type='email'
+            value={email}
+          />
+        </label>
+      ) : resetMode === 'code' ? (
+        <label className={fieldClass}>
+          <span className={labelClass}>Reset code</span>
+          <input
+            className={inputClass}
+            autoComplete='one-time-code'
+            disabled={isBusy}
+            inputMode='numeric'
+            onChange={(event) => setResetCode(event.target.value)}
+            placeholder='Enter reset code'
+            required
+            value={resetCode}
+          />
+        </label>
+      ) : resetMode === 'password' ? (
+        <>
+          <label className={fieldClass}>
+            <span className={labelClass}>New password</span>
+            <div className='grid min-h-11 grid-cols-[minmax(0,1fr)_auto] items-center overflow-hidden rounded-xl border border-[#414141] bg-[#2d2d2d] focus-within:border-[#e6002e] focus-within:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] sm:min-h-[57px] sm:rounded-2xl'>
+              <input
+                className='min-h-[42px] w-full border-0 bg-transparent px-3.5 font-[inherit] text-white placeholder:text-[#a8a8a8] focus:outline-none disabled:cursor-not-allowed disabled:opacity-65 sm:min-h-[55px] sm:px-[19px]'
+                autoComplete='new-password'
+                disabled={isBusy}
+                minLength={8}
+                onChange={(event) => setNewPassword(event.target.value)}
+                placeholder='••••••••'
+                required
+                type={showPassword ? 'text' : 'password'}
+                value={newPassword}
+              />
+              <button
+                className='cursor-pointer bg-transparent px-[18px] text-[13px] font-black text-[#e6002e] disabled:cursor-not-allowed disabled:opacity-65'
+                disabled={isBusy}
+                onClick={() => setShowPassword((currentValue) => !currentValue)}
+                type='button'
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </label>
+          <label className={fieldClass}>
+            <span className={labelClass}>Confirm new password</span>
+            <input
+              className={inputClass}
+              autoComplete='new-password'
+              disabled={isBusy}
+              minLength={8}
+              onChange={(event) => setConfirmNewPassword(event.target.value)}
+              placeholder='••••••••'
+              required
+              type={showPassword ? 'text' : 'password'}
+              value={confirmNewPassword}
+            />
+          </label>
+        </>
+      ) : isSecondFactorStep ? (
         <label className={fieldClass}>
           <span className={labelClass}>
             {getSecondFactorLabel(secondFactor)}
@@ -418,7 +664,7 @@ function LoginForm({ clerkEnabled }) {
             <div className='grid min-h-11 grid-cols-[minmax(0,1fr)_auto] items-center overflow-hidden rounded-xl border border-[#414141] bg-[#2d2d2d] focus-within:border-[#e6002e] focus-within:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] sm:min-h-[57px] sm:rounded-2xl'>
               <input
                 className='min-h-[42px] w-full border-0 bg-transparent px-3.5 font-[inherit] text-white placeholder:text-[#a8a8a8] focus:outline-none disabled:cursor-not-allowed disabled:opacity-65 sm:min-h-[55px] sm:px-[19px]'
-                autoComplete={remember ? 'current-password' : 'off'}
+                autoComplete='current-password'
                 disabled={isBusy}
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder='••••••••'
@@ -439,29 +685,45 @@ function LoginForm({ clerkEnabled }) {
         </>
       )}
 
-      <div className='my-1.5 mb-3 flex items-center justify-between gap-4 max-[640px]:my-0 max-[640px]:mb-0 max-[640px]:items-center max-[640px]:flex-row'>
-        <label className='inline-flex items-center gap-3 text-[13px] text-[#bdbdbd]'>
-          <input
-            className='h-[18px] w-[18px] accent-[#e6002e] disabled:cursor-not-allowed disabled:opacity-65'
-            checked={remember}
+      {!isResetFlow && !isSecondFactorStep && (
+        <div className='my-1.5 mb-3 flex items-center justify-end max-[640px]:my-0 max-[640px]:mb-0'>
+          <button
+            className='cursor-pointer bg-transparent text-[13px] font-black text-[#e6002e] disabled:cursor-not-allowed disabled:opacity-65'
             disabled={isBusy}
-            onChange={(event) => setRemember(event.target.checked)}
-            type='checkbox'
-          />
-          <span>Remember me</span>
-        </label>
+            onClick={openForgotPassword}
+            type='button'
+          >
+            Forgot password?
+          </button>
+        </div>
+      )}
+
+      {isResetFlow && (
         <button
-          className='cursor-pointer bg-transparent text-[13px] font-black text-[#e6002e] disabled:cursor-not-allowed disabled:opacity-65'
-          onClick={handleForgotPassword}
+          className='w-fit cursor-pointer bg-transparent text-[13px] font-black text-[#bdbdbd] disabled:cursor-not-allowed disabled:opacity-65'
+          disabled={isBusy}
+          onClick={closeForgotPassword}
           type='button'
         >
-          Forgot password?
+          ← Back to login
         </button>
-      </div>
+      )}
 
-      {formMessage && <p className={messageClass}>{formMessage}</p>}
+      {formMessage && (
+        <p
+          className={
+            formMessageKind === 'success'
+              ? successMessageClass
+              : formMessageKind === 'info'
+                ? infoMessageClass
+                : messageClass
+          }
+        >
+          {formMessage}
+        </p>
+      )}
 
-      {paymentRequired && (
+      {!isResetFlow && paymentRequired && (
         <a
           className='inline-flex min-h-11 items-center justify-center rounded-[13px] border border-[#414141] bg-[#2d2d2d] text-[13px] font-black text-white no-underline transition hover:border-[#e6002e]'
           href='/choose-plan'
@@ -472,45 +734,66 @@ function LoginForm({ clerkEnabled }) {
 
       <button className={primaryButton} disabled={isBusy} type='submit'>
         {formStatus === 'submitting'
-          ? isSecondFactorStep
-            ? 'Verifying...'
-            : 'Signing in...'
-          : isSecondFactorStep
-            ? 'Verify'
-            : 'Login'}
+          ? resetMode === 'request'
+            ? 'Sending code...'
+            : resetMode === 'code'
+              ? 'Verifying code...'
+              : resetMode === 'password'
+                ? 'Saving password...'
+                : isSecondFactorStep
+                  ? 'Verifying...'
+                  : 'Signing in...'
+          : resetMode === 'request'
+            ? 'Send reset code'
+            : resetMode === 'code'
+              ? 'Verify code'
+              : resetMode === 'password'
+                ? 'Reset password'
+                : isSecondFactorStep
+                  ? 'Verify'
+                  : 'Login'}
       </button>
 
-      <div className='my-[13px] mb-1.5 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-[18px] text-[#bdbdbd] max-[640px]:my-0 max-[640px]:gap-3'>
-        <span className='h-px bg-[#424242]'></span>
-        <p className='m-0 text-sm max-[640px]:text-xs'>or continue with</p>
-        <span className='h-px bg-[#424242]'></span>
-      </div>
+      {!isResetFlow && (
+        <>
+          <div className='my-[13px] mb-1.5 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-[18px] text-[#bdbdbd] max-[640px]:my-0 max-[640px]:gap-3'>
+            <span className='h-px bg-[#424242]'></span>
+            <p className='m-0 text-sm max-[640px]:text-xs'>
+              or continue with
+            </p>
+            <span className='h-px bg-[#424242]'></span>
+          </div>
 
-      <div className='grid grid-cols-2 gap-7 max-[640px]:gap-2.5'>
-        <button
-          className={`${secondaryButton} min-h-[49px] max-[640px]:min-h-10`}
-          disabled={isBusy}
-          onClick={() => handleSocialSignIn('oauth_google')}
-          type='button'
-        >
-          Google
-        </button>
-        <button
-          className={`${secondaryButton} min-h-[49px] max-[640px]:min-h-10`}
-          disabled={isBusy}
-          onClick={() => handleSocialSignIn('oauth_apple')}
-          type='button'
-        >
-          Apple
-        </button>
-      </div>
+          <div className='grid grid-cols-2 gap-7 max-[640px]:gap-2.5'>
+            <button
+              className={`${secondaryButton} min-h-[49px] max-[640px]:min-h-10`}
+              disabled={isBusy}
+              onClick={() => handleSocialSignIn('oauth_google')}
+              type='button'
+            >
+              Google
+            </button>
+            <button
+              className={`${secondaryButton} min-h-[49px] max-[640px]:min-h-10`}
+              disabled={isBusy}
+              onClick={() => handleSocialSignIn('oauth_apple')}
+              type='button'
+            >
+              Apple
+            </button>
+          </div>
 
-      <p className='m-0 text-center text-[13px] text-[#bdbdbd] max-[640px]:text-xs'>
-        Don't have an account?{' '}
-        <a className='font-black text-[#e6002e] no-underline' href='/signup'>
-          Join FitZone
-        </a>
-      </p>
+          <p className='m-0 text-center text-[13px] text-[#bdbdbd] max-[640px]:text-xs'>
+            Don't have an account?{' '}
+            <a
+              className='font-black text-[#e6002e] no-underline'
+              href='/signup'
+            >
+              Join FitZone
+            </a>
+          </p>
+        </>
+      )}
     </form>
   );
 }
