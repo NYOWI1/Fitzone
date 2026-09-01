@@ -145,7 +145,8 @@ function getWeekActivity(attendanceHistory) {
   const today = new Date();
   const weekStart = new Date(today);
   weekStart.setHours(0, 0, 0, 0);
-  weekStart.setDate(today.getDate() - today.getDay() + 1);
+  weekStart.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+  const todayIso = formatIsoDate(today);
 
   return Array.from({ length: 7 }, (_, index) => {
     const date = new Date(weekStart);
@@ -160,9 +161,10 @@ function getWeekActivity(attendanceHistory) {
     );
 
     return {
-      isToday: isoDate === formatIsoDate(today),
-      label: ['M', 'T', 'W', 'T', 'F', 'S', 'S'][index],
-      visits
+      isFuture: isoDate > todayIso,
+      isPresent: isoDate <= todayIso && visits > 0,
+      isToday: isoDate === todayIso,
+      label: ['M', 'T', 'W', 'T', 'F', 'S', 'S'][index]
     };
   });
 }
@@ -216,14 +218,9 @@ export default function DashboardPage({
     () => getWeekActivity(progress.attendanceHistory || []),
     [progress.attendanceHistory]
   );
-  const weeklyVisits = weekActivity.reduce(
-    (total, day) => total + day.visits,
-    0
-  );
-  const highestDailyVisits = Math.max(
-    1,
-    ...weekActivity.map((day) => day.visits)
-  );
+  const presentDaysThisWeek = weekActivity.filter(
+    (day) => day.isPresent
+  ).length;
   const crowdTone = crowdToneStyles[crowdData.tone] || crowdToneStyles.yellow;
   const sessionLimit = getPlanSessionLimit(membershipAccess);
   const { start: periodStart, end: periodEnd } =
@@ -480,8 +477,9 @@ export default function DashboardPage({
                 <div>
                   <h2 className='m-0 text-xl font-black'>Weekly Activity</h2>
                   <p className='mb-0 mt-1 text-sm text-[#bdbdbd]'>
-                    {weeklyVisits} gym {weeklyVisits === 1 ? 'visit' : 'visits'}{' '}
-                    this week
+                    {presentDaysThisWeek}{' '}
+                    {presentDaysThisWeek === 1 ? 'day' : 'days'} present this
+                    week
                   </p>
                 </div>
                 <a
@@ -491,26 +489,64 @@ export default function DashboardPage({
                   View attendance
                 </a>
               </div>
-              <div className='mt-5 grid grid-cols-7 gap-1.5 sm:mt-6 sm:gap-4'>
+              <div className='mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[11px] font-black text-[#bdbdbd]'>
+                <span className='inline-flex items-center gap-1.5'>
+                  <span className='h-2.5 w-2.5 rounded-full bg-[#30e600]'></span>
+                  Present
+                </span>
+                <span className='inline-flex items-center gap-1.5'>
+                  <span className='h-2.5 w-2.5 rounded-full bg-[#e6002e]'></span>
+                  Absent
+                </span>
+              </div>
+              <div className='mt-4 grid grid-cols-7 gap-1.5 sm:mt-5 sm:gap-4'>
                 {weekActivity.map((day, index) => (
                   <div
                     className='flex min-w-0 flex-col items-center text-center'
                     key={`${day.label}-${index}`}
                   >
-                    <strong className='mb-2 text-xs text-white'>
-                      {day.visits}
+                    <strong
+                      aria-label={
+                        day.isFuture
+                          ? 'Upcoming day'
+                          : day.isPresent
+                            ? 'Present'
+                            : 'Absent'
+                      }
+                      className={`mb-2 grid h-6 w-6 place-items-center rounded-full text-xs ${
+                        day.isFuture
+                          ? 'bg-[#303030] text-[#8a8a8a]'
+                          : day.isPresent
+                            ? 'bg-[rgba(48,230,0,0.14)] text-[#30e600]'
+                            : 'bg-[rgba(230,0,46,0.14)] text-[#ff315a]'
+                      }`}
+                      title={
+                        day.isFuture
+                          ? 'Upcoming day'
+                          : day.isPresent
+                            ? 'Present'
+                            : 'Absent'
+                      }
+                    >
+                      {day.isFuture ? '–' : day.isPresent ? '✓' : '×'}
                     </strong>
                     <div className='flex h-20 w-full max-w-10 items-end overflow-hidden rounded-lg bg-[#303030] sm:h-24 sm:rounded-xl'>
                       <span
-                        className={`w-full rounded-xl transition-[height] duration-500 ${day.isToday ? 'bg-[#e6002e]' : 'bg-[#30e600]'}`}
+                        className={`w-full rounded-lg transition-[height] duration-500 sm:rounded-xl ${
+                          day.isFuture
+                            ? 'bg-transparent'
+                            : day.isPresent
+                              ? 'bg-[#30e600]'
+                              : 'bg-[#e6002e]'
+                        }`}
                         style={{
-                          height: day.visits
-                            ? `${Math.max(24, (day.visits / highestDailyVisits) * 100)}%`
-                            : '0%'
+                          height: day.isFuture ? '0%' : '100%'
                         }}
                       ></span>
                     </div>
-                    <small className='mt-2 block text-xs font-bold text-[#bdbdbd]'>
+                    <small
+                      className={`mt-2 block text-xs font-bold ${day.isToday ? 'text-white' : 'text-[#bdbdbd]'}`}
+                    >
                       {day.label}
                     </small>
                   </div>
