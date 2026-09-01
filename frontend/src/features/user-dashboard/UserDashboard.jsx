@@ -23,9 +23,9 @@ const navItems = [
   'Settings'
 ];
 const dashboardShellClass =
-  'relative grid min-h-[100svh] grid-cols-1 overflow-x-hidden overflow-y-visible bg-[#0d0d0d] p-3 font-[Inter,Arial,sans-serif] text-white touch-pan-y sm:p-4 md:p-6 xl:h-screen xl:min-h-0 xl:grid-cols-[238px_minmax(0,1fr)] xl:overflow-hidden xl:p-8';
+  'relative grid min-h-[100svh] grid-cols-1 overflow-x-clip bg-[#0d0d0d] p-3 pt-[92px] font-[Inter,Arial,sans-serif] text-white sm:p-4 sm:pt-[96px] md:p-6 md:pt-[104px] min-[981px]:pt-6 xl:h-screen xl:min-h-0 xl:grid-cols-[238px_minmax(0,1fr)] xl:overflow-hidden xl:p-8';
 const mobileBarClass =
-  'sticky top-3 z-12 mb-3 hidden items-center justify-between gap-4 rounded-[20px] border border-[#414141] bg-[rgba(13,13,13,0.94)] p-3 shadow-[0_14px_34px_rgba(0,0,0,0.35)] backdrop-blur max-[980px]:flex';
+  'fixed left-3 right-3 top-3 z-12 hidden items-center justify-between gap-4 rounded-[20px] border border-[#414141] bg-[rgba(13,13,13,0.96)] p-3 shadow-[0_14px_34px_rgba(0,0,0,0.35)] backdrop-blur max-[980px]:flex sm:left-4 sm:right-4 sm:top-4 md:left-6 md:right-6 md:top-6';
 const mobileMenuButtonClass =
   'hidden h-11 w-11 flex-[0_0_44px] cursor-pointer flex-col items-center justify-center gap-1.25 rounded-[14px] border border-[#414141] bg-[#252525] p-0 max-[980px]:flex';
 const mobileMenuLineClass = 'block h-0.5 w-5 rounded-full bg-white';
