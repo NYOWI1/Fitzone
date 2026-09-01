@@ -23,15 +23,20 @@ const navItems = [
   'Settings'
 ];
 const dashboardShellClass =
-  'relative grid min-h-screen grid-cols-1 overflow-x-hidden bg-[#0d0d0d] p-3 font-[Inter,Arial,sans-serif] text-white sm:p-4 md:p-6 xl:h-screen xl:grid-cols-[238px_minmax(0,1fr)] xl:overflow-hidden xl:p-8';
+  'relative grid min-h-[100svh] grid-cols-1 overflow-x-hidden overflow-y-visible bg-[#0d0d0d] p-3 font-[Inter,Arial,sans-serif] text-white touch-pan-y sm:p-4 md:p-6 xl:h-screen xl:min-h-0 xl:grid-cols-[238px_minmax(0,1fr)] xl:overflow-hidden xl:p-8';
+const mobileBarClass =
+  'sticky top-3 z-12 mb-3 hidden items-center justify-between gap-4 rounded-[20px] border border-[#414141] bg-[rgba(13,13,13,0.94)] p-3 shadow-[0_14px_34px_rgba(0,0,0,0.35)] backdrop-blur max-[980px]:flex';
+const mobileMenuButtonClass =
+  'hidden h-11 w-11 flex-[0_0_44px] cursor-pointer flex-col items-center justify-center gap-1.25 rounded-[14px] border border-[#414141] bg-[#252525] p-0 max-[980px]:flex';
+const mobileMenuLineClass = 'block h-0.5 w-5 rounded-full bg-white';
 const sidebarClass =
-  'relative z-1 flex min-h-[calc(100vh_-_64px)] flex-col rounded-[34px] border border-[#414141] bg-[#181818] px-4.75 py-6.75 shadow-[0_24px_70px_rgba(0,0,0,0.32)] max-[1120px]:min-h-0 max-[680px]:rounded-[22px] max-[680px]:px-3 max-[680px]:py-3 xl:h-[calc(100vh_-_64px)] xl:min-h-0 xl:overflow-hidden';
+  'relative z-1 flex min-h-[calc(100vh_-_64px)] flex-col rounded-[34px] border border-[#414141] bg-[#181818] px-4.75 py-6.75 shadow-[0_24px_70px_rgba(0,0,0,0.32)] max-[1120px]:min-h-0 max-[980px]:fixed max-[980px]:left-0 max-[980px]:top-0 max-[980px]:z-15 max-[980px]:h-[100svh] max-[980px]:w-[min(330px,88vw)] max-[980px]:max-w-[88vw] max-[980px]:overflow-y-auto max-[980px]:rounded-l-none max-[980px]:rounded-r-3xl max-[980px]:px-4.5 max-[980px]:py-5.5 max-[980px]:transition-transform max-[980px]:duration-[180ms] xl:h-[calc(100vh_-_64px)] xl:min-h-0 xl:overflow-hidden';
 const navClass =
-  'mt-11.75 grid gap-2.5 max-[1120px]:mt-7 max-[1120px]:grid-cols-4 max-[680px]:mt-4 max-[680px]:flex max-[680px]:overflow-x-auto max-[680px]:pb-1';
+  'mt-11.75 grid gap-2.5 max-[1120px]:mt-7 max-[1120px]:grid-cols-4 max-[980px]:mt-8 max-[980px]:grid-cols-1';
 const navItemClass =
-  'flex min-h-11 items-center gap-3.5 rounded-full border border-transparent px-4 text-sm font-black text-[#a7a7a7] no-underline transition hover:bg-[#252525] hover:text-white max-[680px]:min-h-10 max-[680px]:flex-none max-[680px]:gap-2 max-[680px]:px-3 max-[680px]:text-xs';
+  'flex min-h-11 items-center gap-3.5 rounded-full border border-transparent px-4 text-sm font-black text-[#a7a7a7] no-underline transition hover:bg-[#252525] hover:text-white';
 const mainContentClass =
-  'relative z-1 min-w-0 pt-5 pl-8.5 max-[1120px]:pt-7 max-[1120px]:pl-0 max-[680px]:pt-5 xl:h-[calc(100vh_-_64px)] xl:overflow-y-auto xl:pr-1';
+  'relative z-1 min-w-0 pt-5 pl-8.5 max-[1120px]:pt-7 max-[1120px]:pl-0 max-[980px]:pt-2 xl:h-[calc(100vh_-_64px)] xl:overflow-y-auto xl:pr-1';
 const authShellClass =
   'relative grid min-h-screen place-items-center bg-[#0d0d0d] p-8 font-[Inter,Arial,sans-serif] text-white max-[680px]:p-4';
 const authCardClass =
@@ -55,15 +60,70 @@ function getDashboardPageFromHash() {
 
 function DashboardLayout({ activePage, children, membershipAccess, user }) {
   const { signOut } = useClerk();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const fullName = user?.fullName || 'Member';
   const planName = membershipAccess?.planName || 'Member';
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [activePage]);
 
   return (
     <main className={dashboardShellClass}>
       <div className='pointer-events-none absolute -left-40 -top-27.5 h-125 w-125 rounded-full bg-[rgba(230,0,46,0.14)]'></div>
       <div className='pointer-events-none absolute -bottom-47.5 -right-30 h-107.5 w-107.5 rounded-full bg-[rgba(48,255,0,0.08)]'></div>
 
-      <aside className={sidebarClass}>
+      <header className={mobileBarClass}>
+        <a
+          className='flex min-w-0 items-center gap-3 text-white no-underline'
+          href='/'
+        >
+          <span className='grid h-10 w-10 flex-none place-items-center rounded-[14px] bg-[#e6002e] text-xl font-black'>
+            F
+          </span>
+          <div className='min-w-0'>
+            <strong className='block truncate text-xl leading-none'>
+              FITZONE
+            </strong>
+            <small className='mt-1 block text-[9px] font-black text-[#e6002e]'>
+              MEMBER APP
+            </small>
+          </div>
+        </a>
+        <button
+          aria-controls='member-sidebar'
+          aria-expanded={isMobileMenuOpen}
+          aria-label='Toggle member navigation'
+          className={mobileMenuButtonClass}
+          onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
+          type='button'
+        >
+          <span className={mobileMenuLineClass}></span>
+          <span className={mobileMenuLineClass}></span>
+          <span className={mobileMenuLineClass}></span>
+        </button>
+      </header>
+
+      <button
+        aria-label='Close member navigation'
+        className={
+          isMobileMenuOpen
+            ? 'fixed inset-0 z-14 hidden cursor-pointer border-0 bg-[rgba(0,0,0,0.58)] p-0 max-[980px]:block'
+            : 'hidden'
+        }
+        onClick={() => setIsMobileMenuOpen(false)}
+        type='button'
+      ></button>
+
+      <aside
+        aria-label='Member navigation'
+        className={
+          isMobileMenuOpen
+            ? `${sidebarClass} max-[980px]:translate-x-0 max-[980px]:pointer-events-auto`
+            : `${sidebarClass} max-[980px]:translate-x-[-106%] max-[980px]:pointer-events-none`
+        }
+        id='member-sidebar'
+      >
         <a
           className='flex items-center gap-3.5 px-2 text-white no-underline max-[680px]:gap-2.5 max-[680px]:px-1'
           href='/'
@@ -90,6 +150,7 @@ function DashboardLayout({ activePage, children, membershipAccess, user }) {
                 className={`${navItemClass} ${isActive ? 'border-[#e6002e] bg-[rgba(230,0,46,0.1)] text-white shadow-[0_12px_28px_rgba(230,0,46,0.12)]' : ''}`}
                 href={`#${encodeURIComponent(item)}`}
                 key={item}
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 <span
                   className={`h-2.5 w-2.5 rounded-full ${isActive ? 'bg-[#e6002e]' : 'bg-[#454545]'}`}
@@ -100,20 +161,20 @@ function DashboardLayout({ activePage, children, membershipAccess, user }) {
           })}
         </nav>
 
-        <div className='mt-auto max-[1120px]:mt-7 max-[680px]:mt-4 max-[680px]:grid max-[680px]:grid-cols-[minmax(0,1fr)_auto] max-[680px]:gap-2'>
-          <div className='flex min-h-21 items-center gap-3.5 rounded-[24px] border border-[#414141] bg-[#252525] p-3.5 shadow-[0_16px_34px_rgba(0,0,0,0.24)] max-[680px]:min-h-14 max-[680px]:gap-2.5 max-[680px]:rounded-[18px] max-[680px]:p-2.5'>
-            <span className='grid h-11.5 w-11.5 flex-none place-items-center rounded-[18px] bg-[#e6002e] text-[21px] font-black max-[680px]:h-9 max-[680px]:w-9 max-[680px]:rounded-[13px] max-[680px]:text-base'>
+        <div className='mt-auto max-[1120px]:mt-7 max-[980px]:mt-8'>
+          <div className='flex min-h-21 items-center gap-3.5 rounded-[24px] border border-[#414141] bg-[#252525] p-3.5 shadow-[0_16px_34px_rgba(0,0,0,0.24)]'>
+            <span className='grid h-11.5 w-11.5 flex-none place-items-center rounded-[18px] bg-[#e6002e] text-[21px] font-black'>
               {fullName.charAt(0).toUpperCase()}
             </span>
             <div className='min-w-0'>
               <strong className='block truncate text-sm'>{fullName}</strong>
-              <small className='mt-1.25 block truncate text-xs text-[#bdbdbd] max-[680px]:mt-0.5 max-[680px]:text-[10px]'>
+              <small className='mt-1.25 block truncate text-xs text-[#bdbdbd]'>
                 {planName} Member
               </small>
             </div>
           </div>
           <button
-            className='mt-3 flex min-h-11 w-full cursor-pointer items-center justify-center rounded-full border border-[#414141] bg-[#252525] px-5 text-sm font-black text-white transition hover:border-[#e6002e] hover:bg-[rgba(230,0,46,0.12)] max-[680px]:mt-0 max-[680px]:min-h-14 max-[680px]:w-auto max-[680px]:rounded-[18px] max-[680px]:px-4 max-[680px]:text-xs'
+            className='mt-3 flex min-h-11 w-full cursor-pointer items-center justify-center rounded-full border border-[#414141] bg-[#252525] px-5 text-sm font-black text-white transition hover:border-[#e6002e] hover:bg-[rgba(230,0,46,0.12)]'
             onClick={() => signOut({ redirectUrl: '/' })}
             type='button'
           >
