@@ -177,6 +177,29 @@ function LoginForm({ clerkEnabled }) {
   const isBusy = formStatus === 'submitting' || formStatus === 'redirecting';
   const isSecondFactorStep = Boolean(secondFactor);
 
+  const finishAuthenticatedSignIn = async (sessionId) => {
+    const paymentAccess = await getStripePaymentAccess(email);
+
+    if (!paymentAccess.paid) {
+      const isExpiredMembership = hasPreviousPayment(paymentAccess);
+
+      savePendingPaymentEmail(email);
+      setPaymentRequired(true);
+      setPaymentActionLabel(
+        isExpiredMembership ? expiredMembershipAction : newMemberPaymentAction
+      );
+      setFormMessage(
+        isExpiredMembership
+          ? expiredMembershipMessage
+          : newMemberPaymentMessage
+      );
+      return;
+    }
+
+    setFormStatus('redirecting');
+    await activateSessionAndOpenDashboard(setActive, sessionId);
+  };
+
   const handlePasswordSignIn = async (event) => {
     event.preventDefault();
 
@@ -199,24 +222,6 @@ function LoginForm({ clerkEnabled }) {
       setSecondFactorCode('');
       setPaymentActionLabel(newMemberPaymentAction);
 
-      const paymentAccess = await getStripePaymentAccess(email);
-
-      if (!paymentAccess.paid) {
-        const isExpiredMembership = hasPreviousPayment(paymentAccess);
-
-        savePendingPaymentEmail(email);
-        setPaymentRequired(true);
-        setPaymentActionLabel(
-          isExpiredMembership ? expiredMembershipAction : newMemberPaymentAction
-        );
-        setFormMessage(
-          isExpiredMembership
-            ? expiredMembershipMessage
-            : newMemberPaymentMessage
-        );
-        return;
-      }
-
       const signInAttempt = await signIn.create({
         identifier: email
       });
@@ -229,9 +234,7 @@ function LoginForm({ clerkEnabled }) {
           : signInAttempt;
 
       if (passwordAttempt.status === 'complete') {
-        setFormStatus('redirecting');
-        await activateSessionAndOpenDashboard(
-          setActive,
+        await finishAuthenticatedSignIn(
           passwordAttempt.createdSessionId || signInAttempt.createdSessionId
         );
         return;
@@ -290,9 +293,7 @@ function LoginForm({ clerkEnabled }) {
       );
 
       if (secondFactorAttempt.status === 'complete') {
-        setFormStatus('redirecting');
-        await activateSessionAndOpenDashboard(
-          setActive,
+        await finishAuthenticatedSignIn(
           secondFactorAttempt.createdSessionId ||
             secondFactor.resource?.createdSessionId
         );
