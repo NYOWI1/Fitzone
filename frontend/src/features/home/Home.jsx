@@ -16,6 +16,7 @@ import {
 } from '../../shared/api';
 import { attachTrainerImage } from '../../shared/trainers';
 import FitZoneLogo from '../../shared/ui/FitZoneLogo';
+import SocialIcon, { getSocialPlatform } from '../../shared/ui/SocialIcon';
 import { getPlanCtaLabel } from '../membership-flow/shared/planSelection';
 import TrainerDetail from '../trainer-detail/TrainerDetail';
 
@@ -1012,14 +1013,25 @@ function Home({ clerkEnabled }) {
                 Follow Us
               </h3>
               <div className='flex gap-2.5'>
-                {(siteSettings.socials || []).map((social) => (
-                  <span
-                    className='grid h-7 w-7 place-items-center rounded-full border border-[#e6002e] text-[9px] font-black text-[#b8b8b8]'
-                    key={social}
-                  >
-                    {social}
-                  </span>
-                ))}
+                {(siteSettings.socials || []).map((social) => {
+                  const platform = getSocialPlatform(social);
+
+                  if (!platform) return null;
+
+                  return (
+                    <a
+                      aria-label={`Visit FitZone on ${platform.label}`}
+                      className='grid h-8 w-8 place-items-center rounded-full border border-[#e6002e] text-white no-underline transition hover:-translate-y-0.5 hover:bg-[#e6002e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e6002e]'
+                      href={platform.url}
+                      key={social}
+                      rel='noopener noreferrer'
+                      target='_blank'
+                      title={platform.label}
+                    >
+                      <SocialIcon name={social} />
+                    </a>
+                  );
+                })}
               </div>
             </div>
           </>
