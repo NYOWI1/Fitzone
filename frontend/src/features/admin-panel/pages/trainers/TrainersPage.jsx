@@ -7,7 +7,6 @@ import {
   getTrainerCategoryBreakdown,
   getTrainerFormFromRecord,
   getTrainerPayload,
-  getTrainerStats,
   trainerImageKeys
 } from '../../adminPanelUtils';
 import AdminLoadingSkeleton from '../../components/AdminLoadingSkeleton';
@@ -34,7 +33,6 @@ export default function TrainersPage() {
   const [trainerForm, setTrainerForm] = useState(null);
   const [trainerFormStatus, setTrainerFormStatus] = useState('idle');
   const [trainerFormError, setTrainerFormError] = useState('');
-  const trainerStats = getTrainerStats(trainers);
   const visibleTrainers = filterTrainers(trainers, searchTerm);
   const categoryBreakdown = getTrainerCategoryBreakdown(trainers);
   const selectedTrainer =
@@ -194,19 +192,6 @@ export default function TrainersPage() {
 
       {status === 'ready' && trainers.length > 0 && (
         <>
-          <div className='admin-kpi-grid flex-none'>
-            {trainerStats.map((stat) => (
-              <article className='admin-kpi-card' key={stat.label}>
-                <span className={`admin-kpi-icon ${stat.tone}`}></span>
-                <div className='admin-kpi-copy'>
-                  <h3>{stat.label}</h3>
-                  <p>{stat.note}</p>
-                </div>
-                <strong className={stat.tone}>{stat.value}</strong>
-              </article>
-            ))}
-          </div>
-
           <div className='grid min-h-0 min-w-0 flex-1 gap-x-7 gap-y-6 [grid-template-columns:minmax(0,1.72fr)_minmax(280px,0.72fr)] max-[1360px]:grid-cols-1'>
             <section className='admin-card min-h-[480px] min-[1440px]:min-h-[540px]'>
               <div className='admin-card-header admin-table-header'>
