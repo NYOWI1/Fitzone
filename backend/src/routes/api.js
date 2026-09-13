@@ -1419,6 +1419,21 @@ function getClassBookingPeriod(access) {
   return { startDate, endDate };
 }
 
+function getClassBookingMonth(classDate) {
+  const match = /^(\d{4})-(\d{2})-\d{2}$/.exec(classDate || "");
+
+  if (!match) {
+    return { startDate: "", endDate: "" };
+  }
+
+  const year = Number(match[1]);
+  const monthIndex = Number(match[2]) - 1;
+  const startDate = formatIsoDate(new Date(Date.UTC(year, monthIndex, 1)));
+  const endDate = formatIsoDate(new Date(Date.UTC(year, monthIndex + 1, 1)));
+
+  return { startDate, endDate };
+}
+
 function getClassBookingRuleError(access, booking, periodBookingCount) {
   if (!access?.paid) {
     return "An active membership is required to book classes.";
@@ -1438,19 +1453,8 @@ function getClassBookingRuleError(access, booking, periodBookingCount) {
     return "Your membership plan does not include class booking access.";
   }
 
-  const { startDate, endDate } = getClassBookingPeriod(access);
-
-  if (
-    !startDate ||
-    !endDate ||
-    booking.classDate < startDate ||
-    booking.classDate >= endDate
-  ) {
-    return "This class is outside your current membership month.";
-  }
-
   if (periodBookingCount >= STANDARD_CLASS_BOOKING_LIMIT) {
-    return "Standard membership includes 3 class bookings per membership month.";
+    return "Standard membership includes 3 class bookings per calendar month.";
   }
 
   return "";
@@ -2972,7 +2976,7 @@ function toggleLocalClassBooking(booking, membershipAccess) {
       updatedAt: new Date().toISOString(),
     };
   } else {
-    const { startDate, endDate } = getClassBookingPeriod(membershipAccess);
+    const { startDate, endDate } = getClassBookingMonth(booking.classDate);
     const periodBookingCount = bookings.filter(
       (storedBooking) =>
         storedBooking.memberEmail === booking.memberEmail &&
@@ -3063,7 +3067,7 @@ async function toggleClassBooking(request, response) {
         booking.memberEmail,
         booking.memberName,
       );
-      const { startDate, endDate } = getClassBookingPeriod(membershipAccess);
+      const { startDate, endDate } = getClassBookingMonth(booking.classDate);
       const periodBookingCount = await bookingsCollection.countDocuments({
         memberEmail: booking.memberEmail,
         active: { $ne: false },

@@ -43,10 +43,10 @@ function getBookingDays() {
   const weekStart = new Date(today);
   weekStart.setDate(today.getDate() - today.getDay());
 
-  return Array.from({ length: 12 }, (_, index) => {
-    const weekIndex = Math.floor(index / 6);
+  return Array.from({ length: 14 }, (_, index) => {
+    const weekIndex = Math.floor(index / 7);
     const date = new Date(weekStart);
-    date.setDate(weekStart.getDate() + (index % 6) + 1 + weekIndex * 7);
+    date.setDate(weekStart.getDate() + (index % 7) + weekIndex * 7);
     const isToday = date.toDateString() === today.toDateString();
 
     return {
@@ -59,6 +59,26 @@ function getBookingDays() {
         : new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(date)
     };
   });
+}
+
+function getCalendarMonthRange(isoDate) {
+  const [year, month] = String(isoDate || '').split('-').map(Number);
+
+  if (!year || !month) {
+    return { startDate: '', endDate: '', label: 'this month' };
+  }
+
+  const start = new Date(year, month - 1, 1);
+  const end = new Date(year, month, 1);
+
+  return {
+    startDate: formatIsoDate(start),
+    endDate: formatIsoDate(end),
+    label: new Intl.DateTimeFormat('en-US', {
+      month: 'long',
+      year: 'numeric'
+    }).format(start)
+  };
 }
 
 function formatClassTime(time) {
@@ -157,16 +177,11 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
   const planSlug = String(
     membershipAccess?.planSlug || membershipAccess?.planName || ''
   ).toLowerCase();
-  const periodStart = membershipAccess?.currentPeriodStart
-    ? formatIsoDate(new Date(membershipAccess.currentPeriodStart * 1000))
-    : membershipAccess?.currentPeriodStartDate || '';
-  const periodEnd = membershipAccess?.currentPeriodEnd
-    ? formatIsoDate(new Date(membershipAccess.currentPeriodEnd * 1000))
-    : membershipAccess?.currentPeriodEndDate || '';
-  const hasPeriod = Boolean(periodStart && periodEnd);
+  const bookingMonth = getCalendarMonthRange(activeClassDate);
   const standardBookingsUsed = bookings.filter(
     (booking) =>
-      booking.classDate >= periodStart && booking.classDate < periodEnd
+      booking.classDate >= bookingMonth.startDate &&
+      booking.classDate < bookingMonth.endDate
   ).length;
 
   useEffect(() => {
@@ -281,7 +296,8 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
       )}
       {planSlug === 'standard' && (
         <p className='mt-4 text-sm font-bold text-[#bdbdbd]'>
-          Standard monthly bookings: {standardBookingsUsed} of 3 used.
+          Standard bookings for {bookingMonth.label}: {standardBookingsUsed} of
+          3 used.
         </p>
       )}
       {planSlug === 'premium' && (
@@ -296,7 +312,7 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
             <p className='mb-2.5 mt-0 text-xs font-black text-[#bdbdbd]'>
               {weekIndex === 0 ? 'This week' : 'Next week'}
             </p>
-            <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6'>
+            <div className='grid grid-cols-2 gap-4 sm:grid-cols-4 xl:grid-cols-7'>
               {bookingDays
                 .filter((day) => day.weekIndex === weekIndex)
                 .map((day) => (
@@ -363,11 +379,8 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
             const basicBlocked = planSlug === 'basic' && !isBooked;
             const standardBlocked =
               planSlug === 'standard' &&
-              hasPeriod &&
               !isBooked &&
-              (standardBookingsUsed >= 3 ||
-                classItem.classDate < periodStart ||
-                classItem.classDate >= periodEnd);
+              standardBookingsUsed >= 3;
             const color = classItem.color || 'gray';
 
             return (
