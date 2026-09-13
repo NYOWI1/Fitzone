@@ -7,7 +7,6 @@ import {
 } from '../../../../shared/api';
 import {
   classCategories,
-  classColors,
   filterVisibleClasses,
   getClassCount,
   getClassesStats,
@@ -32,8 +31,6 @@ const categoryPillClass =
 const rowActionClass =
   'min-h-[34px] rounded-[11px] border border-[#393939] bg-transparent text-xs font-extrabold text-[#eaeaea] max-[980px]:flex max-[980px]:items-center max-[980px]:justify-center';
 const durationOptions = [30, 45, 60, 75];
-const timePickerHours = Array.from({ length: 24 }, (_, index) => index);
-const timePickerMinutes = Array.from({ length: 60 }, (_, index) => index);
 
 function getPeriodFromTime(time) {
   const match = String(time || '').match(/^(\d{1,2}):\d{2}\s*(AM|PM)/i);
@@ -120,18 +117,22 @@ function buildTimeValues({ durationMinutes, hour, minute }) {
   };
 }
 
-function TimeWheelPicker({ duration, onChange, time }) {
+function ClassSchedulePicker({ duration, onChange, time }) {
   const timeParts = getTimePartsFromClassTime(time, duration);
-  const pickerColumns = [
-    ['Hour', timePickerHours, timeParts.hour, 'hour'],
-    ['Minute', timePickerMinutes, timeParts.minute, 'minute']
-  ];
+  const timeValue = `${formatTimePart(timeParts.hour)}:${formatTimePart(timeParts.minute)}`;
 
-  const updateTimePart = (field, value) => {
+  const updateStartTime = (value) => {
+    const [hour, minute] = value.split(':').map(Number);
+
+    if (!Number.isFinite(hour) || !Number.isFinite(minute)) {
+      return;
+    }
+
     onChange(
       buildTimeValues({
         ...timeParts,
-        [field]: value
+        hour,
+        minute
       })
     );
   };
@@ -146,53 +147,52 @@ function TimeWheelPicker({ duration, onChange, time }) {
   };
 
   return (
-    <div className='wide grid gap-3'>
-      <span className='text-xs font-extrabold text-[#b8b8b8]'>Time</span>
-      <div className='relative grid grid-cols-2 gap-3 overflow-hidden rounded-[22px] border border-[#393939] bg-[#171717] p-3'>
-        <div className='pointer-events-none absolute left-3 right-3 top-1/2 h-11 -translate-y-1/2 rounded-full bg-[#302f34]'></div>
-        {pickerColumns.map(([label, values, selectedValue, field]) => (
-          <div className='relative z-1' key={field}>
-            <span className='mb-1 block text-center text-[10px] font-black uppercase text-[#6f6f73]'>
-              {label}
-            </span>
-            <div className='h-40 overflow-y-auto py-[54px]'>
-              <div className='grid gap-1'>
-                {values.map((value) => (
-                  <button
-                    className={
-                      value === selectedValue
-                        ? 'min-h-10 rounded-full bg-transparent text-3xl font-black text-white'
-                        : 'min-h-10 rounded-full bg-transparent text-2xl font-black text-[#68686d] transition hover:text-[#b8b8b8]'
-                    }
-                    key={value}
-                    onClick={() => updateTimePart(field, value)}
-                    type='button'
-                  >
-                    {formatTimePart(value)}
-                  </button>
-                ))}
-              </div>
-            </div>
+    <fieldset className='wide grid gap-3 rounded-2xl border border-[#393939] bg-[#171717] p-4'>
+      <legend className='px-1 text-xs font-extrabold text-[#eaeaea]'>
+        Schedule
+      </legend>
+
+      <div className='grid gap-4 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]'>
+        <label>
+          <span>Start time</span>
+          <input
+            aria-label='Class start time'
+            className='min-h-11 w-full rounded-xl border border-[#393939] bg-[#242424] px-3.25 text-white outline-none focus:border-[#d90429]'
+            onChange={(event) => updateStartTime(event.target.value)}
+            required
+            step='300'
+            type='time'
+            value={timeValue}
+          />
+        </label>
+
+        <div className='grid content-start gap-2'>
+          <span>Duration</span>
+          <div className='grid grid-cols-4 gap-2'>
+            {durationOptions.map((durationMinutes) => (
+              <button
+                aria-pressed={durationMinutes === timeParts.durationMinutes}
+                className={
+                  durationMinutes === timeParts.durationMinutes
+                    ? 'min-h-11 rounded-xl border border-[#d90429] bg-[#241216] text-xs font-black text-white'
+                    : 'min-h-11 rounded-xl border border-[#393939] bg-[#242424] text-xs font-black text-[#b8b8b8] transition hover:border-[#666] hover:text-white'
+                }
+                key={durationMinutes}
+                onClick={() => updateDuration(durationMinutes)}
+                type='button'
+              >
+                {durationMinutes}m
+              </button>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
-      <div className='grid grid-cols-4 gap-2 max-[560px]:grid-cols-2'>
-        {durationOptions.map((durationMinutes) => (
-          <button
-            className={
-              durationMinutes === timeParts.durationMinutes
-                ? 'min-h-10 rounded-full border border-[#d90429] bg-[#241216] text-xs font-black text-white'
-                : 'min-h-10 rounded-full border border-[#393939] bg-[#2b2b2b] text-xs font-black text-[#b8b8b8]'
-            }
-            key={durationMinutes}
-            onClick={() => updateDuration(durationMinutes)}
-            type='button'
-          >
-            {durationMinutes} min
-          </button>
-        ))}
+
+      <div className='flex items-center justify-between gap-3 rounded-xl bg-[#242424] px-3.5 py-2.5'>
+        <span className='text-[#b8b8b8]'>Class time</span>
+        <strong className='text-right text-[13px] text-white'>{time}</strong>
       </div>
-    </div>
+    </fieldset>
   );
 }
 
@@ -667,16 +667,11 @@ export default function ClassesPage() {
                 />
               </label>
 
-              <TimeWheelPicker
+              <ClassSchedulePicker
                 duration={classForm.values.duration}
                 onChange={updateClassFormTime}
                 time={classForm.values.time}
               />
-
-              <label>
-                <span>Duration</span>
-                <input readOnly value={classForm.values.duration} />
-              </label>
 
               <label>
                 <span>Period</span>
@@ -741,21 +736,6 @@ export default function ClassesPage() {
                 </select>
               </label>
 
-              <label>
-                <span>Color</span>
-                <select
-                  onChange={(event) =>
-                    updateClassFormValue('color', event.target.value)
-                  }
-                  value={classForm.values.color}
-                >
-                  {classColors.map((color) => (
-                    <option key={color} value={color}>
-                      {color}
-                    </option>
-                  ))}
-                </select>
-              </label>
             </div>
 
             {formError && <p className='admin-form-error'>{formError}</p>}
