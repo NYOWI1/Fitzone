@@ -59,7 +59,9 @@ export default function PaymentsPage({ membershipAccess = null, user = null }) {
     (total, payment) => total + Number(payment.amount || 0),
     0
   );
-  const renewalIsAutomatic = paymentMethodRecord?.paymentType === 'credit_card';
+  const renewalIsAutomatic =
+    membershipAccess?.autoRenew ??
+    paymentMethodRecord?.paymentType === 'credit_card';
   const renewalDate = formatDate(
     membershipAccess?.currentPeriodEnd,
     'Next membership period'

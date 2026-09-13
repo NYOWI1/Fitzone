@@ -63,42 +63,13 @@ function getBookingDays() {
   });
 }
 
-function shiftIsoMonth(isoDate, amount) {
-  const [year, month, day] = String(isoDate || '').split('-').map(Number);
-
-  if (!year || !month || !day) return '';
-
-  const shifted = new Date(year, month - 1 + amount, 1);
-  const lastDay = new Date(
-    shifted.getFullYear(),
-    shifted.getMonth() + 1,
-    0
-  ).getDate();
-  shifted.setDate(Math.min(day, lastDay));
-  return formatIsoDate(shifted);
-}
-
-function getMembershipBookingPeriod(membershipAccess, referenceDate) {
-  let startDate = membershipAccess?.currentPeriodStart
+function getMembershipBookingPeriod(membershipAccess) {
+  const startDate = membershipAccess?.currentPeriodStart
     ? formatIsoDate(new Date(membershipAccess.currentPeriodStart * 1000))
     : membershipAccess?.currentPeriodStartDate || '';
-  let endDate = membershipAccess?.currentPeriodEnd
+  const endDate = membershipAccess?.currentPeriodEnd
     ? formatIsoDate(new Date(membershipAccess.currentPeriodEnd * 1000))
     : membershipAccess?.currentPeriodEndDate || '';
-
-  if (!startDate || !endDate || !referenceDate) {
-    return { startDate, endDate };
-  }
-
-  while (referenceDate >= endDate) {
-    startDate = endDate;
-    endDate = shiftIsoMonth(endDate, 1);
-  }
-
-  while (referenceDate < startDate) {
-    endDate = startDate;
-    startDate = shiftIsoMonth(startDate, -1);
-  }
 
   return { startDate, endDate };
 }
@@ -237,9 +208,9 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
   const planSlug = String(
     membershipAccess?.planSlug || membershipAccess?.planName || ''
   ).toLowerCase();
-  const bookingPeriod = getMembershipBookingPeriod(
-    membershipAccess,
-    activeClassDate
+  const bookingPeriod = getMembershipBookingPeriod(membershipAccess);
+  const hasBookingPeriod = Boolean(
+    bookingPeriod.startDate && bookingPeriod.endDate
   );
   const standardBookingsUsed = bookings.filter(
     (booking) =>
@@ -453,10 +424,16 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
               Number.isFinite(classStartTime) &&
               Date.now() >= classStartTime - classCancellationCutoffMs;
             const basicBlocked = planSlug === 'basic' && !isBooked;
+            const awaitingRenewal =
+              planSlug === 'standard' &&
+              !isBooked &&
+              (!hasBookingPeriod ||
+                classItem.classDate < bookingPeriod.startDate ||
+                classItem.classDate >= bookingPeriod.endDate);
             const standardBlocked =
               planSlug === 'standard' &&
               !isBooked &&
-              standardBookingsUsed >= 3;
+              (standardBookingsUsed >= 3 || awaitingRenewal);
             const color = classItem.color || 'gray';
 
             return (
@@ -517,6 +494,8 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
                           : 'Cancel booking'
                         : classStarted
                           ? 'Class started'
+                        : awaitingRenewal
+                          ? 'Available after renewal'
                         : basicBlocked
                           ? 'Not included'
                           : standardBlocked

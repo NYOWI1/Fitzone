@@ -1201,6 +1201,7 @@ async function findStripeSubscriptionByEmail(memberEmail) {
     limit: "10",
   });
   params.append("expand[]", "data.items.data.price");
+  params.append("expand[]", "data.latest_invoice");
 
   const subscriptions = await fetchStripeJson(
     `/v1/subscriptions?${params.toString()}`,
@@ -1232,12 +1233,29 @@ async function mapStripeSubscriptionAccess(subscription, memberEmail) {
     (currentPeriodStart
       ? currentPeriodStart + MEMBERSHIP_PERIOD_SECONDS
       : null);
+  const latestInvoice =
+    subscription?.latest_invoice &&
+    typeof subscription.latest_invoice === "object"
+      ? subscription.latest_invoice
+      : null;
+  const subscriptionStatus = subscription?.status || "";
+  const renewalPaymentConfirmed =
+    subscriptionStatus === "trialing" ||
+    (subscriptionStatus === "active" &&
+      (!latestInvoice || latestInvoice.paid === true));
+  const autoRenew =
+    renewalPaymentConfirmed &&
+    subscription?.cancel_at_period_end !== true &&
+    (subscription?.collection_method || "charge_automatically") ===
+      "charge_automatically";
 
   return {
     id: subscription?.id || "",
     hasPaymentHistory: true,
-    paid: ["active", "trialing", "past_due"].includes(subscription?.status),
-    status: subscription?.status || "",
+    paid: renewalPaymentConfirmed,
+    status: subscriptionStatus,
+    renewalPaymentConfirmed,
+    autoRenew,
     amount: Number(price?.unit_amount || price?.unit_amount_decimal || 0),
     currency: price?.currency || "thb",
     planName: plan?.planName || "",
@@ -1468,45 +1486,13 @@ async function getClassBookingMembershipAccess(memberEmail, memberName) {
   );
 }
 
-function shiftIsoMonth(isoDate, amount) {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate || "");
-
-  if (!match) {
-    return "";
-  }
-
-  const year = Number(match[1]);
-  const monthIndex = Number(match[2]) - 1 + amount;
-  const day = Number(match[3]);
-  const shifted = new Date(Date.UTC(year, monthIndex, 1));
-  const lastDay = new Date(
-    Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth() + 1, 0),
-  ).getUTCDate();
-  shifted.setUTCDate(Math.min(day, lastDay));
-  return shifted.toISOString().slice(0, 10);
-}
-
-function getClassBookingPeriod(access, referenceDate = formatIsoDate(Date.now())) {
-  let startDate =
+function getClassBookingPeriod(access) {
+  const startDate =
     access.currentPeriodStartDate ||
     formatIsoDate(access.currentPeriodStart * 1000);
-  let endDate =
+  const endDate =
     access.currentPeriodEndDate ||
     formatIsoDate(access.currentPeriodEnd * 1000);
-
-  if (!startDate || !endDate || !referenceDate) {
-    return { startDate, endDate };
-  }
-
-  while (referenceDate >= endDate) {
-    startDate = endDate;
-    endDate = shiftIsoMonth(endDate, 1);
-  }
-
-  while (referenceDate < startDate) {
-    endDate = startDate;
-    startDate = shiftIsoMonth(startDate, -1);
-  }
 
   return { startDate, endDate };
 }
@@ -1528,6 +1514,17 @@ function getClassBookingRuleError(access, booking, periodBookingCount) {
 
   if (planSlug !== "standard") {
     return "Your membership plan does not include class booking access.";
+  }
+
+  const { startDate, endDate } = getClassBookingPeriod(access);
+
+  if (
+    !startDate ||
+    !endDate ||
+    booking.classDate < startDate ||
+    booking.classDate >= endDate
+  ) {
+    return "This class becomes available after your membership renews successfully.";
   }
 
   if (periodBookingCount >= STANDARD_CLASS_BOOKING_LIMIT) {
@@ -1825,6 +1822,8 @@ async function createStripeSubscription(request, response) {
 
     const params = new URLSearchParams({
       customer: customer.id,
+      collection_method: "charge_automatically",
+      cancel_at_period_end: "false",
       payment_behavior: "default_incomplete",
       "payment_settings[payment_method_types][]": "card",
       "payment_settings[save_default_payment_method]": "on_subscription",
@@ -3066,10 +3065,7 @@ function toggleLocalClassBooking(booking, membershipAccess) {
       return { statusCode: 409, payload: { message: timingError } };
     }
 
-    const { startDate, endDate } = getClassBookingPeriod(
-      membershipAccess,
-      booking.classDate,
-    );
+    const { startDate, endDate } = getClassBookingPeriod(membershipAccess);
     const periodBookingCount = bookings.filter(
       (storedBooking) =>
         storedBooking.memberEmail === booking.memberEmail &&
@@ -3174,10 +3170,7 @@ async function toggleClassBooking(request, response) {
         booking.memberEmail,
         booking.memberName,
       );
-      const { startDate, endDate } = getClassBookingPeriod(
-        membershipAccess,
-        booking.classDate,
-      );
+      const { startDate, endDate } = getClassBookingPeriod(membershipAccess);
       const periodBookingCount = await bookingsCollection.countDocuments({
         memberEmail: booking.memberEmail,
         active: { $ne: false },
