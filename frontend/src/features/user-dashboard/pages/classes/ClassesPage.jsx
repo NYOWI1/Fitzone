@@ -30,6 +30,8 @@ const badgeClasses = {
   teal: 'bg-[#05735e] text-white',
   yellow: 'bg-[#ffd54f] text-[#101010]'
 };
+const classCancellationCutoffMs = 30 * 60 * 1000;
+const gymUtcOffsetMinutes = 7 * 60;
 
 function formatIsoDate(date) {
   const year = date.getFullYear();
@@ -61,28 +63,86 @@ function getBookingDays() {
   });
 }
 
-function getCalendarMonthRange(isoDate) {
-  const [year, month] = String(isoDate || '').split('-').map(Number);
+function shiftIsoMonth(isoDate, amount) {
+  const [year, month, day] = String(isoDate || '').split('-').map(Number);
 
-  if (!year || !month) {
-    return { startDate: '', endDate: '', label: 'this month' };
+  if (!year || !month || !day) return '';
+
+  const shifted = new Date(year, month - 1 + amount, 1);
+  const lastDay = new Date(
+    shifted.getFullYear(),
+    shifted.getMonth() + 1,
+    0
+  ).getDate();
+  shifted.setDate(Math.min(day, lastDay));
+  return formatIsoDate(shifted);
+}
+
+function getMembershipBookingPeriod(membershipAccess, referenceDate) {
+  let startDate = membershipAccess?.currentPeriodStart
+    ? formatIsoDate(new Date(membershipAccess.currentPeriodStart * 1000))
+    : membershipAccess?.currentPeriodStartDate || '';
+  let endDate = membershipAccess?.currentPeriodEnd
+    ? formatIsoDate(new Date(membershipAccess.currentPeriodEnd * 1000))
+    : membershipAccess?.currentPeriodEndDate || '';
+
+  if (!startDate || !endDate || !referenceDate) {
+    return { startDate, endDate };
   }
 
-  const start = new Date(year, month - 1, 1);
-  const end = new Date(year, month, 1);
+  while (referenceDate >= endDate) {
+    startDate = endDate;
+    endDate = shiftIsoMonth(endDate, 1);
+  }
 
-  return {
-    startDate: formatIsoDate(start),
-    endDate: formatIsoDate(end),
-    label: new Intl.DateTimeFormat('en-US', {
-      month: 'long',
-      year: 'numeric'
-    }).format(start)
-  };
+  while (referenceDate < startDate) {
+    endDate = startDate;
+    startDate = shiftIsoMonth(startDate, -1);
+  }
+
+  return { startDate, endDate };
+}
+
+function formatPeriodResetDate(isoDate) {
+  if (!isoDate) return '';
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric'
+  }).format(new Date(`${isoDate}T00:00:00`));
 }
 
 function formatClassTime(time) {
   return time.replaceAll('am', ' AM').replaceAll('pm', ' PM').toUpperCase();
+}
+
+function getClassStartTimeMs(classDate, classTime) {
+  const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(classDate || '');
+  const timeMatch = /(\d{1,2}):(\d{2})\s*(AM|PM)?/i.exec(classTime || '');
+
+  if (!dateMatch || !timeMatch) return Number.NaN;
+
+  let hour = Number(timeMatch[1]);
+  const minute = Number(timeMatch[2]);
+  const meridiem = String(timeMatch[3] || '').toUpperCase();
+
+  if (meridiem) {
+    hour %= 12;
+    if (meridiem === 'PM') hour += 12;
+  }
+
+  if (hour > 23 || minute > 59) return Number.NaN;
+
+  return (
+    Date.UTC(
+      Number(dateMatch[1]),
+      Number(dateMatch[2]) - 1,
+      Number(dateMatch[3]),
+      hour,
+      minute
+    ) -
+    gymUtcOffsetMinutes * 60 * 1000
+  );
 }
 
 function getClassTitleSize(name) {
@@ -177,11 +237,14 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
   const planSlug = String(
     membershipAccess?.planSlug || membershipAccess?.planName || ''
   ).toLowerCase();
-  const bookingMonth = getCalendarMonthRange(activeClassDate);
+  const bookingPeriod = getMembershipBookingPeriod(
+    membershipAccess,
+    activeClassDate
+  );
   const standardBookingsUsed = bookings.filter(
     (booking) =>
-      booking.classDate >= bookingMonth.startDate &&
-      booking.classDate < bookingMonth.endDate
+      booking.classDate >= bookingPeriod.startDate &&
+      booking.classDate < bookingPeriod.endDate
   ).length;
 
   useEffect(() => {
@@ -296,8 +359,11 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
       )}
       {planSlug === 'standard' && (
         <p className='mt-4 text-sm font-bold text-[#bdbdbd]'>
-          Standard bookings for {bookingMonth.label}: {standardBookingsUsed} of
-          3 used.
+          Standard bookings: {standardBookingsUsed} of 3 used
+          {bookingPeriod.endDate
+            ? ` · Resets ${formatPeriodResetDate(bookingPeriod.endDate)}`
+            : ''}
+          .
         </p>
       )}
       {planSlug === 'premium' && (
@@ -376,6 +442,16 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
           {visibleClasses.map((classItem) => {
             const isBooked = bookedClassIds.has(classItem.id);
             const isFull = classItem.availableSpots === 0;
+            const classStartTime = getClassStartTimeMs(
+              classItem.classDate,
+              classItem.time
+            );
+            const classStarted =
+              Number.isFinite(classStartTime) && Date.now() >= classStartTime;
+            const cancellationClosed =
+              isBooked &&
+              Number.isFinite(classStartTime) &&
+              Date.now() >= classStartTime - classCancellationCutoffMs;
             const basicBlocked = planSlug === 'basic' && !isBooked;
             const standardBlocked =
               planSlug === 'standard' &&
@@ -426,6 +502,8 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
                       (isFull && !isBooked) ||
                       basicBlocked ||
                       standardBlocked ||
+                      classStarted ||
+                      cancellationClosed ||
                       savingClassId === classItem.id
                     }
                     onClick={() => handleBooking(classItem)}
@@ -434,7 +512,11 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
                     {savingClassId === classItem.id
                       ? 'Saving...'
                       : isBooked
-                        ? 'Booked'
+                        ? cancellationClosed
+                          ? 'Cancellation closed'
+                          : 'Cancel booking'
+                        : classStarted
+                          ? 'Class started'
                         : basicBlocked
                           ? 'Not included'
                           : standardBlocked

@@ -95,6 +95,8 @@ const localDbDefaults = {
 const ADMIN_ROLE = "admin";
 const MEMBERSHIP_PERIOD_SECONDS = 30 * 24 * 60 * 60;
 const STANDARD_CLASS_BOOKING_LIMIT = 3;
+const CLASS_CANCELLATION_CUTOFF_MS = 30 * 60 * 1000;
+const GYM_UTC_OFFSET_MINUTES = 7 * 60;
 const TRAINER_BOOKING_LIMITS = {
   basic: 0,
   standard: 2,
@@ -710,6 +712,64 @@ function sanitizeClassBooking(payload) {
     category,
     capacity,
   };
+}
+
+function getClassStartTimeMs(booking) {
+  const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(
+    booking?.classDate || "",
+  );
+  const timeMatch = /(\d{1,2}):(\d{2})\s*(AM|PM)?/i.exec(
+    booking?.classTime || "",
+  );
+
+  if (!dateMatch || !timeMatch) {
+    return Number.NaN;
+  }
+
+  let hour = Number(timeMatch[1]);
+  const minute = Number(timeMatch[2]);
+  const meridiem = String(timeMatch[3] || "").toUpperCase();
+
+  if (meridiem) {
+    hour %= 12;
+    if (meridiem === "PM") hour += 12;
+  }
+
+  if (hour > 23 || minute > 59) {
+    return Number.NaN;
+  }
+
+  return (
+    Date.UTC(
+      Number(dateMatch[1]),
+      Number(dateMatch[2]) - 1,
+      Number(dateMatch[3]),
+      hour,
+      minute,
+    ) -
+    GYM_UTC_OFFSET_MINUTES * 60 * 1000
+  );
+}
+
+function getClassTimingRuleError(booking, isCancellation) {
+  const classStartTime = getClassStartTimeMs(booking);
+
+  if (!Number.isFinite(classStartTime)) {
+    return "The class start time is invalid.";
+  }
+
+  if (
+    isCancellation &&
+    Date.now() >= classStartTime - CLASS_CANCELLATION_CUTOFF_MS
+  ) {
+    return "Class bookings cannot be cancelled within 30 minutes of the start time.";
+  }
+
+  if (!isCancellation && Date.now() >= classStartTime) {
+    return "This class has already started.";
+  }
+
+  return "";
 }
 
 function sanitizeTrainerBooking(payload) {
@@ -1408,28 +1468,45 @@ async function getClassBookingMembershipAccess(memberEmail, memberName) {
   );
 }
 
-function getClassBookingPeriod(access) {
-  const startDate =
-    access.currentPeriodStartDate ||
-    formatIsoDate(access.currentPeriodStart * 1000);
-  const endDate =
-    access.currentPeriodEndDate ||
-    formatIsoDate(access.currentPeriodEnd * 1000);
-
-  return { startDate, endDate };
-}
-
-function getClassBookingMonth(classDate) {
-  const match = /^(\d{4})-(\d{2})-\d{2}$/.exec(classDate || "");
+function shiftIsoMonth(isoDate, amount) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate || "");
 
   if (!match) {
-    return { startDate: "", endDate: "" };
+    return "";
   }
 
   const year = Number(match[1]);
-  const monthIndex = Number(match[2]) - 1;
-  const startDate = formatIsoDate(new Date(Date.UTC(year, monthIndex, 1)));
-  const endDate = formatIsoDate(new Date(Date.UTC(year, monthIndex + 1, 1)));
+  const monthIndex = Number(match[2]) - 1 + amount;
+  const day = Number(match[3]);
+  const shifted = new Date(Date.UTC(year, monthIndex, 1));
+  const lastDay = new Date(
+    Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth() + 1, 0),
+  ).getUTCDate();
+  shifted.setUTCDate(Math.min(day, lastDay));
+  return shifted.toISOString().slice(0, 10);
+}
+
+function getClassBookingPeriod(access, referenceDate = formatIsoDate(Date.now())) {
+  let startDate =
+    access.currentPeriodStartDate ||
+    formatIsoDate(access.currentPeriodStart * 1000);
+  let endDate =
+    access.currentPeriodEndDate ||
+    formatIsoDate(access.currentPeriodEnd * 1000);
+
+  if (!startDate || !endDate || !referenceDate) {
+    return { startDate, endDate };
+  }
+
+  while (referenceDate >= endDate) {
+    startDate = endDate;
+    endDate = shiftIsoMonth(endDate, 1);
+  }
+
+  while (referenceDate < startDate) {
+    endDate = startDate;
+    startDate = shiftIsoMonth(startDate, -1);
+  }
 
   return { startDate, endDate };
 }
@@ -1454,7 +1531,7 @@ function getClassBookingRuleError(access, booking, periodBookingCount) {
   }
 
   if (periodBookingCount >= STANDARD_CLASS_BOOKING_LIMIT) {
-    return "Standard membership includes 3 class bookings per calendar month.";
+    return "Standard membership includes 3 class bookings per membership month.";
   }
 
   return "";
@@ -2969,6 +3046,12 @@ function toggleLocalClassBooking(booking, membershipAccess) {
   );
 
   if (existingIndex !== -1) {
+    const timingError = getClassTimingRuleError(bookings[existingIndex], true);
+
+    if (timingError) {
+      return { statusCode: 409, payload: { message: timingError } };
+    }
+
     bookings[existingIndex] = {
       ...bookings[existingIndex],
       active: false,
@@ -2976,7 +3059,16 @@ function toggleLocalClassBooking(booking, membershipAccess) {
       updatedAt: new Date().toISOString(),
     };
   } else {
-    const { startDate, endDate } = getClassBookingMonth(booking.classDate);
+    const timingError = getClassTimingRuleError(booking, false);
+
+    if (timingError) {
+      return { statusCode: 409, payload: { message: timingError } };
+    }
+
+    const { startDate, endDate } = getClassBookingPeriod(
+      membershipAccess,
+      booking.classDate,
+    );
     const periodBookingCount = bookings.filter(
       (storedBooking) =>
         storedBooking.memberEmail === booking.memberEmail &&
@@ -3052,6 +3144,13 @@ async function toggleClassBooking(request, response) {
     });
 
     if (existingBooking) {
+      const timingError = getClassTimingRuleError(existingBooking, true);
+
+      if (timingError) {
+        sendJson(response, 409, { message: timingError });
+        return;
+      }
+
       await bookingsCollection.updateOne(
         { memberEmail: booking.memberEmail, classId: booking.classId },
         {
@@ -3063,11 +3162,21 @@ async function toggleClassBooking(request, response) {
         },
       );
     } else {
+      const timingError = getClassTimingRuleError(booking, false);
+
+      if (timingError) {
+        sendJson(response, 409, { message: timingError });
+        return;
+      }
+
       membershipAccess = await getClassBookingMembershipAccess(
         booking.memberEmail,
         booking.memberName,
       );
-      const { startDate, endDate } = getClassBookingMonth(booking.classDate);
+      const { startDate, endDate } = getClassBookingPeriod(
+        membershipAccess,
+        booking.classDate,
+      );
       const periodBookingCount = await bookingsCollection.countDocuments({
         memberEmail: booking.memberEmail,
         active: { $ne: false },
