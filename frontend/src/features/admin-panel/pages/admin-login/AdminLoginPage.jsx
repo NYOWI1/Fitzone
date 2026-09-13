@@ -7,6 +7,7 @@ import {
 } from '@clerk/clerk-react';
 import { getAuthErrorMessage } from '../../../auth/authConfig';
 import { hasAdminAccess } from '../../adminAuth';
+import FitZoneLogo from '../../../../shared/ui/FitZoneLogo';
 
 const adminThemeStyle = {
   '--admin-red': '#d90429',
@@ -17,8 +18,7 @@ const adminThemeStyle = {
 };
 
 const brandClass = 'flex items-center gap-3.5';
-const logoClass =
-  'flex h-[46px] w-[46px] items-center justify-center rounded-2xl bg-[#d90429] text-[23px] font-extrabold text-white';
+const logoClass = 'h-[46px] w-[46px]';
 const brandTitleClass = 'm-0 mb-[5px] text-[23px] leading-none text-white';
 const brandLabelClass = 'block text-[10px] font-extrabold text-[#d90429]';
 const inputClass =
@@ -34,10 +34,10 @@ function getSecondFactor(resource) {
 
   return (
     priority
-      .map((strategy) =>
-        factors.find((factor) => factor.strategy === strategy)
-      )
-      .find(Boolean) || factors[0] || null
+      .map((strategy) => factors.find((factor) => factor.strategy === strategy))
+      .find(Boolean) ||
+    factors[0] ||
+    null
   );
 }
 
@@ -68,9 +68,7 @@ function getSecondFactorPreparePayload(factor) {
   return {
     strategy: factor?.strategy || 'totp',
     ...(factor?.phoneNumberId ? { phoneNumberId: factor.phoneNumberId } : {}),
-    ...(factor?.emailAddressId
-      ? { emailAddressId: factor.emailAddressId }
-      : {})
+    ...(factor?.emailAddressId ? { emailAddressId: factor.emailAddressId } : {})
   };
 }
 
@@ -91,7 +89,7 @@ function AdminLoginCard({ children, label = 'ADMIN LOGIN', title }) {
   return (
     <section className='relative z-[1] grid w-[min(100%,430px)] gap-5 rounded-[28px] border border-[#393939] bg-[#242424] p-7 shadow-[0_24px_70px_rgba(0,0,0,0.45)] max-[520px]:rounded-[22px] max-[520px]:p-5'>
       <div className={brandClass}>
-        <div className={logoClass}>F</div>
+        <FitZoneLogo className={logoClass} />
         <div>
           <h1 className={brandTitleClass}>FitZone</h1>
           <span className={brandLabelClass}>{label}</span>
@@ -264,7 +262,7 @@ function AdminLoginForm() {
       }
     >
       <div className={brandClass}>
-        <div className={logoClass}>F</div>
+        <FitZoneLogo className={logoClass} />
         <div>
           <h1 className={brandTitleClass}>FitZone</h1>
           <span className={brandLabelClass}>ADMIN LOGIN</span>

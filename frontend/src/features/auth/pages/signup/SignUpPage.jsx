@@ -5,6 +5,7 @@ import {
   AUTH_REDIRECT_AFTER_SIGNUP,
   getAuthErrorMessage
 } from '../../authConfig';
+import FitZoneLogo from '../../../../shared/ui/FitZoneLogo';
 
 const pageContent = 'relative z-[1] mx-auto max-w-[1140px]';
 const authCard =
@@ -322,9 +323,7 @@ function SignUpPage({ clerkEnabled }) {
           className='inline-flex items-center gap-3.5 text-white no-underline'
           href='/'
         >
-          <span className='grid h-10 w-10 place-items-center rounded-[14px] bg-[#e6002e] text-[21px] font-black max-[640px]:h-8 max-[640px]:w-8 max-[640px]:rounded-[10px] max-[640px]:text-base'>
-            F
-          </span>
+          <FitZoneLogo className='h-10 w-10 max-[640px]:h-8 max-[640px]:w-8' />
           <strong className='text-[23px] tracking-normal max-[640px]:text-base'>
             FITZONE
           </strong>

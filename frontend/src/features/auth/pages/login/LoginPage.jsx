@@ -13,6 +13,7 @@ import {
 } from '../../authConfig';
 import { getStripePaymentAccess } from '../../../../shared/api';
 import { getSavedPaidMembershipAccess } from '../../../membership-flow/shared/planSelection';
+import FitZoneLogo from '../../../../shared/ui/FitZoneLogo';
 
 const authCard =
   'rounded-[30px] border border-[#3a3a3a] bg-[#242424] shadow-[0_24px_70px_rgba(0,0,0,0.5)] max-[640px]:rounded-[22px]';
@@ -758,9 +759,7 @@ function LoginForm({ clerkEnabled }) {
         <>
           <div className='my-[13px] mb-1.5 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-[18px] text-[#bdbdbd] max-[640px]:my-0 max-[640px]:gap-3'>
             <span className='h-px bg-[#424242]'></span>
-            <p className='m-0 text-sm max-[640px]:text-xs'>
-              or continue with
-            </p>
+            <p className='m-0 text-sm max-[640px]:text-xs'>or continue with</p>
             <span className='h-px bg-[#424242]'></span>
           </div>
 
@@ -816,9 +815,7 @@ function LoginPage({ clerkEnabled }) {
             className='inline-flex w-fit items-center gap-4 text-white no-underline'
             href='/'
           >
-            <span className='grid h-[55px] w-[55px] place-items-center rounded-[18px] bg-[#e6002e] text-[26px] font-black max-[640px]:h-10 max-[640px]:w-10 max-[640px]:rounded-[12px] max-[640px]:text-xl'>
-              F
-            </span>
+            <FitZoneLogo className='h-[55px] w-[55px] max-[640px]:h-10 max-[640px]:w-10' />
             <div>
               <strong className='block text-[29px] leading-none max-[640px]:text-xl'>
                 FITZONE
@@ -870,9 +867,7 @@ function LoginPage({ clerkEnabled }) {
               className='mb-4 inline-flex items-center gap-3 text-white no-underline max-[640px]:mb-2'
               href='/'
             >
-              <span className='grid h-10 w-10 place-items-center rounded-xl bg-[#e6002e] text-xl font-black max-[640px]:h-9 max-[640px]:w-9 max-[640px]:text-lg'>
-                F
-              </span>
+              <FitZoneLogo className='h-10 w-10 max-[640px]:h-9 max-[640px]:w-9' />
               <div>
                 <strong className='block text-xl leading-none'>FITZONE</strong>
                 <small className='mt-1 block text-[8px] font-black text-[#e6002e]'>

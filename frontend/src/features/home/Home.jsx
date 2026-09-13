@@ -15,6 +15,7 @@ import {
   getTrainers
 } from '../../shared/api';
 import { attachTrainerImage } from '../../shared/trainers';
+import FitZoneLogo from '../../shared/ui/FitZoneLogo';
 import { getPlanCtaLabel } from '../membership-flow/shared/planSelection';
 import TrainerDetail from '../trainer-detail/TrainerDetail';
 
@@ -443,9 +444,7 @@ function Home({ clerkEnabled }) {
             onClick={() => handleNavClick('home')}
           >
             <div className='flex items-center justify-center gap-2'>
-              <div className='grid h-8 w-8 place-items-center rounded-[9px] bg-[#e6002e] text-sm font-extrabold text-white'>
-                F
-              </div>
+              <FitZoneLogo className='h-8 w-8' />
               <div className='text-left'>
                 <strong className='block text-[15px] leading-none text-white'>
                   FITZONE
@@ -575,9 +574,7 @@ function Home({ clerkEnabled }) {
         </div>
 
         <div className='flex min-w-[170px] items-center gap-2.5 max-[980px]:min-w-0 max-[640px]:hidden'>
-          <div className='grid h-9 w-9 place-items-center rounded-[11px] bg-[#e6002e] text-base font-extrabold'>
-            F
-          </div>
+          <FitZoneLogo className='h-9 w-9' />
           <div>
             <h2 className='m-0 text-lg leading-none'>FITZONE</h2>
             <span className='mt-[3px] block text-[8px] font-extrabold text-[#e6002e]'>
@@ -744,9 +741,7 @@ function Home({ clerkEnabled }) {
                 key={plan.slug || plan.name}
               >
                 {plan.popular && (
-                  <span
-                    className='mx-auto mb-3.5 mt-[-14px] table rounded-[20px] bg-[#e6002e] px-[22px] py-1.5 text-[9px] font-black text-white'
-                  >
+                  <span className='mx-auto mb-3.5 mt-[-14px] table rounded-[20px] bg-[#e6002e] px-[22px] py-1.5 text-[9px] font-black text-white'>
                     MOST POPULAR
                   </span>
                 )}

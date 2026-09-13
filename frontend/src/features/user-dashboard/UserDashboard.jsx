@@ -12,6 +12,7 @@ import PaymentsPage from './pages/payments/PaymentsPage';
 import ProgressPage from './pages/progress/ProgressPage';
 import SettingsPage from './pages/settings/SettingsPage';
 import TrainersPage from './pages/trainers/TrainersPage';
+import FitZoneLogo from '../../shared/ui/FitZoneLogo';
 
 const navItems = [
   'Dashboard',
@@ -78,9 +79,7 @@ function DashboardLayout({ activePage, children, membershipAccess, user }) {
           className='flex min-w-0 items-center gap-3 text-white no-underline'
           href='/'
         >
-          <span className='grid h-10 w-10 flex-none place-items-center rounded-[14px] bg-[#e6002e] text-xl font-black'>
-            F
-          </span>
+          <FitZoneLogo className='h-10 w-10' />
           <div className='min-w-0'>
             <strong className='block truncate text-xl leading-none'>
               FITZONE
@@ -128,9 +127,7 @@ function DashboardLayout({ activePage, children, membershipAccess, user }) {
           className='flex items-center gap-3.5 px-2 text-white no-underline max-[680px]:gap-2.5 max-[680px]:px-1'
           href='/'
         >
-          <span className='grid h-11.75 w-11.75 flex-none place-items-center rounded-[18px] bg-[#e6002e] text-2xl font-black shadow-[0_14px_28px_rgba(230,0,46,0.24)] max-[680px]:h-10 max-[680px]:w-10 max-[680px]:rounded-[14px] max-[680px]:text-xl'>
-            F
-          </span>
+          <FitZoneLogo className='h-11.75 w-11.75 drop-shadow-[0_14px_14px_rgba(230,0,46,0.24)] max-[680px]:h-10 max-[680px]:w-10' />
           <div>
             <strong className='block text-[25px] leading-none max-[680px]:text-xl'>
               FITZONE

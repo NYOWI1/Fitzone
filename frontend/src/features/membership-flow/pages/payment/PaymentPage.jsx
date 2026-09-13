@@ -5,7 +5,10 @@ import {
   createStripePaymentIntent,
   getMembershipPlans
 } from '../../../../shared/api';
-import { isStripeEnabled, stripePublishableKey } from '../../../../app/config/stripe';
+import {
+  isStripeEnabled,
+  stripePublishableKey
+} from '../../../../app/config/stripe';
 import {
   getPlanFromSelection,
   getPlanMonthlyLabel,
@@ -13,6 +16,7 @@ import {
   savePaidMembershipAccess,
   saveSelectedPlan
 } from '../../shared/planSelection';
+import FitZoneLogo from '../../../../shared/ui/FitZoneLogo';
 
 const stripeScriptUrl = 'https://js.stripe.com/v3/';
 const pageClass =
@@ -238,17 +242,24 @@ function PaymentPageContent({ clerkEmail = '' }) {
       return false;
     }
 
-    const result = await stripeClient.retrievePaymentIntent(promptPayClientSecret);
+    const result = await stripeClient.retrievePaymentIntent(
+      promptPayClientSecret
+    );
 
     if (result.error) {
       if (showPendingMessage) {
-        setPaymentMessage(result.error.message || 'Unable to check PromptPay status.');
+        setPaymentMessage(
+          result.error.message || 'Unable to check PromptPay status.'
+        );
       }
       return false;
     }
 
     if (isPaymentSuccessful(result.paymentIntent)) {
-      completePayment('PromptPay payment succeeded. Redirecting to login...', result.paymentIntent);
+      completePayment(
+        'PromptPay payment succeeded. Redirecting to login...',
+        result.paymentIntent
+      );
       return true;
     }
 
@@ -282,7 +293,9 @@ function PaymentPageContent({ clerkEmail = '' }) {
     }
 
     if (!isStripeEnabled) {
-      setPaymentMessage('Add VITE_STRIPE_PUBLISHABLE_KEY to .env and restart Vite.');
+      setPaymentMessage(
+        'Add VITE_STRIPE_PUBLISHABLE_KEY to .env and restart Vite.'
+      );
       return;
     }
 
@@ -297,7 +310,9 @@ function PaymentPageContent({ clerkEmail = '' }) {
     }
 
     if (!isPromptPay && (!cardComplete || !cardElementRef.current)) {
-      setPaymentMessage(cardError || 'Enter a complete card number before paying.');
+      setPaymentMessage(
+        cardError || 'Enter a complete card number before paying.'
+      );
       return;
     }
 
@@ -341,7 +356,8 @@ function PaymentPageContent({ clerkEmail = '' }) {
 
         if (confirmation.error) {
           throw new Error(
-            confirmation.error.message || 'Stripe could not create a PromptPay QR code.'
+            confirmation.error.message ||
+              'Stripe could not create a PromptPay QR code.'
           );
         }
 
@@ -391,7 +407,8 @@ function PaymentPageContent({ clerkEmail = '' }) {
 
       if (confirmation.error) {
         throw new Error(
-          confirmation.error.message || 'Stripe could not confirm the card payment.'
+          confirmation.error.message ||
+            'Stripe could not confirm the card payment.'
         );
       }
 
@@ -426,11 +443,14 @@ function PaymentPageContent({ clerkEmail = '' }) {
       <div className='pointer-events-none absolute -left-32 -top-24 h-116 w-116 rounded-full bg-[rgba(230,0,46,0.16)]'></div>
       <div className='pointer-events-none absolute -bottom-36 -right-6 h-108 w-108 rounded-full bg-[rgba(255,213,79,0.09)]'></div>
 
-      <header className={`${containerClass} flex min-h-16 flex-col gap-3 rounded-3xl border border-[#3a3a3a] bg-[#181818] p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6`}>
-        <a className='inline-flex items-center gap-3.5 text-white no-underline' href='/'>
-          <span className='grid h-10 w-10 place-items-center rounded-2xl bg-[#e6002e] text-xl font-black'>
-            F
-          </span>
+      <header
+        className={`${containerClass} flex min-h-16 flex-col gap-3 rounded-3xl border border-[#3a3a3a] bg-[#181818] p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6`}
+      >
+        <a
+          className='inline-flex items-center gap-3.5 text-white no-underline'
+          href='/'
+        >
+          <FitZoneLogo className='h-10 w-10' />
           <strong className='text-2xl'>FITZONE</strong>
         </a>
         <p className='m-0 text-[13px] font-black text-[#bdbdbd]'>
@@ -442,9 +462,12 @@ function PaymentPageContent({ clerkEmail = '' }) {
         <span className='mb-3 block text-xs font-black uppercase text-[#e6002e]'>
           Secure Stripe Sandbox Checkout
         </span>
-        <h1 className='m-0 mb-2 text-3xl leading-none sm:text-4xl'>Payment Details</h1>
+        <h1 className='m-0 mb-2 text-3xl leading-none sm:text-4xl'>
+          Payment Details
+        </h1>
         <p className='m-0 max-w-2xl text-[15px] leading-normal text-[#bdbdbd]'>
-          Cards renew automatically each month. PromptPay renewals are paid manually.
+          Cards renew automatically each month. PromptPay renewals are paid
+          manually.
         </p>
       </section>
 
@@ -534,7 +557,10 @@ function PaymentPageContent({ clerkEmail = '' }) {
                     <img
                       alt='PromptPay QR code'
                       className='w-full max-w-64 rounded-2xl bg-white p-3'
-                      src={promptPayQrCode.image_url_svg || promptPayQrCode.image_url_png}
+                      src={
+                        promptPayQrCode.image_url_svg ||
+                        promptPayQrCode.image_url_png
+                      }
                     />
                     <p className='mb-0 mt-3 text-[#bdbdbd]'>
                       Scan this QR code with your banking app.
@@ -549,20 +575,30 @@ function PaymentPageContent({ clerkEmail = '' }) {
             )}
 
             {!isStripeEnabled && (
-              <p className={messageClass}>Add VITE_STRIPE_PUBLISHABLE_KEY to `.env`.</p>
+              <p className={messageClass}>
+                Add VITE_STRIPE_PUBLISHABLE_KEY to `.env`.
+              </p>
             )}
             {stripeStatus === 'error' && (
               <p className={messageClass}>Stripe.js could not load.</p>
             )}
-            {!isPromptPay && cardError && <p className={messageClass}>{cardError}</p>}
+            {!isPromptPay && cardError && (
+              <p className={messageClass}>{cardError}</p>
+            )}
           </section>
 
           <aside className={`${cardClass} overflow-hidden p-5 sm:p-8`}>
             <h2 className='m-0 mb-5 text-2xl'>Order Summary</h2>
             <div className='grid gap-2 rounded-2xl border border-[#e6002e] p-5'>
-              <span className='text-xs font-black text-[#e6002e]'>Selected Plan</span>
-              <strong className='text-xl'>{selectedPlan.name} Membership</strong>
-              <b className='text-[#ffd54f]'>{getPlanMonthlyLabel(selectedPlan)}/month</b>
+              <span className='text-xs font-black text-[#e6002e]'>
+                Selected Plan
+              </span>
+              <strong className='text-xl'>
+                {selectedPlan.name} Membership
+              </strong>
+              <b className='text-[#ffd54f]'>
+                {getPlanMonthlyLabel(selectedPlan)}/month
+              </b>
             </div>
 
             <div className='grid gap-4 border-b border-[#3a3a3a] py-6'>
@@ -586,7 +622,13 @@ function PaymentPageContent({ clerkEmail = '' }) {
             </div>
 
             {paymentMessage && (
-              <p className={paymentStatus === 'success' ? successMessageClass : messageClass}>
+              <p
+                className={
+                  paymentStatus === 'success'
+                    ? successMessageClass
+                    : messageClass
+                }
+              >
                 {paymentMessage}
               </p>
             )}

@@ -6,6 +6,7 @@ import {
   getPlanVariant,
   saveSelectedPlan
 } from '../../shared/planSelection';
+import FitZoneLogo from '../../../../shared/ui/FitZoneLogo';
 
 const pageContent = 'relative z-[1] mx-auto max-w-[1140px]';
 const flowNav = `${pageContent} flex min-h-[66px] items-center justify-between rounded-[22px] border border-[#3a3a3a] bg-[#181818] py-3 pl-6 pr-7 max-[640px]:items-start max-[640px]:flex-col max-[640px]:gap-3.5 max-[640px]:p-[18px]`;
@@ -128,9 +129,7 @@ function ChoosePlanPage() {
 
       <header className={flowNav}>
         <a className={flowBrand} href='/'>
-          <span className='grid h-10 w-10 place-items-center rounded-[14px] bg-[#e6002e] text-[21px] font-black'>
-            F
-          </span>
+          <FitZoneLogo className='h-10 w-10' />
           <strong className='text-[23px] tracking-normal'>FITZONE</strong>
         </a>
         <p className='m-0 text-[13px] font-black text-[#bdbdbd]'>

@@ -19,6 +19,7 @@ import {
 } from './adminPanelUtils';
 import { hasAdminAccess } from './adminAuth';
 import { getSiteSettings } from '../../shared/api';
+import FitZoneLogo from '../../shared/ui/FitZoneLogo';
 
 const adminThemeStyle = {
   '--admin-red': '#d90429',
@@ -33,8 +34,7 @@ const adminThemeStyle = {
   '--admin-muted': '#b8b8b8'
 };
 const brandClass = 'flex items-center gap-3.5';
-const logoClass =
-  'flex h-11.5 w-11.5 items-center justify-center rounded-2xl bg-[#d90429] text-[23px] font-extrabold text-white';
+const logoClass = 'h-11.5 w-11.5';
 const brandTitleClass = 'm-0 mb-1.25 text-[23px] leading-none text-white';
 const brandLabelClass = 'block text-[10px] font-extrabold text-[#d90429]';
 const mobileBarClass =
@@ -70,13 +70,7 @@ function getAdminProfile(user) {
   };
 }
 
-function AdminAccessMessage({
-  action,
-  brandInitial,
-  brandName,
-  message,
-  title
-}) {
+function AdminAccessMessage({ action, brandName, message, title }) {
   return (
     <main
       className='relative grid min-h-screen place-items-center overflow-hidden bg-[#0f0f0f] p-5 font-sans text-white'
@@ -87,7 +81,7 @@ function AdminAccessMessage({
 
       <section className='relative z-1 grid w-[min(100%,430px)] gap-5 rounded-[28px] border border-[#393939] bg-[#242424] p-7 shadow-[0_24px_70px_rgba(0,0,0,0.45)] max-[520px]:rounded-[22px] max-[520px]:p-5'>
         <div className={brandClass}>
-          <div className={logoClass}>{brandInitial}</div>
+          <FitZoneLogo className={logoClass} />
           <div>
             <h1 className={brandTitleClass}>{brandName}</h1>
             <span className={brandLabelClass}>ADMIN ACCESS</span>
@@ -115,14 +109,13 @@ function RedirectToAdminLogin() {
   return null;
 }
 
-function ClerkAdminGate({ brandInitial, brandName, children }) {
+function ClerkAdminGate({ brandName, children }) {
   const { signOut } = useClerk();
   const { isLoaded, isSignedIn, user } = useUser();
 
   if (!isLoaded) {
     return (
       <AdminAccessMessage
-        brandInitial={brandInitial}
         brandName={brandName}
         message='Checking your Clerk session before loading the admin panel.'
         title='Checking access'
@@ -146,7 +139,6 @@ function ClerkAdminGate({ brandInitial, brandName, children }) {
             Sign out
           </button>
         }
-        brandInitial={brandInitial}
         brandName={brandName}
         message='Your Clerk account is signed in, but it does not have admin access.'
         title='Access denied'
@@ -163,7 +155,6 @@ function AdminPanelShell({ onAdminSignOut }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [siteSettings, setSiteSettings] = useState({});
   const brandName = siteSettings.brand?.name || 'Gym';
-  const brandInitial = brandName.trim().charAt(0).toUpperCase() || 'G';
   const adminProfile = getAdminProfile(user);
 
   useEffect(() => {
@@ -220,7 +211,7 @@ function AdminPanelShell({ onAdminSignOut }) {
 
       <header className={mobileBarClass}>
         <div className={brandClass}>
-          <div className={logoClass}>{brandInitial}</div>
+          <FitZoneLogo className={logoClass} />
           <div>
             <h1 className={brandTitleClass}>{brandName}</h1>
             <span className={brandLabelClass}>ADMIN PANEL</span>
@@ -261,7 +252,7 @@ function AdminPanelShell({ onAdminSignOut }) {
         aria-label='Admin navigation'
       >
         <div className={brandClass}>
-          <div className={logoClass}>{brandInitial}</div>
+          <FitZoneLogo className={logoClass} />
           <div>
             <h1 className={brandTitleClass}>{brandName}</h1>
             <span className={brandLabelClass}>ADMIN PANEL</span>
@@ -342,7 +333,6 @@ function AdminPanelShell({ onAdminSignOut }) {
 function AdminPanel({ clerkEnabled }) {
   const [siteSettings, setSiteSettings] = useState({});
   const brandName = siteSettings.brand?.name || 'Gym';
-  const brandInitial = brandName.trim().charAt(0).toUpperCase() || 'G';
 
   useEffect(() => {
     let isCurrent = true;
@@ -374,7 +364,6 @@ function AdminPanel({ clerkEnabled }) {
             VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
           </code>
         }
-        brandInitial={brandInitial}
         brandName={brandName}
         message='Add your Clerk publishable key to .env and restart the dev server to enable admin authentication.'
         title='Connect Clerk'
@@ -383,7 +372,7 @@ function AdminPanel({ clerkEnabled }) {
   }
 
   return (
-    <ClerkAdminGate brandInitial={brandInitial} brandName={brandName}>
+    <ClerkAdminGate brandName={brandName}>
       {({ onAdminSignOut }) => (
         <AdminPanelShell onAdminSignOut={onAdminSignOut} />
       )}
