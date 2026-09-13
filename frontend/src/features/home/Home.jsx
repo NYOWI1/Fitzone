@@ -40,7 +40,7 @@ const buttonBase =
   'cursor-pointer rounded-[10px] border-0 px-6 py-[11px] font-sans text-[11px] font-extrabold max-[560px]:px-4';
 const outlineButton = `${buttonBase} border border-[#454545] bg-[rgba(255,255,255,0.03)] text-white transition hover:border-[#e6002e] hover:bg-[#1d1114]`;
 const redButton = `${buttonBase} bg-[#e6002e] text-white shadow-[0_12px_26px_rgba(230,0,46,0.2)] transition hover:bg-[#ff123e]`;
-const goldButton = `${buttonBase} bg-[#ffd34d] text-[#111] shadow-[0_12px_26px_rgba(255,211,77,0.16)] transition hover:bg-[#ffe17c]`;
+const goldButton = redButton;
 const sectionClass =
   'flex min-h-screen w-full flex-col justify-center bg-[linear-gradient(180deg,#171717,#111)] px-[max(36px,5vw)] py-[90px] max-[980px]:min-h-0 max-[980px]:justify-start max-[980px]:px-[22px] max-[980px]:py-[72px] max-[560px]:px-4 max-[560px]:py-14 min-[1200px]:px-[6vw]';
 const sectionTitle =
@@ -52,24 +52,24 @@ const statusText =
 
 const classColorStyles = {
   green: {
-    card: 'border-t-[#39e600]',
-    label: 'bg-[#39e600] text-[#111]'
+    card: 'border-t-[#e6002e]',
+    label: 'bg-[#e6002e] text-white'
   },
   red: {
-    card: 'border-t-[#ff1e1e]',
-    label: 'bg-[#ff1e1e] text-white'
+    card: 'border-t-[#e6002e]',
+    label: 'bg-[#e6002e] text-white'
   },
   gray: {
-    card: 'border-t-[#cfcfcf]',
-    label: 'bg-[#bfbfbf] text-white'
+    card: 'border-t-[#e6002e]',
+    label: 'bg-[#e6002e] text-white'
   },
   teal: {
-    card: 'border-t-[#05735e]',
-    label: 'bg-[#05735e] text-white'
+    card: 'border-t-[#e6002e]',
+    label: 'bg-[#e6002e] text-white'
   },
   yellow: {
-    card: 'border-t-[#ffd34d]',
-    label: 'bg-[#ffd34d] text-[#111]'
+    card: 'border-t-[#e6002e]',
+    label: 'bg-[#e6002e] text-white'
   }
 };
 
@@ -738,7 +738,7 @@ function Home({ clerkEnabled }) {
           <div className='grid w-full grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] items-center gap-[clamp(24px,3vw,42px)]'>
             {plans.map((plan) => (
               <div
-                className={`min-h-0 rounded-[14px] border border-[#373737] bg-[#202020] px-[22px] pb-[22px] pt-7 shadow-[0_18px_42px_rgba(0,0,0,0.34)] transition hover:-translate-y-1.5 hover:shadow-[0_24px_50px_rgba(0,0,0,0.44)] min-[1200px]:px-7 min-[1200px]:pb-[26px] min-[1200px]:pt-8 max-[980px]:hover:translate-y-0 max-[560px]:rounded-xl max-[560px]:px-4 max-[560px]:pb-5 max-[560px]:pt-6 ${plan.premium ? 'border-t-[7px] border-t-[#ffd34d] hover:border-[#ffd34d]' : 'border-t-[7px] border-t-[#e6002e] hover:border-[#e6002e] hover:bg-[linear-gradient(180deg,#211014,#161616)]'}`}
+                className='min-h-0 rounded-[14px] border border-[#373737] border-t-[7px] border-t-[#e6002e] bg-[#202020] px-[22px] pb-[22px] pt-7 shadow-[0_18px_42px_rgba(0,0,0,0.34)] transition hover:-translate-y-1.5 hover:border-[#e6002e] hover:bg-[linear-gradient(180deg,#211014,#161616)] hover:shadow-[0_24px_50px_rgba(0,0,0,0.44)] min-[1200px]:px-7 min-[1200px]:pb-[26px] min-[1200px]:pt-8 max-[980px]:hover:translate-y-0 max-[560px]:rounded-xl max-[560px]:px-4 max-[560px]:pb-5 max-[560px]:pt-6'
                 key={plan.slug || plan.name}
               >
                 {plan.popular && (
@@ -752,9 +752,7 @@ function Home({ clerkEnabled }) {
                 <p className='mb-3.5 mt-0 text-center text-[11px] font-bold leading-[1.35] text-[#aaa] min-[1200px]:text-xs max-[560px]:text-[12px]'>
                   {plan.desc}
                 </p>
-                <h4
-                  className={`mb-[22px] mt-0 text-[38px] leading-none min-[1200px]:mb-6 min-[1200px]:text-[46px] max-[560px]:mb-5 max-[560px]:text-[34px] ${plan.premium ? 'text-[#ffd34d]' : ''}`}
-                >
+                <h4 className='mb-[22px] mt-0 text-[38px] leading-none text-white min-[1200px]:mb-6 min-[1200px]:text-[46px] max-[560px]:mb-5 max-[560px]:text-[34px]'>
                   {plan.price}
                   <small className='ml-3.5 text-xs text-[#a8a8a8]'>
                     /month
@@ -770,9 +768,7 @@ function Home({ clerkEnabled }) {
                       className='flex items-center gap-[9px] text-[11px] font-bold text-[#d3d3d3] min-[1200px]:text-xs max-[560px]:text-xs'
                       key={feature}
                     >
-                      <span
-                        className={`grid h-4 w-4 flex-[0_0_16px] place-items-center rounded-full text-[9px] min-[1200px]:h-[19px] min-[1200px]:w-[19px] min-[1200px]:flex-[0_0_19px] min-[1200px]:text-[10px] ${plan.premium ? 'bg-[#ffd34d] text-[#111]' : 'bg-[#e6002e] text-white'}`}
-                      >
+                      <span className='grid h-4 w-4 flex-[0_0_16px] place-items-center rounded-full bg-[#e6002e] text-[9px] text-white min-[1200px]:h-[19px] min-[1200px]:w-[19px] min-[1200px]:flex-[0_0_19px] min-[1200px]:text-[10px]'>
                         ✓
                       </span>
                       {feature}

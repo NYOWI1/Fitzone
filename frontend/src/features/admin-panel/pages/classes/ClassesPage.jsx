@@ -28,7 +28,7 @@ const filterTabClass =
   'min-h-[30px] rounded-[10px] bg-transparent px-3.5 text-xs font-extrabold text-[#b8b8b8] max-[980px]:flex-1 max-[980px]:basis-auto';
 const activeFilterTabClass = `${filterTabClass} bg-[#d90429] text-white`;
 const categoryPillClass =
-  'inline-flex justify-center rounded-full bg-[rgba(77,163,255,0.12)] px-2.5 py-[7px] text-[11px] font-black text-[#4da3ff] max-[980px]:min-h-[34px] max-[980px]:items-center max-[560px]:justify-center';
+  'inline-flex justify-center rounded-full bg-[rgba(217,4,41,0.12)] px-2.5 py-[7px] text-[11px] font-black text-[#d90429] max-[980px]:min-h-[34px] max-[980px]:items-center max-[560px]:justify-center';
 const rowActionClass =
   'min-h-[34px] rounded-[11px] border border-[#393939] bg-transparent text-xs font-extrabold text-[#eaeaea] max-[980px]:flex max-[980px]:items-center max-[980px]:justify-center';
 const classColorClasses = {
@@ -692,7 +692,10 @@ export default function ClassesPage() {
 
               <label>
                 <span>Period</span>
-                <input readOnly value={getPeriodLabel(classForm.values.period)} />
+                <input
+                  readOnly
+                  value={getPeriodLabel(classForm.values.period)}
+                />
               </label>
 
               <label>

@@ -169,18 +169,19 @@ function getWeekActivity(attendanceHistory) {
   });
 }
 
-function StatCard({ color, label, value }) {
+function StatCard({ label, value }) {
   return (
     <article className='grid min-h-24 grid-cols-1 place-items-center gap-2 rounded-[18px] border border-[#414141] bg-[#252525] p-3 text-center shadow-[0_20px_50px_rgba(0,0,0,0.26)] sm:min-h-28 sm:grid-cols-[52px_minmax(0,1fr)] sm:place-items-stretch sm:items-center sm:gap-4 sm:rounded-[24px] sm:p-5 sm:text-left'>
-      <span
-        className='grid h-10 w-10 place-items-center rounded-full text-lg font-black sm:h-13 sm:w-13 sm:text-2xl'
-        style={{ backgroundColor: `${color}24`, color }}
-      >
+      <span className='grid h-10 w-10 place-items-center rounded-full bg-[rgba(230,0,46,0.14)] text-lg font-black text-[#e6002e] sm:h-13 sm:w-13 sm:text-2xl'>
         {value}
       </span>
       <div className='min-w-0'>
-        <strong className='block text-[11px] leading-tight sm:text-sm'>{label}</strong>
-        <small className='mt-1 hidden text-xs text-[#a9a9a9] sm:block'>This month</small>
+        <strong className='block text-[11px] leading-tight sm:text-sm'>
+          {label}
+        </strong>
+        <small className='mt-1 hidden text-xs text-[#a9a9a9] sm:block'>
+          This month
+        </small>
       </div>
     </article>
   );
@@ -317,27 +318,23 @@ export default function DashboardPage({
         <>
           <div className='mt-5 grid grid-cols-3 gap-2 sm:mt-7 sm:gap-5'>
             <StatCard
-              color='#e6002e'
               label='Classes Booked'
               value={summary.classesBookedThisMonth || 0}
             />
             <StatCard
-              color='#30e600'
               label='Active Days'
               value={summary.activeDaysThisMonth || 0}
             />
-            <StatCard
-              color='#4da3ff'
-              label='Gym Visits'
-              value={summary.visitsThisMonth || 0}
-            />
+            <StatCard label='Gym Visits' value={summary.visitsThisMonth || 0} />
           </div>
 
           <div className='mt-5 grid grid-cols-1 gap-4 sm:mt-6 sm:gap-6 2xl:grid-cols-2'>
             <article className='relative overflow-hidden rounded-[22px] border border-[#414141] bg-[#252525] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.3)] before:absolute before:inset-x-0 before:top-0 before:h-1.5 before:bg-[#e6002e] sm:rounded-[28px] sm:p-6'>
               <div className='flex flex-wrap items-start justify-between gap-3'>
                 <div>
-                  <h2 className='m-0 text-xl font-black sm:text-2xl'>PT Booking</h2>
+                  <h2 className='m-0 text-xl font-black sm:text-2xl'>
+                    PT Booking
+                  </h2>
                   <p className='mb-0 mt-1 text-sm text-[#bdbdbd]'>
                     Your personal training schedule
                   </p>
@@ -380,10 +377,12 @@ export default function DashboardPage({
               </a>
             </article>
 
-            <article className='relative overflow-hidden rounded-[22px] border border-[#414141] bg-[#252525] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.3)] before:absolute before:inset-x-0 before:top-0 before:h-1.5 before:bg-[#ffd54f] sm:rounded-[28px] sm:p-6'>
+            <article className='relative overflow-hidden rounded-[22px] border border-[#414141] bg-[#252525] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.3)] before:absolute before:inset-x-0 before:top-0 before:h-1.5 before:bg-[#e6002e] sm:rounded-[28px] sm:p-6'>
               <div className='flex flex-wrap items-start justify-between gap-3'>
                 <div>
-                  <h2 className='m-0 text-xl font-black sm:text-2xl'>Crowd Detection</h2>
+                  <h2 className='m-0 text-xl font-black sm:text-2xl'>
+                    Crowd Detection
+                  </h2>
                   <p className='mb-0 mt-1 text-sm text-[#bdbdbd]'>
                     Live gym capacity status before you go
                   </p>
@@ -425,7 +424,7 @@ export default function DashboardPage({
                 </div>
               ) : (
                 <div className='mt-6 flex min-h-32 flex-col justify-center rounded-[20px] border border-[#554d29] bg-[#2c291f] p-5'>
-                  <strong className='text-lg text-[#ffd54f]'>
+                  <strong className='text-lg text-[#e6002e]'>
                     Awaiting live update
                   </strong>
                   <p className='mb-0 mt-3 max-w-120 text-sm leading-relaxed text-[#c9c3aa]'>
@@ -483,7 +482,7 @@ export default function DashboardPage({
                   </p>
                 </div>
                 <a
-                  className='text-sm font-black text-[#30e600] no-underline'
+                  className='text-sm font-black text-[#e6002e] no-underline'
                   href='#Progress'
                 >
                   View attendance

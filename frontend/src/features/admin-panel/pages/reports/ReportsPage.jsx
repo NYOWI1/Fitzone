@@ -14,10 +14,10 @@ import {
 import AdminLoadingSkeleton from '../../components/AdminLoadingSkeleton';
 
 const reportToneClasses = {
-  blue: 'text-[#4da3ff]',
-  green: 'text-[#39e600]',
+  blue: 'text-[#e6002e]',
+  green: 'text-[#e6002e]',
   red: 'text-[#d90429]',
-  yellow: 'text-[#ffd54f]'
+  yellow: 'text-[#e6002e]'
 };
 const reportChartWidth = 760;
 const reportChartHeight = 240;
@@ -25,8 +25,8 @@ const reportChartBaseline = 184;
 const reportChartTop = 30;
 const reportChartLeft = 46;
 const reportChartRight = 26;
-const reportLineColors = ['#4da3ff', '#ffd54f', '#39e600', '#d90429'];
-const attendanceLineColors = ['#39e600', '#ffd54f', '#4da3ff', '#d90429'];
+const reportLineColors = ['#e6002e', '#ffffff', '#8f8f8f', '#9f001f'];
+const attendanceLineColors = ['#e6002e', '#ffffff', '#8f8f8f', '#9f001f'];
 const monthOptions = Array.from({ length: 12 }, (_, index) => ({
   label: new Date(new Date().getFullYear(), index, 1).toLocaleString('en-US', {
     month: 'long'
@@ -487,7 +487,7 @@ export default function ReportsPage() {
                   {attendanceTotal} recorded check-ins across selected years
                 </p>
               </div>
-              <span className='rounded-[14px] border border-[rgba(57,230,0,0.25)] bg-[rgba(57,230,0,0.1)] px-4 py-2 text-sm font-black text-[#39e600]'>
+              <span className='rounded-[14px] border border-[rgba(230,0,46,0.3)] bg-[rgba(230,0,46,0.1)] px-4 py-2 text-sm font-black text-[#e6002e]'>
                 Attendance report
               </span>
             </div>

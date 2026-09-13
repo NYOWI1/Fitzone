@@ -263,7 +263,7 @@ export default function OverviewPage() {
                     Last 12 months from paid Stripe payments.
                   </p>
                 </div>
-                <strong className='rounded-[14px] border border-[rgba(77,163,255,0.28)] bg-[rgba(77,163,255,0.1)] px-4 py-2 text-[15px] text-[#4da3ff]'>
+                <strong className='rounded-[14px] border border-[rgba(217,4,41,0.3)] bg-[rgba(217,4,41,0.1)] px-4 py-2 text-[15px] text-[#d90429]'>
                   {formatPaymentAmount({
                     amount: overviewData.stripeRevenue.monthlyRevenue || 0
                   })}

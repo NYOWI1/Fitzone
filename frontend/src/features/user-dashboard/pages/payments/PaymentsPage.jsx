@@ -18,9 +18,10 @@ function formatAmount(payment) {
 function formatDate(value, fallback = 'Not available') {
   if (!value) return fallback;
 
-  const date = typeof value === 'number'
-    ? new Date(value * 1000)
-    : new Date(`${value}T00:00:00`);
+  const date =
+    typeof value === 'number'
+      ? new Date(value * 1000)
+      : new Date(`${value}T00:00:00`);
 
   if (Number.isNaN(date.getTime())) return fallback;
 
@@ -64,9 +65,10 @@ export default function PaymentsPage({ membershipAccess = null, user = null }) {
     'Next membership period'
   );
   const cardType = savedCard ? 'Debit / Credit Card' : 'PromptPay QR';
-  const cardExpiry = savedCard?.expMonth && savedCard?.expYear
-    ? `${String(savedCard.expMonth).padStart(2, '0')}/${String(savedCard.expYear).slice(-2)}`
-    : 'Not available';
+  const cardExpiry =
+    savedCard?.expMonth && savedCard?.expYear
+      ? `${String(savedCard.expMonth).padStart(2, '0')}/${String(savedCard.expYear).slice(-2)}`
+      : 'Not available';
   const cardBrand = savedCard?.brand
     ? savedCard.brand.charAt(0).toUpperCase() + savedCard.brand.slice(1)
     : '';
@@ -152,15 +154,21 @@ export default function PaymentsPage({ membershipAccess = null, user = null }) {
         <>
           <div className='mt-7 grid grid-cols-1 gap-5 md:grid-cols-3'>
             <article className='min-h-32 rounded-[24px] border border-[#414141] bg-[#252525] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.28)]'>
-              <h2 className='m-0 text-base font-black underline'>Payment Method</h2>
+              <h2 className='m-0 text-base font-black underline'>
+                Payment Method
+              </h2>
               <p className='mb-0 mt-3 text-sm font-bold text-[#d8d8d8]'>
                 {cardType}
               </p>
               <strong className='mt-3 block tracking-[3px] text-xl font-black text-[#e6002e]'>
-                {savedCard?.last4 ? `•••• •••• •••• ${savedCard.last4}` : 'PromptPay QR'}
+                {savedCard?.last4
+                  ? `•••• •••• •••• ${savedCard.last4}`
+                  : 'PromptPay QR'}
               </strong>
               <small className='mt-3 block text-xs text-[#8f8f8f]'>
-                {savedCard ? `Expires ${cardExpiry}${cardBrand ? ` • ${cardBrand}` : ''}` : 'Manual payment method'}
+                {savedCard
+                  ? `Expires ${cardExpiry}${cardBrand ? ` • ${cardBrand}` : ''}`
+                  : 'Manual payment method'}
               </small>
               {savedCard && (
                 <button
@@ -173,25 +181,34 @@ export default function PaymentsPage({ membershipAccess = null, user = null }) {
                 </button>
               )}
               {portalMessage && (
-                <p className='mb-0 mt-3 text-xs font-bold text-[#ff8ea2]' role='alert'>
+                <p
+                  className='mb-0 mt-3 text-xs font-bold text-[#ff8ea2]'
+                  role='alert'
+                >
                   {portalMessage}
                 </p>
               )}
             </article>
 
             <article className='min-h-32 rounded-[24px] border border-[#414141] bg-[#252525] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.28)]'>
-              <span className='text-xs font-black uppercase text-[#bdbdbd]'>Next billing</span>
-              <strong className='mt-4 block break-words text-xl font-black text-[#30e600]'>
+              <span className='text-xs font-black uppercase text-[#bdbdbd]'>
+                Next billing
+              </span>
+              <strong className='mt-4 block break-words text-xl font-black text-[#e6002e]'>
                 {renewalDate}
               </strong>
               <small className='mt-2 block text-xs text-[#bdbdbd]'>
-                {renewalIsAutomatic ? 'Card renews automatically' : 'PromptPay requires a new payment'}
+                {renewalIsAutomatic
+                  ? 'Card renews automatically'
+                  : 'PromptPay requires a new payment'}
               </small>
             </article>
 
             <article className='min-h-32 rounded-[24px] border border-[#414141] bg-[#252525] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.28)]'>
-              <span className='text-xs font-black uppercase text-[#bdbdbd]'>Total paid</span>
-              <strong className='mt-4 block text-2xl font-black text-[#4da3ff]'>
+              <span className='text-xs font-black uppercase text-[#bdbdbd]'>
+                Total paid
+              </span>
+              <strong className='mt-4 block text-2xl font-black text-[#e6002e]'>
                 {new Intl.NumberFormat('en-US', {
                   style: 'currency',
                   currency: 'THB',
@@ -199,14 +216,17 @@ export default function PaymentsPage({ membershipAccess = null, user = null }) {
                 }).format(totalPaid)}
               </strong>
               <small className='mt-2 block text-xs text-[#bdbdbd]'>
-                {paidPayments.length} successful payment{paidPayments.length === 1 ? '' : 's'}
+                {paidPayments.length} successful payment
+                {paidPayments.length === 1 ? '' : 's'}
               </small>
             </article>
           </div>
 
           <section className='mt-6 overflow-hidden rounded-[28px] border border-[#414141] bg-[#252525] shadow-[0_24px_65px_rgba(0,0,0,0.3)]'>
             <div className='border-b border-[#414141] px-5 py-5 sm:px-7'>
-              <h2 className='m-0 text-xl font-black sm:text-2xl'>Payment History</h2>
+              <h2 className='m-0 text-xl font-black sm:text-2xl'>
+                Payment History
+              </h2>
               <p className='mb-0 mt-2 text-sm text-[#bdbdbd]'>
                 Stripe transactions associated with {memberEmail}.
               </p>
@@ -231,9 +251,15 @@ export default function PaymentsPage({ membershipAccess = null, user = null }) {
                     className='grid min-w-0 grid-cols-1 gap-3 rounded-[18px] border border-[#414141] bg-[#2c2c2c] p-4 lg:grid-cols-[minmax(120px,0.8fr)_minmax(110px,0.8fr)_minmax(130px,1fr)_minmax(100px,0.6fr)_90px] lg:items-center lg:gap-4'
                     key={payment.invoice}
                   >
-                    <span className='text-sm font-bold'>{formatDate(payment.date)}</span>
-                    <span className='min-w-0 break-words text-sm text-[#bdbdbd]'>{payment.plan}</span>
-                    <span className='min-w-0 break-words text-sm text-[#bdbdbd]'>{getPaymentMethod(payment)}</span>
+                    <span className='text-sm font-bold'>
+                      {formatDate(payment.date)}
+                    </span>
+                    <span className='min-w-0 break-words text-sm text-[#bdbdbd]'>
+                      {payment.plan}
+                    </span>
+                    <span className='min-w-0 break-words text-sm text-[#bdbdbd]'>
+                      {getPaymentMethod(payment)}
+                    </span>
                     <strong className='text-sm'>{formatAmount(payment)}</strong>
                     <span
                       className={

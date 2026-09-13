@@ -596,7 +596,7 @@ function PaymentPageContent({ clerkEmail = '' }) {
               <strong className='text-xl'>
                 {selectedPlan.name} Membership
               </strong>
-              <b className='text-[#ffd54f]'>
+              <b className='text-[#e6002e]'>
                 {getPlanMonthlyLabel(selectedPlan)}/month
               </b>
             </div>
@@ -616,7 +616,7 @@ function PaymentPageContent({ clerkEmail = '' }) {
 
             <div className='flex items-center justify-between py-6'>
               <span className='text-sm font-black'>Total Today</span>
-              <strong className='text-[#ffd54f]'>
+              <strong className='text-[#e6002e]'>
                 ฿{monthlyAmount.toLocaleString('en-US')}
               </strong>
             </div>

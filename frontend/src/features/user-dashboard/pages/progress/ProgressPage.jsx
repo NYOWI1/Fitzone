@@ -104,23 +104,19 @@ export default function ProgressPage({ user = null }) {
   const statCards = [
     {
       label: 'Workout Streak',
-      value: `${summary.workoutStreak || 0} days`,
-      color: '#30e600'
+      value: `${summary.workoutStreak || 0} days`
     },
     {
       label: 'Visits This Month',
-      value: summary.visitsThisMonth || 0,
-      color: '#e6002e'
+      value: summary.visitsThisMonth || 0
     },
     {
       label: 'Active Days',
-      value: summary.activeDaysThisMonth || 0,
-      color: '#4da3ff'
+      value: summary.activeDaysThisMonth || 0
     },
     {
       label: 'Booked Sessions',
-      value: totalBookedSessions,
-      color: '#ffd54f'
+      value: totalBookedSessions
     }
   ];
 
@@ -182,13 +178,12 @@ export default function ProgressPage({ user = null }) {
                 className='min-h-28 rounded-[24px] border border-[#414141] bg-[#252525] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.28)]'
                 key={stat.label}
               >
-                <strong
-                  className='block break-words text-2xl font-black sm:text-[28px]'
-                  style={{ color: stat.color }}
-                >
+                <strong className='block break-words text-2xl font-black text-[#e6002e] sm:text-[28px]'>
                   {stat.value}
                 </strong>
-                <span className='mt-3 block text-sm font-black'>{stat.label}</span>
+                <span className='mt-3 block text-sm font-black'>
+                  {stat.label}
+                </span>
               </article>
             ))}
           </div>
@@ -196,9 +191,12 @@ export default function ProgressPage({ user = null }) {
           <article className='mt-7 overflow-hidden rounded-[28px] border border-[#414141] bg-[#252525] shadow-[0_24px_65px_rgba(0,0,0,0.32)]'>
             <div className='flex flex-col gap-4 border-b border-[#414141] px-5 py-5 sm:px-7 lg:flex-row lg:items-center lg:justify-between'>
               <div>
-                <h2 className='m-0 text-xl font-black sm:text-2xl'>Monthly Attendance</h2>
+                <h2 className='m-0 text-xl font-black sm:text-2xl'>
+                  Monthly Attendance
+                </h2>
                 <p className='mb-0 mt-2 text-sm text-[#bdbdbd]'>
-                  {totalAttendanceVisits} recorded check-in{totalAttendanceVisits === 1 ? '' : 's'} for your account
+                  {totalAttendanceVisits} recorded check-in
+                  {totalAttendanceVisits === 1 ? '' : 's'} for your account
                 </p>
               </div>
               <span className='w-fit rounded-[14px] border border-[rgba(48,230,0,0.3)] bg-[rgba(48,230,0,0.1)] px-4 py-2 text-sm font-black text-[#30e600]'>
@@ -211,7 +209,8 @@ export default function ProgressPage({ user = null }) {
                 <span className='h-2.5 w-2.5 rounded-full bg-[#30e600]'></span>
                 {selectedYear}
                 <small className='text-[11px] text-[#bdbdbd]'>
-                  {selectedYearVisits} check-in{selectedYearVisits === 1 ? '' : 's'}
+                  {selectedYearVisits} check-in
+                  {selectedYearVisits === 1 ? '' : 's'}
                 </small>
               </span>
               <div className='mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
@@ -224,82 +223,97 @@ export default function ProgressPage({ user = null }) {
                 <div className='flex gap-2'>
                   <select
                     className='min-h-11 min-w-0 flex-1 rounded-[12px] border border-[#414141] bg-[#2c2c2c] px-3 text-sm font-bold text-white outline-none focus:border-[#30e600] sm:flex-none'
-                    onChange={(event) => setSelectedMonth(Number(event.target.value))}
+                    onChange={(event) =>
+                      setSelectedMonth(Number(event.target.value))
+                    }
                     value={selectedMonth}
                   >
                     {monthOptions.map((month) => (
-                      <option key={month.value} value={month.value}>{month.label}</option>
+                      <option key={month.value} value={month.value}>
+                        {month.label}
+                      </option>
                     ))}
                   </select>
                   <select
                     className='min-h-11 min-w-0 flex-1 rounded-[12px] border border-[#414141] bg-[#2c2c2c] px-3 text-sm font-bold text-white outline-none focus:border-[#30e600] sm:flex-none'
-                    onChange={(event) => setSelectedYear(Number(event.target.value))}
+                    onChange={(event) =>
+                      setSelectedYear(Number(event.target.value))
+                    }
                     value={selectedYear}
                   >
                     {yearOptions.map((year) => (
-                      <option key={year} value={year}>{year}</option>
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
                     ))}
                   </select>
                 </div>
               </div>
 
               <div className='max-w-full overflow-x-auto pb-2'>
-                  <div className='min-w-155'>
-                    <div className='grid grid-cols-7 gap-2 text-center text-[11px] font-black uppercase text-[#bdbdbd]'>
-                      {weekdayLabels.map((weekday) => <span key={weekday}>{weekday}</span>)}
-                    </div>
-                    <div className='mt-2 grid grid-cols-7 gap-2'>
-                      {calendarDays.map((calendarDay) =>
-                        calendarDay.isEmpty ? (
-                          <div className='min-h-18' key={calendarDay.id}></div>
-                        ) : (
-                          <div
-                            className={
-                              calendarDay.visits
-                                ? 'min-h-18 rounded-[14px] border border-[rgba(48,230,0,0.34)] bg-[rgba(48,230,0,0.08)] p-2.5 text-left text-white'
-                                : 'min-h-18 rounded-[14px] border border-[#363636] bg-[#202020] p-2.5 text-left text-white'
-                            }
-                            key={calendarDay.id}
-                          >
-                            <span className='flex items-start justify-between gap-2'>
-                              <strong className='text-sm'>{calendarDay.day}</strong>
-                              {calendarDay.visits > 0 && (
-                                <span className='rounded-full bg-[#30e600] px-2 py-1 text-[10px] font-black text-[#111]'>
-                                  {calendarDay.visits}
-                                </span>
-                              )}
-                            </span>
-                            <span className='mt-3 block text-[11px] font-bold text-[#bdbdbd]'>
-                              {calendarDay.visits ? `${calendarDay.visits} check-in${calendarDay.visits === 1 ? '' : 's'}` : 'No check-ins'}
-                            </span>
-                          </div>
-                        )
-                      )}
-                    </div>
+                <div className='min-w-155'>
+                  <div className='grid grid-cols-7 gap-2 text-center text-[11px] font-black uppercase text-[#bdbdbd]'>
+                    {weekdayLabels.map((weekday) => (
+                      <span key={weekday}>{weekday}</span>
+                    ))}
                   </div>
+                  <div className='mt-2 grid grid-cols-7 gap-2'>
+                    {calendarDays.map((calendarDay) =>
+                      calendarDay.isEmpty ? (
+                        <div className='min-h-18' key={calendarDay.id}></div>
+                      ) : (
+                        <div
+                          className={
+                            calendarDay.visits
+                              ? 'min-h-18 rounded-[14px] border border-[rgba(48,230,0,0.34)] bg-[rgba(48,230,0,0.08)] p-2.5 text-left text-white'
+                              : 'min-h-18 rounded-[14px] border border-[#363636] bg-[#202020] p-2.5 text-left text-white'
+                          }
+                          key={calendarDay.id}
+                        >
+                          <span className='flex items-start justify-between gap-2'>
+                            <strong className='text-sm'>
+                              {calendarDay.day}
+                            </strong>
+                            {calendarDay.visits > 0 && (
+                              <span className='rounded-full bg-[#30e600] px-2 py-1 text-[10px] font-black text-[#111]'>
+                                {calendarDay.visits}
+                              </span>
+                            )}
+                          </span>
+                          <span className='mt-3 block text-[11px] font-bold text-[#bdbdbd]'>
+                            {calendarDay.visits
+                              ? `${calendarDay.visits} check-in${calendarDay.visits === 1 ? '' : 's'}`
+                              : 'No check-ins'}
+                          </span>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </article>
 
           <div className='mt-6'>
-              <article className='rounded-[28px] border border-[#414141] bg-[#252525] p-5 shadow-[0_24px_65px_rgba(0,0,0,0.28)] sm:p-6'>
-                <h2 className='m-0 text-xl font-black'>Monthly Sessions</h2>
-                <div className='mt-5 grid gap-3'>
-                  <div className='flex min-h-14 items-center justify-between rounded-[16px] border border-[#414141] bg-[#2c2c2c] px-4'>
-                    <span className='text-sm text-[#bdbdbd]'>Classes booked</span>
-                    <strong className='text-[#30e600]'>
-                      {summary.classesBookedThisMonth || 0}
-                    </strong>
-                  </div>
-                  <div className='flex min-h-14 items-center justify-between rounded-[16px] border border-[#414141] bg-[#2c2c2c] px-4'>
-                    <span className='text-sm text-[#bdbdbd]'>Trainer sessions</span>
-                    <strong className='text-[#4da3ff]'>
-                      {summary.trainerSessionsThisMonth || 0}
-                    </strong>
-                  </div>
+            <article className='rounded-[28px] border border-[#414141] bg-[#252525] p-5 shadow-[0_24px_65px_rgba(0,0,0,0.28)] sm:p-6'>
+              <h2 className='m-0 text-xl font-black'>Monthly Sessions</h2>
+              <div className='mt-5 grid gap-3'>
+                <div className='flex min-h-14 items-center justify-between rounded-[16px] border border-[#414141] bg-[#2c2c2c] px-4'>
+                  <span className='text-sm text-[#bdbdbd]'>Classes booked</span>
+                  <strong className='text-[#e6002e]'>
+                    {summary.classesBookedThisMonth || 0}
+                  </strong>
                 </div>
-              </article>
-
+                <div className='flex min-h-14 items-center justify-between rounded-[16px] border border-[#414141] bg-[#2c2c2c] px-4'>
+                  <span className='text-sm text-[#bdbdbd]'>
+                    Trainer sessions
+                  </span>
+                  <strong className='text-[#e6002e]'>
+                    {summary.trainerSessionsThisMonth || 0}
+                  </strong>
+                </div>
+              </div>
+            </article>
           </div>
         </>
       )}

@@ -1,6 +1,20 @@
 @import 'tailwindcss';
 
 @layer base {
+  :root {
+    --fz-base-60: #0d0d0d;
+    --fz-surface-30: #242424;
+    --fz-surface-raised: #2b2b2b;
+    --fz-accent-10: #e6002e;
+    --fz-accent-hover: #ff1748;
+    --fz-border: #393939;
+    --fz-text: #ffffff;
+    --fz-muted: #b8b8b8;
+    --fz-success: #39e600;
+    --fz-warning: #ffd54f;
+    --fz-danger: #ff5f78;
+  }
+
   * {
     box-sizing: border-box;
   }
@@ -11,7 +25,7 @@
 
   body {
     margin: 0;
-    background: #050505;
+    background: var(--fz-base-60);
   }
 
   #root {
@@ -55,7 +69,7 @@
 
   .admin-card,
   .admin-kpi-card {
-    @apply border border-[#393939] bg-[#242424] shadow-[0_12px_24px_rgba(0,0,0,0.24)];
+    @apply border border-[var(--fz-border)] bg-[var(--fz-surface-30)] shadow-[0_12px_24px_rgba(0,0,0,0.24)];
   }
 
   .admin-card {
@@ -76,7 +90,7 @@
   }
 
   .admin-kpi-card {
-    @apply relative min-h-25 rounded-2xl p-4.75 sm:min-h-29 sm:rounded-3xl;
+    @apply relative min-h-25 rounded-2xl border-t-2 border-t-[var(--fz-accent-10)] p-4.75 sm:min-h-29 sm:rounded-3xl;
   }
 
   .admin-kpi-icon {
@@ -96,43 +110,37 @@
   }
 
   .admin-kpi-card strong {
-    @apply mt-0.5 block text-[28px] leading-none;
+    @apply mt-0.5 block text-[28px] leading-none text-[var(--fz-text)];
   }
 
   .admin-kpi-icon.red,
-  .admin-class-dot.red {
-    @apply bg-[#d90429];
-  }
-
-  .admin-kpi-card strong.red {
-    @apply text-[#d90429];
-  }
-
   .admin-kpi-icon.green,
+  .admin-kpi-icon.yellow,
+  .admin-kpi-icon.blue {
+    @apply bg-[var(--fz-accent-10)];
+  }
+
+  .admin-class-dot.red {
+    @apply bg-[var(--fz-accent-10)];
+  }
+
   .admin-class-dot.green {
     @apply bg-[#39e600];
   }
 
-  .admin-kpi-card strong.green {
-    @apply text-[#39e600];
-  }
-
-  .admin-kpi-icon.yellow,
   .admin-class-dot.yellow {
     @apply bg-[#ffd54f];
   }
 
-  .admin-kpi-card strong.yellow {
-    @apply text-[#ffd54f];
-  }
-
-  .admin-kpi-icon.blue,
   .admin-class-dot.blue {
     @apply bg-[#4da3ff];
   }
 
+  .admin-kpi-card strong.red,
+  .admin-kpi-card strong.green,
+  .admin-kpi-card strong.yellow,
   .admin-kpi-card strong.blue {
-    @apply text-[#4da3ff];
+    @apply text-[var(--fz-text)];
   }
 
   .admin-class-dot {

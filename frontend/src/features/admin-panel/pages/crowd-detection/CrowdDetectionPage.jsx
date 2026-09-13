@@ -857,7 +857,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
           </div>
 
           <div className='grid min-h-[118px] place-items-center rounded-[18px] border border-[#373737] bg-[#202020] p-4 text-center'>
-            <strong className='block whitespace-nowrap text-[42px] leading-none text-[#ffd54f]'>
+            <strong className='block whitespace-nowrap text-[42px] leading-none text-[#e6002e]'>
               {people.length}
               <span className='text-[26px] text-[#8f8f8f]'>/{gymCapacity}</span>
             </strong>
@@ -1002,7 +1002,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
 
       <div className='mt-8 grid flex-none grid-cols-4 gap-6 max-[900px]:grid-cols-2 max-[760px]:grid-cols-1'>
         <article className={summaryCardClass}>
-          <strong className='pb-6 text-[clamp(27px,2.7vw,32px)] leading-none text-[#ffd54f]'>
+          <strong className='pb-6 text-[clamp(27px,2.7vw,32px)] leading-none text-[#e6002e]'>
             {people.length}
           </strong>
           <h3 className='mb-[9px] mt-4 text-sm leading-tight text-white'>
@@ -1011,7 +1011,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
         </article>
 
         <article className={summaryCardClass}>
-          <strong className='pb-6 text-[clamp(27px,2.7vw,32px)] leading-none text-[#39e600]'>
+          <strong className='pb-6 text-[clamp(27px,2.7vw,32px)] leading-none text-[#e6002e]'>
             {people.length ? formatPercent(averageConfidence) : '0%'}
           </strong>
           <h3 className='mb-[9px] mt-4 text-sm leading-tight text-white'>

@@ -20,7 +20,7 @@ function getPlanCardClass(variant) {
   }
 
   if (variant === 'premium') {
-    return `${baseCard} border-[#ffd54f] pt-[66px] before:bg-[#ffd54f]`;
+    return `${baseCard} border-[#e6002e] pt-[66px] before:bg-[#e6002e]`;
   }
 
   return baseCard;
@@ -29,14 +29,11 @@ function getPlanCardClass(variant) {
 function PlanCard({ plan, onChoose }) {
   const variant = getPlanVariant(plan);
   const badge = plan.popular ? 'MOST POPULAR' : '';
-  const isPremium = variant === 'premium';
 
   return (
     <article className={getPlanCardClass(variant)}>
       {badge && (
-        <span
-          className={`absolute left-1/2 top-5 inline-flex min-h-[30px] min-w-[150px] -translate-x-1/2 items-center justify-center rounded-full px-[18px] text-xs font-black ${isPremium ? 'bg-[#ffd54f] text-[#111]' : 'bg-[#e6002e] text-white'}`}
-        >
+        <span className='absolute left-1/2 top-5 inline-flex min-h-[30px] min-w-[150px] -translate-x-1/2 items-center justify-center rounded-full bg-[#e6002e] px-[18px] text-xs font-black text-white'>
           {badge}
         </span>
       )}
@@ -47,9 +44,7 @@ function PlanCard({ plan, onChoose }) {
         {plan.desc}
       </p>
       <div className='mt-0.5 flex items-baseline gap-4'>
-        <strong
-          className={`text-[clamp(46px,4vw,50px)] leading-none ${isPremium ? 'text-[#ffd54f]' : 'text-white'}`}
-        >
+        <strong className='text-[clamp(46px,4vw,50px)] leading-none text-white'>
           {getPlanMonthlyLabel(plan).replace('฿', '')}฿
         </strong>
         <span className='text-[15px] text-[#bdbdbd]'>/month</span>
@@ -64,9 +59,7 @@ function PlanCard({ plan, onChoose }) {
             className='flex items-center gap-3 text-sm text-[#e4e4e4]'
             key={feature}
           >
-            <span
-              className={`grid h-5 w-5 flex-[0_0_20px] place-items-center rounded-full text-xs font-black ${isPremium ? 'bg-[#ffd54f] text-[#111]' : 'bg-[#e6002e] text-white'}`}
-            >
+            <span className='grid h-5 w-5 flex-[0_0_20px] place-items-center rounded-full bg-[#e6002e] text-xs font-black text-white'>
               ✓
             </span>
             {feature}
@@ -75,7 +68,7 @@ function PlanCard({ plan, onChoose }) {
       </ul>
 
       <button
-        className={`mt-auto min-h-[49px] w-full cursor-pointer rounded-[13px] border text-[15px] font-black ${variant === 'basic' ? 'border-[#e6002e] bg-transparent text-white' : isPremium ? 'border-[#ffd54f] bg-[#ffd54f] text-[#111]' : 'border-[#e6002e] bg-[#e6002e] text-white'}`}
+        className={`mt-auto min-h-[49px] w-full cursor-pointer rounded-[13px] border text-[15px] font-black ${variant === 'basic' ? 'border-[#e6002e] bg-transparent text-white' : 'border-[#e6002e] bg-[#e6002e] text-white'}`}
         onClick={() => onChoose(plan)}
         type='button'
       >
