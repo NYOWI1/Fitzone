@@ -202,7 +202,7 @@ export default function OverviewPage() {
             </section>
 
             <section
-              className={`${overviewCardClass} !h-[360px] flex flex-col`}
+              className={`${overviewCardClass} !h-[360px] flex flex-col max-[1360px]:col-span-full max-[980px]:col-auto`}
             >
               <div className='flex items-center justify-between gap-3'>
                 <h3>Today Classes</h3>
