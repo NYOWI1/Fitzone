@@ -13,6 +13,7 @@ import ProgressPage from './pages/progress/ProgressPage';
 import SettingsPage from './pages/settings/SettingsPage';
 import TrainersPage from './pages/trainers/TrainersPage';
 import FitZoneLogo from '../../shared/ui/FitZoneLogo';
+import DefaultProfileAvatar from '../../shared/ui/DefaultProfileAvatar';
 
 const navItems = [
   'Dashboard',
@@ -160,9 +161,11 @@ function DashboardLayout({ activePage, children, membershipAccess, user }) {
 
         <div className='mt-auto max-[1120px]:mt-7 max-[980px]:mt-8'>
           <div className='flex min-h-21 items-center gap-3.5 rounded-[24px] border border-[#414141] bg-[#252525] p-3.5 shadow-[0_16px_34px_rgba(0,0,0,0.24)]'>
-            <span className='grid h-11.5 w-11.5 flex-none place-items-center rounded-[18px] bg-[#e6002e] text-[21px] font-black'>
-              {fullName.charAt(0).toUpperCase()}
-            </span>
+            <DefaultProfileAvatar
+              className='h-11.5 w-11.5'
+              imageUrl={user?.imageUrl}
+              name={fullName}
+            />
             <div className='min-w-0'>
               <strong className='block truncate text-sm'>{fullName}</strong>
               <small className='mt-1.25 block truncate text-xs text-[#bdbdbd]'>

@@ -4,8 +4,8 @@ import {
   getTrainers,
   updateTrainerBooking
 } from '../../../../shared/api';
+import DefaultProfileAvatar from '../../../../shared/ui/DefaultProfileAvatar';
 
-const trainerColors = ['#e6002e', '#30e600', '#4da3ff', '#ffd54f'];
 const sessionTimes = [
   '08:00',
   '09:00',
@@ -117,12 +117,16 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
 
   function openBooking(trainer) {
     if (limit === 0) {
-      setMessage('Basic membership does not include personal trainer sessions.');
+      setMessage(
+        'Basic membership does not include personal trainer sessions.'
+      );
       return;
     }
 
     if (remaining === 0) {
-      setMessage(`You have used all ${limit} trainer sessions for this membership month.`);
+      setMessage(
+        `You have used all ${limit} trainer sessions for this membership month.`
+      );
       return;
     }
 
@@ -190,7 +194,9 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
           </p>
         </div>
         <p className='m-0 text-sm font-black text-[#bdbdbd]'>
-          {limit === 0 ? 'No sessions included' : `${remaining} of ${limit} sessions left`}
+          {limit === 0
+            ? 'No sessions included'
+            : `${remaining} of ${limit} sessions left`}
         </p>
       </header>
 
@@ -207,15 +213,15 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
 
       {status === 'ready' && (
         <div className='mt-7 grid grid-cols-1 gap-6 lg:grid-cols-2'>
-          {trainers.map((trainer, index) => (
+          {trainers.map((trainer) => (
             <article
               className='grid min-h-54 grid-cols-1 gap-5 rounded-[28px] border border-[#414141] bg-[#252525] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.32)] sm:grid-cols-[82px_minmax(0,1fr)]'
               key={trainer.slug}
             >
-              <span
-                className='h-20.5 w-20.5 rounded-full'
-                style={{ backgroundColor: trainerColors[index % trainerColors.length] }}
-              ></span>
+              <DefaultProfileAvatar
+                className='h-20.5 w-20.5'
+                name={trainer.name}
+              />
               <div className='min-w-0'>
                 <h2 className='m-0 break-words text-xl font-black sm:text-2xl'>
                   {trainer.name}
@@ -224,7 +230,8 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
                   {trainer.role}
                 </p>
                 <p className='mb-0 mt-3 break-words text-sm text-[#bdbdbd]'>
-                  {(trainer.specialties || []).slice(0, 2).join(' · ') || trainer.category}
+                  {(trainer.specialties || []).slice(0, 2).join(' · ') ||
+                    trainer.category}
                 </p>
                 <p className='mb-0 mt-3 text-xs text-[#d7d7d7]'>
                   4.9 rating · Available this month
@@ -253,9 +260,12 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
                 key={`${booking.trainerSlug}-${booking.sessionDate}-${booking.sessionTime}`}
               >
                 <div className='min-w-0'>
-                  <strong className='block truncate'>{booking.trainerName}</strong>
+                  <strong className='block truncate'>
+                    {booking.trainerName}
+                  </strong>
                   <span className='mt-1 block text-sm text-[#bdbdbd]'>
-                    {formatSessionDate(booking.sessionDate)} · {booking.sessionTime}
+                    {formatSessionDate(booking.sessionDate)} ·{' '}
+                    {booking.sessionTime}
                   </span>
                 </div>
                 <button
@@ -278,24 +288,36 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
             className='w-full max-w-md rounded-[26px] border border-[#414141] bg-[#252525] p-6 shadow-[0_30px_90px_rgba(0,0,0,0.6)]'
             onSubmit={saveBooking}
           >
-            <h2 className='m-0 text-2xl font-black'>Book {selectedTrainer.name}</h2>
+            <h2 className='m-0 text-2xl font-black'>
+              Book {selectedTrainer.name}
+            </h2>
             <p className='mb-5 mt-2 text-sm text-[#bdbdbd]'>
               Select an available date and session time.
             </p>
-            <label className='block text-xs font-black text-[#bdbdbd]' htmlFor='trainer-session-date'>
+            <label
+              className='block text-xs font-black text-[#bdbdbd]'
+              htmlFor='trainer-session-date'
+            >
               Session date
             </label>
             <input
               className='mt-2 min-h-12 w-full rounded-[13px] border border-[#414141] bg-[#303030] px-4 text-white'
               id='trainer-session-date'
               max={lastBookingDate || undefined}
-              min={periodStart > formatIsoDate(new Date()) ? periodStart : formatIsoDate(new Date())}
+              min={
+                periodStart > formatIsoDate(new Date())
+                  ? periodStart
+                  : formatIsoDate(new Date())
+              }
               onChange={(event) => setSessionDate(event.target.value)}
               required
               type='date'
               value={sessionDate}
             />
-            <label className='mt-4 block text-xs font-black text-[#bdbdbd]' htmlFor='trainer-session-time'>
+            <label
+              className='mt-4 block text-xs font-black text-[#bdbdbd]'
+              htmlFor='trainer-session-time'
+            >
               Session time
             </label>
             <select
@@ -305,7 +327,9 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
               value={sessionTime}
             >
               {sessionTimes.map((time) => (
-                <option key={time} value={time}>{time}</option>
+                <option key={time} value={time}>
+                  {time}
+                </option>
               ))}
             </select>
             <div className='mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end'>
