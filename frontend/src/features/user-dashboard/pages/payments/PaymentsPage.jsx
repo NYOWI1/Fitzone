@@ -62,10 +62,19 @@ export default function PaymentsPage({ membershipAccess = null, user = null }) {
   const renewalIsAutomatic =
     membershipAccess?.autoRenew ??
     paymentMethodRecord?.paymentType === 'credit_card';
-  const renewalDate = formatDate(
-    membershipAccess?.currentPeriodEnd,
-    'Next membership period'
-  );
+  const renewalNeedsPayment = membershipAccess?.status === 'past_due';
+  const renewalIsProcessing =
+    !renewalNeedsPayment &&
+    membershipAccess?.renewalPaymentConfirmed === false;
+  const renewalDate = renewalNeedsPayment
+    ? 'Payment retry required'
+    : renewalIsProcessing
+      ? 'Renewal processing'
+      : formatDate(
+          membershipAccess?.currentPeriodEnd ||
+            membershipAccess?.currentPeriodEndDate,
+          'Billing date unavailable'
+        );
   const cardType = savedCard ? 'Debit / Credit Card' : 'PromptPay QR';
   const cardExpiry =
     savedCard?.expMonth && savedCard?.expYear
@@ -201,7 +210,11 @@ export default function PaymentsPage({ membershipAccess = null, user = null }) {
               </strong>
               <small className='mt-2 block text-xs text-[#bdbdbd]'>
                 {renewalIsAutomatic
-                  ? 'Card renews automatically'
+                  ? renewalNeedsPayment
+                    ? 'Update your card so Stripe can retry automatically'
+                    : renewalIsProcessing
+                      ? 'Stripe is confirming the automatic card payment'
+                      : 'Card renews automatically'
                   : 'PromptPay requires a new payment'}
               </small>
             </article>

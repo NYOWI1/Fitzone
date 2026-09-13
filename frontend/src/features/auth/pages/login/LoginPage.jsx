@@ -12,7 +12,11 @@ import {
   getAuthErrorMessage
 } from '../../authConfig';
 import { getStripePaymentAccess } from '../../../../shared/api';
-import { getSavedPaidMembershipAccess } from '../../../membership-flow/shared/planSelection';
+import {
+  clearPaidMembershipAccess,
+  getSavedPaidMembershipAccess,
+  hasRecentPaymentConfirmation
+} from '../../../membership-flow/shared/planSelection';
 import FitZoneLogo from '../../../../shared/ui/FitZoneLogo';
 
 const authCard =
@@ -147,13 +151,17 @@ function SignedInLoginRedirect() {
       }
 
       const savedAccess = getSavedPaidMembershipAccess(email);
+      const recentlyPaid = hasRecentPaymentConfirmation(savedAccess, email);
 
       try {
         const access = await getStripePaymentAccess(email, memberName);
 
         if (isCurrent) {
+          if (!access.paid && !recentlyPaid) {
+            clearPaidMembershipAccess(email);
+          }
           setRedirectTo(
-            access.paid || savedAccess?.paid
+            access.paid || recentlyPaid
               ? AUTH_REDIRECT_AFTER_LOGIN
               : '/choose-plan'
           );
@@ -162,7 +170,9 @@ function SignedInLoginRedirect() {
         console.error(error);
 
         if (isCurrent) {
-          setRedirectTo(AUTH_REDIRECT_AFTER_LOGIN);
+          setRedirectTo(
+            savedAccess?.paid ? AUTH_REDIRECT_AFTER_LOGIN : '/choose-plan'
+          );
         }
       }
     }
@@ -204,11 +214,13 @@ function LoginForm({ clerkEnabled }) {
   const finishAuthenticatedSignIn = async (sessionId, resource) => {
     const memberName = getSignInMemberName(resource);
     const savedAccess = getSavedPaidMembershipAccess(email);
+    const recentlyPaid = hasRecentPaymentConfirmation(savedAccess, email);
     const paymentAccess = await getStripePaymentAccess(email, memberName);
 
-    if (!paymentAccess.paid && !savedAccess?.paid) {
+    if (!paymentAccess.paid && !recentlyPaid) {
       const isExpiredMembership = hasPreviousPayment(paymentAccess);
 
+      clearPaidMembershipAccess(email);
       savePendingPaymentEmail(email);
       setPaymentRequired(true);
       setPaymentActionLabel(

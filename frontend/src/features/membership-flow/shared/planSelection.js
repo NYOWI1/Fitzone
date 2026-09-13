@@ -1,6 +1,7 @@
 const selectedPlanStorageKey = 'fitzone:selected-plan';
 const paidMembershipAccessStorageKey = 'fitzone:paid-membership-access';
 const paidAccessDurationMs = 31 * 24 * 60 * 60 * 1000;
+const recentPaymentConfirmationMs = 5 * 60 * 1000;
 
 function normalizeEmail(email = '') {
   return String(email).trim().toLowerCase();
@@ -49,7 +50,8 @@ export function savePaidMembershipAccess({
   email = '',
   memberName = '',
   paymentIntentId = '',
-  plan = null
+  plan = null,
+  membershipAccess = null
 }) {
   const memberEmail = normalizeEmail(email);
 
@@ -66,6 +68,15 @@ export function savePaidMembershipAccess({
       paymentIntentId,
       planName: plan?.name || '',
       planSlug: plan?.slug || '',
+      currentPeriodStart: membershipAccess?.currentPeriodStart || null,
+      currentPeriodEnd: membershipAccess?.currentPeriodEnd || null,
+      currentPeriodStartDate:
+        membershipAccess?.currentPeriodStartDate || '',
+      currentPeriodEndDate: membershipAccess?.currentPeriodEndDate || '',
+      autoRenew: membershipAccess?.autoRenew,
+      renewalPaymentConfirmed:
+        membershipAccess?.renewalPaymentConfirmed,
+      status: membershipAccess?.status || '',
       savedAt: Date.now(),
       expiresAt: Date.now() + paidAccessDurationMs
     })
@@ -91,6 +102,38 @@ export function getSavedPaidMembershipAccess(email = '') {
   } catch {
     return null;
   }
+}
+
+export function clearPaidMembershipAccess(email = '') {
+  const memberEmail = normalizeEmail(email);
+
+  if (!memberEmail) {
+    window.localStorage.removeItem(paidMembershipAccessStorageKey);
+    return;
+  }
+
+  try {
+    const access = JSON.parse(
+      window.localStorage.getItem(paidMembershipAccessStorageKey) || 'null'
+    );
+
+    if (!access || access.email === memberEmail) {
+      window.localStorage.removeItem(paidMembershipAccessStorageKey);
+    }
+  } catch {
+    window.localStorage.removeItem(paidMembershipAccessStorageKey);
+  }
+}
+
+export function hasRecentPaymentConfirmation(access, email = '') {
+  const memberEmail = normalizeEmail(email);
+
+  return Boolean(
+    access?.paid &&
+      access.paymentIntentId &&
+      (!memberEmail || access.email === memberEmail) &&
+      Date.now() - Number(access.savedAt || 0) <= recentPaymentConfirmationMs
+  );
 }
 
 export function getPlanFromSelection(plans, slug) {

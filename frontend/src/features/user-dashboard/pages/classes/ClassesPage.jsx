@@ -424,10 +424,13 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
               Number.isFinite(classStartTime) &&
               Date.now() >= classStartTime - classCancellationCutoffMs;
             const basicBlocked = planSlug === 'basic' && !isBooked;
+            const renewalPending =
+              membershipAccess?.renewalPaymentConfirmed === false;
             const awaitingRenewal =
               planSlug === 'standard' &&
               !isBooked &&
-              (!hasBookingPeriod ||
+              (renewalPending ||
+                !hasBookingPeriod ||
                 classItem.classDate < bookingPeriod.startDate ||
                 classItem.classDate >= bookingPeriod.endDate);
             const standardBlocked =

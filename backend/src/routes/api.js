@@ -1239,12 +1239,14 @@ async function mapStripeSubscriptionAccess(subscription, memberEmail) {
       ? subscription.latest_invoice
       : null;
   const subscriptionStatus = subscription?.status || "";
+  const latestInvoicePaid =
+    latestInvoice?.paid === true || latestInvoice?.status === "paid";
   const renewalPaymentConfirmed =
     subscriptionStatus === "trialing" ||
     (subscriptionStatus === "active" &&
-      (!latestInvoice || latestInvoice.paid === true));
+      (!latestInvoice || latestInvoicePaid));
   const autoRenew =
-    renewalPaymentConfirmed &&
+    ["active", "trialing", "past_due"].includes(subscriptionStatus) &&
     subscription?.cancel_at_period_end !== true &&
     (subscription?.collection_method || "charge_automatically") ===
       "charge_automatically";

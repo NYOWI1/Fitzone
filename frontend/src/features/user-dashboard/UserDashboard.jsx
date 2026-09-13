@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { SignedIn, SignedOut, useClerk, useUser } from '@clerk/clerk-react';
 import { getStripePaymentAccess } from '../../shared/api';
 import {
+  clearPaidMembershipAccess,
   getSavedPaidMembershipAccess,
+  hasRecentPaymentConfirmation,
   savePaidMembershipAccess
 } from '../membership-flow/shared/planSelection';
 import DashboardPage from './pages/dashboard/DashboardPage';
@@ -263,10 +265,7 @@ function AuthenticatedDashboard() {
       }
 
       const savedAccess = getSavedPaidMembershipAccess(email);
-      if (savedAccess?.paid) {
-        setAccessStatus('paid');
-        setMembershipAccess(savedAccess);
-      }
+      const recentlyPaid = hasRecentPaymentConfirmation(savedAccess, email);
 
       try {
         const access = await getStripePaymentAccess(email, memberName);
@@ -276,12 +275,24 @@ function AuthenticatedDashboard() {
           savePaidMembershipAccess({
             email,
             memberName,
-            plan: { name: access.planName, slug: access.planSlug }
+            plan: { name: access.planName, slug: access.planSlug },
+            membershipAccess: access
           });
           setMembershipAccess(access);
           setAccessStatus('paid');
+        } else if (recentlyPaid) {
+          setMembershipAccess({
+            ...savedAccess,
+            ...access,
+            paid: true,
+            planName: access.planName || savedAccess.planName,
+            planSlug: access.planSlug || savedAccess.planSlug
+          });
+          setAccessStatus('paid');
         } else {
-          setAccessStatus(savedAccess?.paid ? 'paid' : 'unpaid');
+          clearPaidMembershipAccess(email);
+          setMembershipAccess(null);
+          setAccessStatus('unpaid');
         }
       } catch (error) {
         console.error(error);

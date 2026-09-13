@@ -233,7 +233,7 @@ function PaymentPageContent({ clerkEmail = '' }) {
     setPaymentMessage(message);
     clearPendingMemberEmail();
     window.setTimeout(() => {
-      window.location.href = '/login';
+      window.location.href = '/dashboard';
     }, 900);
   };
 
@@ -363,7 +363,7 @@ function PaymentPageContent({ clerkEmail = '' }) {
 
         if (isPaymentSuccessful(confirmation.paymentIntent)) {
           completePayment(
-            'PromptPay payment succeeded. Redirecting to login...',
+            'PromptPay payment succeeded. Redirecting to your dashboard...',
             confirmation.paymentIntent
           );
           return;
@@ -417,7 +417,7 @@ function PaymentPageContent({ clerkEmail = '' }) {
         confirmation.setupIntent?.status === 'succeeded'
       ) {
         completePayment(
-          'Card payment succeeded. Automatic monthly renewal is active. Redirecting to login...',
+          'Card payment succeeded. Automatic monthly renewal is active. Redirecting to your dashboard...',
           confirmation.paymentIntent || { id: subscription.id }
         );
         return;
