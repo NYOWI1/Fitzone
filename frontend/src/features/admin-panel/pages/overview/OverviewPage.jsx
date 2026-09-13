@@ -17,7 +17,9 @@ import AdminLoadingSkeleton from '../../components/AdminLoadingSkeleton';
 import DefaultProfileAvatar from '../../../../shared/ui/DefaultProfileAvatar';
 
 const overviewMemberGridClass =
-  'grid min-h-8 items-center gap-3.5 [grid-template-columns:32px_minmax(0,1fr)_90px_88px_74px] max-[680px]:grid-cols-[32px_minmax(0,1fr)_auto] max-[560px]:grid-cols-[32px_minmax(0,1fr)]';
+  'grid min-h-8 items-center gap-3.5 [grid-template-columns:32px_minmax(0,1fr)_minmax(230px,280px)] max-[560px]:gap-2.5 max-[560px]:[grid-template-columns:32px_minmax(0,1fr)_auto]';
+const overviewMemberMetaClass =
+  'grid min-w-0 grid-cols-[90px_88px_74px] items-center gap-3.5 max-[560px]:flex max-[560px]:flex-col max-[560px]:items-end max-[560px]:gap-1';
 const overviewCardClass = 'admin-card min-h-0';
 const revenueChartWidth = 720;
 const revenueChartHeight = 220;
@@ -175,17 +177,19 @@ export default function OverviewPage() {
                         {member.email}
                       </small>
                     </div>
-                    <span className='text-xs text-[#b8b8b8] max-[680px]:col-start-2'>
-                      {member.plan}
-                    </span>
-                    <span
-                      className={`admin-status-pill ${member.status.toLowerCase()}`}
-                    >
-                      {member.status}
-                    </span>
-                    <time className='text-right text-xs text-[#b8b8b8] max-[680px]:col-start-3 max-[680px]:row-span-2 max-[680px]:row-start-1 max-[560px]:col-start-2 max-[560px]:row-auto max-[560px]:text-left'>
-                      {member.joined}
-                    </time>
+                    <div className={overviewMemberMetaClass}>
+                      <span className='whitespace-nowrap text-xs text-[#b8b8b8]'>
+                        {member.plan}
+                      </span>
+                      <span
+                        className={`admin-status-pill ${member.status.toLowerCase()} max-[560px]:px-2 max-[560px]:py-0.5 max-[560px]:text-[10px]`}
+                      >
+                        {member.status}
+                      </span>
+                      <time className='whitespace-nowrap text-right text-xs text-[#b8b8b8] max-[560px]:text-[10px]'>
+                        {member.joined}
+                      </time>
+                    </div>
                   </div>
                 ))}
 
