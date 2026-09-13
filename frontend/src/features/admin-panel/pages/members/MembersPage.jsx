@@ -314,11 +314,12 @@ export default function MembersPage() {
                       {member.visits}
                     </b>
                     <button
+                      aria-label={`Check attendance for ${member.name}`}
                       className={rowActionClass}
                       onClick={() => openAttendanceForm(member)}
                       type='button'
                     >
-                      Edit
+                      Check
                     </button>
                   </div>
                 ))}
@@ -381,7 +382,7 @@ export default function MembersPage() {
           >
             <div className='admin-form-header'>
               <div>
-                <h3>Edit Attendance</h3>
+                <h3>Check Attendance</h3>
                 <p>
                   Manually correct check-ins for {attendanceForm.member.name}.
                 </p>
