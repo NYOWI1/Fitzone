@@ -31,13 +31,6 @@ const categoryPillClass =
   'inline-flex justify-center rounded-full bg-[rgba(217,4,41,0.12)] px-2.5 py-[7px] text-[11px] font-black text-[#d90429] max-[980px]:min-h-[34px] max-[980px]:items-center max-[560px]:justify-center';
 const rowActionClass =
   'min-h-[34px] rounded-[11px] border border-[#393939] bg-transparent text-xs font-extrabold text-[#eaeaea] max-[980px]:flex max-[980px]:items-center max-[980px]:justify-center';
-const classColorClasses = {
-  gray: 'bg-[#b8b8b8]',
-  green: 'bg-[#39e600]',
-  red: 'bg-[#d90429]',
-  teal: 'bg-[#05735e]',
-  yellow: 'bg-[#ffd54f]'
-};
 const durationOptions = [30, 45, 60, 75];
 const timePickerHours = Array.from({ length: 24 }, (_, index) => index);
 const timePickerMinutes = Array.from({ length: 60 }, (_, index) => index);
@@ -522,18 +515,13 @@ export default function ClassesPage() {
                     className={`${tableGridClass} min-h-16 rounded-2xl border border-[rgba(57,57,57,0.82)] bg-[rgba(43,43,43,0.72)] px-3 py-2.5 max-[980px]:min-h-0 max-[980px]:p-3.5`}
                     key={`${classItem.name}-${classItem.time}-${index}`}
                   >
-                    <div className='flex min-w-0 items-center gap-3 max-[980px]:col-span-full'>
-                      <span
-                        className={`h-8 w-8 flex-[0_0_32px] rounded-full ${classColorClasses[classItem.color] || classColorClasses.gray}`}
-                      ></span>
-                      <div className='min-w-0'>
-                        <strong className='mb-[5px] block overflow-hidden text-ellipsis whitespace-nowrap text-[13px] text-white'>
-                          {classItem.name}
-                        </strong>
-                        <small className='block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-xs text-[#b8b8b8]'>
-                          {classItem.period}
-                        </small>
-                      </div>
+                    <div className='min-w-0 max-[980px]:col-span-full'>
+                      <strong className='mb-[5px] block overflow-hidden text-ellipsis whitespace-nowrap text-[13px] text-white'>
+                        {classItem.name}
+                      </strong>
+                      <small className='block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-xs text-[#b8b8b8]'>
+                        {classItem.period}
+                      </small>
                     </div>
                     <time className={mutedCellClass}>{classItem.time}</time>
                     <span className={mutedCellClass}>{classItem.duration}</span>
