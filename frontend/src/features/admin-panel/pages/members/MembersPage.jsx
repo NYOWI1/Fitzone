@@ -10,6 +10,7 @@ import {
   getTodayIsoDate
 } from '../../adminPanelUtils';
 import AdminLoadingSkeleton from '../../components/AdminLoadingSkeleton';
+import DefaultProfileAvatar from '../../../../shared/ui/DefaultProfileAvatar';
 
 const memberTableGridClass =
   'grid min-w-0 items-center gap-2.5 [grid-template-columns:minmax(170px,1.5fr)_minmax(64px,0.6fr)_minmax(76px,0.72fr)_minmax(92px,0.8fr)_minmax(42px,0.36fr)_minmax(60px,0.52fr)] max-[980px]:[grid-template-columns:minmax(0,1fr)_auto] max-[980px]:items-start max-[980px]:gap-x-3.5 max-[980px]:gap-y-2.5 max-[560px]:[grid-template-columns:minmax(0,1fr)]';
@@ -286,9 +287,11 @@ export default function MembersPage() {
                     key={member.memberId || member.email}
                   >
                     <div className='flex min-w-0 items-center gap-3 max-[980px]:col-span-full'>
-                      <span
-                        className={`h-11 w-11 flex-[0_0_44px] rounded-full ${memberAvatarToneClasses[member.tone] || memberAvatarToneClasses.blue}`}
-                      ></span>
+                      <DefaultProfileAvatar
+                        className='h-11 w-11'
+                        imageUrl={member.imageUrl}
+                        name={member.name}
+                      />
                       <div className='min-w-0'>
                         <strong className='mb-[5px] block text-[13px] text-white'>
                           {member.name}
@@ -393,9 +396,11 @@ export default function MembersPage() {
             </div>
 
             <div className='admin-attendance-member'>
-              <span
-                className={`h-11 w-11 flex-[0_0_44px] rounded-full ${memberAvatarToneClasses[attendanceForm.member.tone] || memberAvatarToneClasses.blue}`}
-              ></span>
+              <DefaultProfileAvatar
+                className='h-11 w-11'
+                imageUrl={attendanceForm.member.imageUrl}
+                name={attendanceForm.member.name}
+              />
               <div>
                 <strong>{attendanceForm.member.name}</strong>
                 <small>{attendanceForm.member.email}</small>

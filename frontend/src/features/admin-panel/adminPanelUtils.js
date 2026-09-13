@@ -778,6 +778,7 @@ export function getOverviewRecentMembers(members) {
       plan: member.plan || 'Unassigned',
       status: member.status || 'Unknown',
       joined: getRelativeDateLabel(member.joined),
+      imageUrl: member.imageUrl || '',
       tone: member.tone || ['red', 'green', 'yellow', 'blue'][index % 4]
     }));
 }

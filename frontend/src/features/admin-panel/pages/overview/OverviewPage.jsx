@@ -14,16 +14,11 @@ import {
   getOverviewTodayClasses
 } from '../../adminPanelUtils';
 import AdminLoadingSkeleton from '../../components/AdminLoadingSkeleton';
+import DefaultProfileAvatar from '../../../../shared/ui/DefaultProfileAvatar';
 
 const overviewMemberGridClass =
   'grid min-h-8 items-center gap-3.5 [grid-template-columns:32px_minmax(0,1fr)_90px_88px_74px] max-[680px]:grid-cols-[32px_minmax(0,1fr)_auto] max-[560px]:grid-cols-[32px_minmax(0,1fr)]';
 const overviewCardClass = 'admin-card min-h-0';
-const memberAvatarToneClasses = {
-  blue: 'bg-[#4da3ff]',
-  green: 'bg-[#39e600]',
-  red: 'bg-[#d90429]',
-  yellow: 'bg-[#ffd54f]'
-};
 const revenueChartWidth = 720;
 const revenueChartHeight = 220;
 const revenueChartBaseline = 170;
@@ -146,7 +141,6 @@ export default function OverviewPage() {
           <div className='admin-kpi-grid mb-[clamp(16px,2vh,22px)] flex-none gap-4'>
             {kpis.map((kpi) => (
               <article className='admin-kpi-card' key={kpi.label}>
-                <span className={`admin-kpi-icon ${kpi.tone}`}></span>
                 <div className='admin-kpi-copy'>
                   <h3>{kpi.label}</h3>
                   <p>{kpi.note}</p>
@@ -168,9 +162,11 @@ export default function OverviewPage() {
               <div className='grid max-h-[274px] gap-4 overflow-y-auto pr-1 min-[1440px]:gap-5'>
                 {recentMembers.map((member) => (
                   <div className={overviewMemberGridClass} key={member.id}>
-                    <span
-                      className={`block h-8 w-8 rounded-full ${memberAvatarToneClasses[member.tone] || memberAvatarToneClasses.blue}`}
-                    ></span>
+                    <DefaultProfileAvatar
+                      className='h-8 w-8'
+                      imageUrl={member.imageUrl}
+                      name={member.name}
+                    />
                     <div className='min-w-0'>
                       <strong className='block text-[13px] text-white'>
                         {member.name}
@@ -214,16 +210,9 @@ export default function OverviewPage() {
               <div className='mt-[18px] grid min-h-0 flex-1 content-start gap-2.5 overflow-y-auto pr-1'>
                 {todayClasses.map((item) => (
                   <div
-                    className='grid min-h-[70px] grid-cols-[10px_minmax(0,1fr)_54px] items-center gap-2.5 rounded-[14px] border border-[#343434] bg-[#202020] px-3 py-2.5 max-[560px]:grid-cols-[10px_minmax(0,1fr)_auto]'
+                    className='grid min-h-[70px] grid-cols-[minmax(0,1fr)_54px] items-center gap-2.5 rounded-[14px] border border-[#343434] bg-[#202020] px-3 py-2.5 max-[560px]:grid-cols-[minmax(0,1fr)_auto]'
                     key={item.id}
                   >
-                    <span
-                      className={
-                        item.status === 'full'
-                          ? 'h-2.5 w-2.5 rounded-full bg-[#d90429]'
-                          : 'h-2.5 w-2.5 rounded-full bg-[#39e600]'
-                      }
-                    ></span>
                     <div className='min-w-0 self-center'>
                       <strong className='mb-1 block overflow-hidden text-ellipsis whitespace-nowrap text-[13px] leading-tight text-white'>
                         {item.name}

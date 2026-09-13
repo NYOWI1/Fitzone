@@ -138,18 +138,11 @@ export default function MyPlanPage({ membershipAccess = null }) {
 
       {status === 'ready' && benefits.length > 0 && (
         <div className='mt-6 grid grid-cols-1 gap-5 md:grid-cols-2'>
-          {benefits.map((benefit, index) => (
+          {benefits.map((benefit) => (
             <article
-              className='grid min-h-24 grid-cols-[48px_minmax(0,1fr)] items-center gap-5 rounded-[24px] border border-[#414141] bg-[#252525] px-5 py-4 shadow-[0_18px_45px_rgba(0,0,0,0.25)] sm:px-6'
+              className='flex min-h-24 items-center rounded-[24px] border border-[#414141] bg-[#252525] px-6 py-4 shadow-[0_18px_45px_rgba(0,0,0,0.25)] sm:px-8'
               key={benefit}
             >
-              <span
-                className={
-                  index % 2 === 0
-                    ? 'h-12 w-12 rounded-full bg-[rgba(230,0,46,0.22)]'
-                    : 'h-12 w-12 rounded-full bg-[rgba(48,255,0,0.18)]'
-                }
-              ></span>
               <div className='min-w-0'>
                 <h3 className='m-0 break-words text-base font-black sm:text-lg'>
                   {benefit}

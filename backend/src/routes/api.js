@@ -1552,6 +1552,7 @@ async function mapClerkUserToMember(user, index) {
     memberId: user.id,
     name,
     email,
+    imageUrl: user.image_url || "",
     phone: getClerkPrimaryPhone(user),
     plan,
     planSlug: paymentAccess.planSlug || makeSlug(plan),

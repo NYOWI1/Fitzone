@@ -90,15 +90,11 @@
   }
 
   .admin-kpi-card {
-    @apply relative min-h-25 rounded-2xl border-t-2 border-t-[var(--fz-accent-10)] p-4.75 sm:min-h-29 sm:rounded-3xl;
-  }
-
-  .admin-kpi-icon {
-    @apply mb-2 block h-8.5 w-8.5 rounded-full opacity-40;
+    @apply relative flex min-h-25 flex-col justify-between rounded-2xl border-t-2 border-t-[var(--fz-accent-10)] p-4.75 sm:min-h-29 sm:rounded-3xl;
   }
 
   .admin-kpi-copy {
-    @apply absolute top-6 right-3 left-19 sm:left-23.75;
+    @apply min-w-0;
   }
 
   .admin-kpi-copy h3 {
@@ -110,14 +106,7 @@
   }
 
   .admin-kpi-card strong {
-    @apply mt-0.5 block text-[28px] leading-none text-[var(--fz-text)];
-  }
-
-  .admin-kpi-icon.red,
-  .admin-kpi-icon.green,
-  .admin-kpi-icon.yellow,
-  .admin-kpi-icon.blue {
-    @apply bg-[var(--fz-accent-10)];
+    @apply mt-3 block text-[28px] leading-none text-[var(--fz-text)];
   }
 
   .admin-class-dot.red {
