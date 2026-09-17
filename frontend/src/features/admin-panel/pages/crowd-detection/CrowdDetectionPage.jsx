@@ -856,7 +856,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
           <div
             className='relative mt-5 h-auto min-h-0 w-full flex-none overflow-hidden border-y border-[#444] bg-[#2c2c2c] after:absolute after:inset-x-0 after:bottom-0 after:z-0 after:h-[29%] after:rounded-t-2xl after:bg-[#111] max-[760px]:min-h-80'
             style={{
-              aspectRatio: videoAspectRatio,
+              aspectRatio: sourceMode === 'image' ? '16 / 9' : videoAspectRatio,
               backgroundImage:
                 'linear-gradient(rgba(57, 230, 0, 0.38) 1px, transparent 1px)',
               backgroundPosition: '0 28px',
@@ -879,7 +879,6 @@ export default function CrowdDetectionPage({ isVisible = true }) {
                 onLoad={(event) => {
                   const image = event.currentTarget;
                   if (image.naturalWidth && image.naturalHeight) {
-                    setVideoAspectRatio(`${image.naturalWidth} / ${image.naturalHeight}`);
                     setImageLoaded(true);
                   }
                 }}
