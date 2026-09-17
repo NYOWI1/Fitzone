@@ -5,6 +5,7 @@ const CONFIDENCE_STEP = 0.05;
 const INITIAL_CONFIDENCE = 0.45;
 const DETECTION_INTERVAL_MS = 700;
 const STATUS_PUBLISH_INTERVAL_MS = 1800;
+const MAX_TEST_IMAGE_BYTES = 20 * 1024 * 1024;
 const PERSON_CLASS = 'person';
 const INITIAL_GYM_CAPACITY = 70;
 const INITIAL_RANGES = {
@@ -387,6 +388,10 @@ function drawPredictions(canvas, source, people) {
 export default function CrowdDetectionPage({ isVisible = true }) {
   const modelRef = useRef(null);
   const videoRef = useRef(null);
+  const imageRef = useRef(null);
+  const imageUrlRef = useRef('');
+  const imageRequestRef = useRef(0);
+  const sourceModeRef = useRef('camera');
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const animationRef = useRef(null);
@@ -403,7 +408,14 @@ export default function CrowdDetectionPage({ isVisible = true }) {
   const [modelStatus, setModelStatus] = useState('loading');
   const [modelName, setModelName] = useState('YOLO11');
   const [sourceStatus, setSourceStatus] = useState('idle');
+  const [sourceMode, setSourceMode] = useState('camera');
+  const [imageUrl, setImageUrl] = useState('');
+  const [imageName, setImageName] = useState('');
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageDetectionStatus, setImageDetectionStatus] = useState('idle');
+  const [actualCount, setActualCount] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  sourceModeRef.current = sourceMode;
 
   const people = detections.filter(
     (prediction) =>
@@ -420,9 +432,16 @@ export default function CrowdDetectionPage({ isVisible = true }) {
     : 0;
   const moderateMin = ranges.normalMax + 1;
   const crowdedMin = ranges.moderateMax + 1;
+  const hasActualCount = actualCount !== '' && Number.isFinite(Number(actualCount));
+  const countDifference = hasActualCount
+    ? Math.abs(people.length - Number(actualCount))
+    : null;
   crowdStatusPayloadRef.current = {
-    active: modelStatus === 'ready' && sourceStatus === 'ready',
-    peopleCount: people.length,
+    active:
+      sourceMode === 'camera' &&
+      modelStatus === 'ready' &&
+      sourceStatus === 'ready',
+    peopleCount: sourceMode === 'camera' ? people.length : 0,
     capacity: gymCapacity,
     normalMax: ranges.normalMax,
     moderateMax: ranges.moderateMax
@@ -517,6 +536,19 @@ export default function CrowdDetectionPage({ isVisible = true }) {
     }
   }, []);
 
+  const clearTestImage = useCallback(() => {
+    imageRequestRef.current += 1;
+    if (imageUrlRef.current) {
+      URL.revokeObjectURL(imageUrlRef.current);
+      imageUrlRef.current = '';
+    }
+    setImageUrl('');
+    setImageName('');
+    setImageLoaded(false);
+    setImageDetectionStatus('idle');
+    setActualCount('');
+  }, []);
+
   const clearCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     const context = canvas?.getContext('2d');
@@ -539,7 +571,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
             prediction.class === PERSON_CLASS && prediction.score >= confidence
         );
 
-        if (!isMountedRef.current) {
+        if (!isMountedRef.current || sourceModeRef.current !== 'camera') {
           return;
         }
 
@@ -547,7 +579,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
         drawPredictions(canvasRef.current, source, nextPeople);
         setSourceStatus('ready');
       } catch (error) {
-        if (!isMountedRef.current) {
+        if (!isMountedRef.current || sourceModeRef.current !== 'camera') {
           return;
         }
 
@@ -589,6 +621,11 @@ export default function CrowdDetectionPage({ isVisible = true }) {
   );
 
   const startCamera = useCallback(async () => {
+    sourceModeRef.current = 'camera';
+    setSourceMode('camera');
+    clearTestImage();
+    setDetections([]);
+    clearCanvas();
     if (!canRequestCameraPermission()) {
       setErrorMessage(
         `Camera permission only appears on HTTPS or localhost. Open http://localhost:${window.location.port || '5173'}/admin/crowd-detection on this Mac, or serve the network URL with HTTPS.`
@@ -666,7 +703,76 @@ export default function CrowdDetectionPage({ isVisible = true }) {
       );
       setSourceStatus('error');
     }
-  }, [clearCanvas, detectVideoFrame, stopCamera]);
+  }, [clearCanvas, clearTestImage, detectVideoFrame, stopCamera]);
+
+  const selectTestImage = (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setErrorMessage('Choose an image file to test person detection.');
+      return;
+    }
+    if (file.size > MAX_TEST_IMAGE_BYTES) {
+      setErrorMessage('Choose an image smaller than 20 MB.');
+      return;
+    }
+
+    sourceModeRef.current = 'image';
+    stopCamera();
+    clearTestImage();
+    clearCanvas();
+    setDetections([]);
+    setSourceMode('image');
+    setSourceStatus('idle');
+    setErrorMessage('');
+    setImageDetectionStatus('loading');
+    setVideoAspectRatio('16 / 9');
+    const url = URL.createObjectURL(file);
+    imageUrlRef.current = url;
+    setImageUrl(url);
+    setImageName(file.name);
+  };
+
+  useEffect(() => {
+    if (
+      sourceMode !== 'image' ||
+      !imageLoaded ||
+      modelStatus !== 'ready' ||
+      !imageRef.current
+    ) return;
+
+    const requestId = ++imageRequestRef.current;
+    const image = imageRef.current;
+    setImageDetectionStatus('loading');
+    setErrorMessage('');
+
+    modelRef.current.detect(image, confidence).then((predictions) => {
+      if (
+        !isMountedRef.current ||
+        sourceModeRef.current !== 'image' ||
+        imageRequestRef.current !== requestId
+      ) return;
+
+      const nextPeople = predictions.filter(
+        (prediction) =>
+          prediction.class === PERSON_CLASS && prediction.score >= confidence
+      );
+      setDetections(nextPeople);
+      drawPredictions(canvasRef.current, image, nextPeople);
+      setImageDetectionStatus('ready');
+    }).catch((error) => {
+      if (imageRequestRef.current !== requestId) return;
+      console.error(error);
+      setErrorMessage('Image detection failed. Try another image.');
+      setImageDetectionStatus('error');
+    });
+
+    return () => {
+      imageRequestRef.current += 1;
+    };
+  }, [confidence, imageLoaded, modelStatus, sourceMode, imageUrl]);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -700,26 +806,27 @@ export default function CrowdDetectionPage({ isVisible = true }) {
       isCurrent = false;
       isMountedRef.current = false;
       stopCamera();
+      if (imageUrlRef.current) URL.revokeObjectURL(imageUrlRef.current);
     };
   }, [stopCamera]);
 
   useEffect(() => {
-    if (sourceStatus === 'idle') {
+    if (sourceMode === 'camera' && sourceStatus === 'idle') {
       startCamera();
     }
-  }, [sourceStatus, startCamera]);
+  }, [sourceMode, sourceStatus, startCamera]);
 
   useEffect(() => {
-    const source = videoRef.current;
+    const source = sourceMode === 'image' ? imageRef.current : videoRef.current;
     const visiblePeople = detections.filter(
       (prediction) =>
         prediction.class === PERSON_CLASS && prediction.score >= confidence
     );
 
-    if (source && detections.length > 0) {
+    if (source && (sourceMode === 'camera' || imageLoaded)) {
       drawPredictions(canvasRef.current, source, visiblePeople);
     }
-  }, [confidence, detections]);
+  }, [confidence, detections, imageLoaded, sourceMode]);
 
   useEffect(() => {
     return () => {
@@ -745,8 +852,8 @@ export default function CrowdDetectionPage({ isVisible = true }) {
             Crowd Detection System
           </h2>
           <p className='max-w-[760px] text-base text-[#a9a9a9]'>
-            Admin view for monitoring the AI model video, live capacity, and
-            detection results.
+            Monitor the live camera or test a photo to see where the model
+            detects people.
           </p>
         </div>
 
@@ -763,10 +870,10 @@ export default function CrowdDetectionPage({ isVisible = true }) {
         <section className={monitorCardClass}>
           <div className='flex min-h-[52px] flex-none items-center justify-between rounded-[25px] bg-[#151515] px-[25px]'>
             <h3 className='m-0 text-base leading-none text-white'>
-              AI Model Video Preview
+              {sourceMode === 'image' ? 'Image Detection Test' : 'AI Model Video Preview'}
             </h3>
             <span className='inline-flex h-7 min-w-[86px] items-center justify-center rounded-full bg-[#d90429] text-[11px] font-black text-white'>
-              LIVE
+              {sourceMode === 'image' ? 'TEST IMAGE' : 'LIVE'}
             </span>
           </div>
 
@@ -782,12 +889,34 @@ export default function CrowdDetectionPage({ isVisible = true }) {
           >
             <video
               aria-label='Live gym camera preview'
-              className='absolute inset-0 z-[1] h-full w-full object-contain'
+              className={`absolute inset-0 z-[1] h-full w-full object-contain ${sourceMode === 'image' ? 'hidden' : ''}`}
               muted
               onLoadedMetadata={updateVideoAspectRatio}
               playsInline
               ref={videoRef}
             ></video>
+
+            {sourceMode === 'image' && imageUrl && (
+              <img
+                alt={`Uploaded test image: ${imageName}`}
+                className='absolute inset-0 z-[1] h-full w-full object-contain'
+                onLoad={(event) => {
+                  const image = event.currentTarget;
+                  if (image.naturalWidth && image.naturalHeight) {
+                    setVideoAspectRatio(
+                      `${image.naturalWidth} / ${image.naturalHeight}`
+                    );
+                    setImageLoaded(true);
+                  }
+                }}
+                onError={() => {
+                  setErrorMessage('This image could not be opened. Try another file.');
+                  setImageDetectionStatus('error');
+                }}
+                ref={imageRef}
+                src={imageUrl}
+              />
+            )}
 
             <canvas
               aria-hidden='true'
@@ -795,23 +924,31 @@ export default function CrowdDetectionPage({ isVisible = true }) {
               ref={canvasRef}
             ></canvas>
 
-            {((modelStatus === 'loading' && sourceStatus !== 'ready') ||
-              sourceStatus === 'loading') && (
+            {((sourceMode === 'camera' &&
+              ((modelStatus === 'loading' && sourceStatus !== 'ready') ||
+                sourceStatus === 'loading')) ||
+              (sourceMode === 'image' &&
+                (modelStatus === 'loading' || imageDetectionStatus === 'loading'))) && (
               <div className='absolute inset-0 z-[3] flex flex-col items-center justify-center gap-2.5 bg-[rgba(17,17,17,0.88)] p-7 text-center'>
                 <strong className='text-[clamp(20px,2.2vw,30px)] leading-tight text-white'>
                   {modelStatus === 'loading'
                     ? `Loading ${modelName} detection model`
-                    : 'Preparing source'}
+                    : sourceMode === 'image'
+                      ? 'Detecting people in image'
+                      : 'Preparing source'}
                 </strong>
                 <span className='max-w-[360px] text-sm leading-normal text-[#b8b8b8]'>
                   {modelStatus === 'loading'
                     ? 'YOLO11 ONNX is starting in the browser.'
-                    : 'Waiting for a usable frame.'}
+                    : sourceMode === 'image'
+                      ? 'Processing this image locally in your browser.'
+                      : 'Waiting for a usable frame.'}
                 </span>
               </div>
             )}
 
-            {(sourceStatus === 'error' ||
+            {((sourceMode === 'camera' && sourceStatus === 'error') ||
+              (sourceMode === 'image' && imageDetectionStatus === 'error') ||
               (modelStatus === 'error' && sourceStatus !== 'ready')) && (
               <div className='absolute inset-0 z-[3] flex flex-col items-center justify-center gap-2.5 bg-[rgba(17,17,17,0.88)] p-7 text-center'>
                 <strong className='text-[clamp(20px,2.2vw,30px)] leading-tight text-[#d90429]'>
@@ -830,43 +967,95 @@ export default function CrowdDetectionPage({ isVisible = true }) {
               aria-label='Detection source controls'
             >
               <button
-                className={`${sourceButtonClass} border-[#d90429] max-[760px]:flex-[1_1_140px]`}
+                className={`${sourceButtonClass} ${sourceMode === 'camera' ? 'border-[#d90429]' : ''} max-[760px]:flex-[1_1_140px]`}
                 disabled={sourceStatus === 'loading'}
                 onClick={startCamera}
                 type='button'
               >
                 Live camera
               </button>
+              <input
+                accept='image/*'
+                className='sr-only'
+                id='crowd-test-image'
+                onChange={selectTestImage}
+                type='file'
+              />
+              <label
+                className={`${sourceButtonClass} ${sourceMode === 'image' ? 'border-[#d90429]' : ''} max-[760px]:flex-[1_1_140px]`}
+                htmlFor='crowd-test-image'
+              >
+                Upload image
+              </label>
             </div>
+            {sourceMode === 'image' && imageName && (
+              <span className='min-w-0 truncate text-xs text-[#b8b8b8]' title={imageName}>
+                {imageName} · test only, not live occupancy
+              </span>
+            )}
+            {errorMessage && modelStatus !== 'error' &&
+              imageDetectionStatus !== 'error' && sourceStatus !== 'error' && (
+                <span role='alert' className='text-xs text-[#ff7c91]'>
+                  {errorMessage}
+                </span>
+              )}
           </footer>
         </section>
 
         <aside className='admin-card mx-auto grid min-h-0 w-full max-w-[270px] content-start gap-4 rounded-[22px] border-[#424242] bg-[#252525] p-5 max-[1360px]:max-w-none max-[1360px]:grid-cols-3 max-[900px]:grid-cols-1'>
           <div className='flex items-center justify-between gap-3 max-[1360px]:col-span-full'>
             <h3 className='m-0 whitespace-nowrap text-xl leading-none'>
-              Live Status
+              {sourceMode === 'image' ? 'Image Results' : 'Live Status'}
             </h3>
             <span
-              className={`inline-flex min-h-8 items-center gap-2 rounded-full border border-current px-3 text-[11px] font-black uppercase ${toneTextClasses[crowdStatus.tone]}`}
+              className={`inline-flex min-h-8 items-center gap-2 rounded-full border border-current px-3 text-[11px] font-black uppercase ${sourceMode === 'image' ? 'text-[#ffd54f]' : toneTextClasses[crowdStatus.tone]}`}
             >
-              <span
+              {sourceMode === 'camera' && <span
                 className={`h-2.5 w-2.5 rounded-full ${toneDotClasses[crowdStatus.tone]}`}
-              ></span>
-              {crowdStatus.label}
+              ></span>}
+              {sourceMode === 'image' ? 'Test only' : crowdStatus.label}
             </span>
           </div>
 
           <div className='grid min-h-[118px] place-items-center rounded-[18px] border border-[#373737] bg-[#202020] p-4 text-center'>
             <strong className='block whitespace-nowrap text-[42px] leading-none text-[#e6002e]'>
               {people.length}
-              <span className='text-[26px] text-[#8f8f8f]'>/{gymCapacity}</span>
+              {sourceMode === 'camera' && <span className='text-[26px] text-[#8f8f8f]'>/{gymCapacity}</span>}
             </strong>
             <span className='mt-2 block text-xs font-bold text-[#b8b8b8]'>
               people detected
             </span>
           </div>
 
-          <div className='rounded-[18px] border border-[#373737] bg-[#202020] p-4'>
+          {sourceMode === 'image' && (
+            <div className='grid gap-3 rounded-[18px] border border-[#373737] bg-[#202020] p-4'>
+              <span className='text-xs font-black uppercase text-[#b8b8b8]'>Check against a known count</span>
+              <label className='grid gap-2 text-xs text-[#b8b8b8]' htmlFor='actual-person-count'>
+                Actual people in image
+                <input
+                  className='h-10 w-full rounded-lg border border-[#424242] bg-[#151515] px-3 text-sm text-white'
+                  id='actual-person-count'
+                  min='0'
+                  onChange={(event) => setActualCount(event.target.value)}
+                  placeholder='Enter your manual count'
+                  type='number'
+                  value={actualCount}
+                />
+              </label>
+              {hasActualCount && imageDetectionStatus === 'ready' && (
+                <strong className='text-sm text-white'>
+                  {countDifference === 0
+                    ? 'Exact count match'
+                    : `Count differs by ${countDifference}`}
+                </strong>
+              )}
+              <p className='m-0 text-xs leading-snug text-[#a7a7a7]'>
+                Confidence is not accuracy. A reliable model accuracy score needs multiple labeled images.
+              </p>
+            </div>
+          )}
+
+          {sourceMode === 'camera' && <div className='rounded-[18px] border border-[#373737] bg-[#202020] p-4'>
             <label className='mb-3 flex items-center justify-between gap-3'>
               <span className='text-[11px] font-black uppercase text-[#b8b8b8]'>
                 Gym capacity
@@ -911,9 +1100,9 @@ export default function CrowdDetectionPage({ isVisible = true }) {
             <b className='mt-3 block text-center text-sm text-[#ffd54f]'>
               {capacityPercent}% capacity
             </b>
-          </div>
+          </div>}
 
-          <div className='grid gap-2 rounded-[18px] border border-[#373737] bg-[#202020] p-4'>
+          {sourceMode === 'camera' && <div className='grid gap-2 rounded-[18px] border border-[#373737] bg-[#202020] p-4'>
             <h4 className='mb-1 mt-0 text-xs font-black uppercase text-[#b8b8b8]'>
               Alert ranges
             </h4>
@@ -996,7 +1185,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
                 {crowdedMin}+
               </small>
             </div>
-          </div>
+          </div>}
         </aside>
       </div>
 
@@ -1015,36 +1204,39 @@ export default function CrowdDetectionPage({ isVisible = true }) {
             {people.length ? formatPercent(averageConfidence) : '0%'}
           </strong>
           <h3 className='mb-[9px] mt-4 text-sm leading-tight text-white'>
-            {modelName}
+            Average detection confidence · {modelName}
           </h3>
+          <p className='m-0 text-xs text-[#a7a7a7]'>Not a measured accuracy score</p>
         </article>
 
         <article className={summaryCardClass}>
-          <strong
-            className={`pb-6 text-[clamp(27px,2.7vw,32px)] leading-none ${toneTextClasses[cameraStatus.tone]}`}
-          >
-            {cameraStatus.label}
-          </strong>
-          <h3 className='mb-[9px] mt-4 text-sm leading-tight text-white'>
-            Camera Status
-          </h3>
-          <p className='m-0 text-xs leading-snug text-[#a7a7a7]'>
-            {cameraStatus.note}
-          </p>
+          {sourceMode === 'image' ? <>
+            <strong className='pb-6 text-[clamp(27px,2.7vw,32px)] leading-none text-[#ffd54f]'>
+              {hasActualCount && imageDetectionStatus === 'ready' ? actualCount : '—'}
+            </strong>
+            <h3 className='mb-[9px] mt-4 text-sm leading-tight text-white'>Actual people</h3>
+            <p className='m-0 text-xs leading-snug text-[#a7a7a7]'>Manually counted in the image</p>
+          </> : <>
+            <strong className={`pb-6 text-[clamp(27px,2.7vw,32px)] leading-none ${toneTextClasses[cameraStatus.tone]}`}>
+              {cameraStatus.label}
+            </strong>
+            <h3 className='mb-[9px] mt-4 text-sm leading-tight text-white'>Camera Status</h3>
+          </>}
         </article>
 
         <article className={summaryCardClass}>
-          <strong
-            className={`pb-6 text-[clamp(27px,2.7vw,32px)] leading-none ${toneTextClasses[crowdStatus.tone]}`}
-          >
-            {crowdStatus.label}
-          </strong>
-          <h3 className='mb-[9px] mt-4 text-sm leading-tight text-white'>
-            Alert Level
-          </h3>
-          <p className='m-0 text-xs leading-snug text-[#a7a7a7]'>
-            {crowdStatus.note}
-          </p>
+          {sourceMode === 'image' ? <>
+            <strong className='pb-6 text-[clamp(27px,2.7vw,32px)] leading-none text-[#e6002e]'>
+              {countDifference === null || imageDetectionStatus !== 'ready' ? '—' : countDifference}
+            </strong>
+            <h3 className='mb-[9px] mt-4 text-sm leading-tight text-white'>Count difference</h3>
+            <p className='m-0 text-xs leading-snug text-[#a7a7a7]'>Detected versus actual people</p>
+          </> : <>
+            <strong className={`pb-6 text-[clamp(27px,2.7vw,32px)] leading-none ${toneTextClasses[crowdStatus.tone]}`}>
+              {crowdStatus.label}
+            </strong>
+            <h3 className='mb-[9px] mt-4 text-sm leading-tight text-white'>Alert Level</h3>
+          </>}
         </article>
       </div>
 
