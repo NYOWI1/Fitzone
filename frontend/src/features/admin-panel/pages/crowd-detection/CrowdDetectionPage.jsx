@@ -825,7 +825,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
         </button>
       </header>
 
-      <div className='grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_310px] gap-4 max-[1359px]:grid-cols-1'>
+      <div className='mx-auto grid w-full min-h-0 flex-1 grid-cols-[minmax(0,1fr)_310px] gap-4 min-[1360px]:max-w-[1380px] max-[1359px]:grid-cols-1'>
         <section className={monitorCardClass}>
           <div className='flex min-h-[52px] flex-none items-center justify-between rounded-[25px] bg-[#151515] px-[25px]'>
             <h3 className='m-0 text-base leading-none text-white'>
@@ -1104,7 +1104,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
         </aside>
       </div>
 
-      <div className='mt-4 grid flex-none grid-cols-4 gap-4 max-[900px]:grid-cols-2 max-[760px]:grid-cols-1'>
+      <div className='mx-auto mt-4 grid w-full flex-none grid-cols-4 gap-4 min-[1360px]:max-w-[1380px] max-[900px]:grid-cols-2 max-[760px]:grid-cols-1'>
         <article className={summaryCardClass}>
           <strong className='pb-1 text-[clamp(27px,2.7vw,32px)] leading-none text-[#e6002e]'>
             {people.length}
