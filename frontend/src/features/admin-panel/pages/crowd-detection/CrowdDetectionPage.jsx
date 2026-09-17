@@ -411,7 +411,6 @@ export default function CrowdDetectionPage({ isVisible = true }) {
   const [imageUrl, setImageUrl] = useState('');
   const [imageName, setImageName] = useState('');
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [actualCount, setActualCount] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   const people = detections.filter(
@@ -429,10 +428,6 @@ export default function CrowdDetectionPage({ isVisible = true }) {
     : 0;
   const moderateMin = ranges.normalMax + 1;
   const crowdedMin = ranges.moderateMax + 1;
-  const hasActualCount = actualCount !== '' && Number.isFinite(Number(actualCount));
-  const countDifference = hasActualCount
-    ? Math.abs(people.length - Number(actualCount))
-    : null;
   crowdStatusPayloadRef.current = {
     active:
       sourceMode === 'camera' &&
@@ -534,7 +529,6 @@ export default function CrowdDetectionPage({ isVisible = true }) {
     setImageUrl('');
     setImageName('');
     setImageLoaded(false);
-    setActualCount('');
   }, []);
 
   const clearCanvas = useCallback(() => {
@@ -862,7 +856,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
             {sourceMode === 'image' && imageUrl && (
               <img
                 alt={`Uploaded image: ${imageName}`}
-                className='absolute inset-0 z-[1] h-full w-full object-contain'
+                className='absolute inset-0 z-[1] h-full w-full object-cover'
                 onLoad={(event) => {
                   const image = event.currentTarget;
                   if (image.naturalWidth && image.naturalHeight) {
@@ -880,7 +874,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
 
             <canvas
               aria-hidden='true'
-              className={`pointer-events-none absolute inset-0 z-[2] h-full w-full ${sourceMode === 'image' ? 'object-contain' : 'object-cover'}`}
+              className='pointer-events-none absolute inset-0 z-[2] h-full w-full object-cover'
               ref={canvasRef}
             ></canvas>
 
@@ -949,28 +943,6 @@ export default function CrowdDetectionPage({ isVisible = true }) {
               </span>
             )}
           </footer>
-          {sourceMode === 'image' && (
-            <div className='flex flex-wrap items-end gap-4 border-t border-[#424242] px-[23px] py-4'>
-              <label className='grid gap-1 text-xs text-[#b8b8b8]' htmlFor='actual-person-count'>
-                Actual people in image (optional)
-                <input
-                  className='h-9 w-48 rounded-lg border border-[#424242] bg-[#151515] px-3 text-sm text-white'
-                  id='actual-person-count'
-                  min='0'
-                  onChange={(event) => setActualCount(event.target.value)}
-                  placeholder='Manual count'
-                  type='number'
-                  value={actualCount}
-                />
-              </label>
-              {hasActualCount && sourceStatus === 'ready' && (
-                <span className='pb-2 text-sm font-bold text-white'>
-                  {countDifference === 0 ? 'Exact count match' : `Count differs by ${countDifference}`}
-                </span>
-              )}
-              <p className='m-0 text-xs text-[#b8b8b8]'>Confidence is not overall model accuracy.</p>
-            </div>
-          )}
         </section>
 
         <aside className='admin-card mx-auto grid h-fit min-h-0 w-full max-w-[310px] content-start gap-3 rounded-[22px] border-[#424242] bg-[#252525] p-4 max-[1359px]:max-w-none max-[1359px]:grid-cols-3 max-[900px]:grid-cols-1'>
