@@ -48,7 +48,7 @@ const rangeStepperButtonClass =
 const stepperShellClass =
   'ml-1 inline-flex overflow-hidden rounded-lg border border-[#424242] bg-[#1a1a1a]';
 const summaryCardClass =
-  'admin-card flex min-h-[140px] flex-col justify-center rounded-[20px] border-[#424242] bg-[#252525] px-[23px] py-7';
+  'admin-card flex min-h-[108px] flex-col justify-center rounded-[20px] border-[#424242] bg-[#252525] px-[18px] py-4';
 
 const hiddenCameraPageStyle = {
   height: 1,
@@ -404,7 +404,6 @@ export default function CrowdDetectionPage({ isVisible = true }) {
   const [detections, setDetections] = useState([]);
   const [gymCapacity, setGymCapacity] = useState(INITIAL_GYM_CAPACITY);
   const [ranges, setRanges] = useState(INITIAL_RANGES);
-  const [videoAspectRatio, setVideoAspectRatio] = useState('16 / 9');
   const [modelStatus, setModelStatus] = useState('loading');
   const [modelName, setModelName] = useState('YOLO11');
   const [sourceStatus, setSourceStatus] = useState('idle');
@@ -506,14 +505,6 @@ export default function CrowdDetectionPage({ isVisible = true }) {
 
       return { normalMax, moderateMax };
     });
-  };
-
-  const updateVideoAspectRatio = () => {
-    const video = videoRef.current;
-
-    if (video?.videoWidth && video?.videoHeight) {
-      setVideoAspectRatio(`${video.videoWidth} / ${video.videoHeight}`);
-    }
   };
 
   const stopCamera = useCallback(() => {
@@ -629,7 +620,6 @@ export default function CrowdDetectionPage({ isVisible = true }) {
     sourceModeRef.current = 'camera';
     setSourceMode('camera');
     clearImage();
-    setVideoAspectRatio('16 / 9');
     if (!canRequestCameraPermission()) {
       setErrorMessage(
         `Camera permission only appears on HTTPS or localhost. Open http://localhost:${window.location.port || '5173'}/admin/crowd-detection on this Mac, or serve the network URL with HTTPS.`
@@ -735,7 +725,6 @@ export default function CrowdDetectionPage({ isVisible = true }) {
     setSourceMode('image');
     setSourceStatus('loading');
     setErrorMessage('');
-    setVideoAspectRatio('16 / 9');
     const url = URL.createObjectURL(file);
     imageUrlRef.current = url;
     setImageUrl(url);
@@ -818,11 +807,11 @@ export default function CrowdDetectionPage({ isVisible = true }) {
 
   return (
     <section
-      className='admin-content min-h-[calc(100vh_-_64px)] overflow-visible pt-5 max-[1360px]:h-auto'
+      className='admin-content min-h-[calc(100vh_-_64px)] overflow-visible pt-5 min-[1360px]:h-[calc(100svh-64px)] min-[1360px]:min-h-0 min-[1360px]:overflow-hidden max-[1360px]:h-auto'
       id='crowd-detection'
       style={isVisible ? undefined : hiddenCameraPageStyle}
     >
-      <header className='admin-header mb-7 flex-none items-start max-[760px]:items-stretch max-[760px]:flex-col'>
+      <header className='admin-header mb-4 flex-none items-start lg:mb-4 max-[760px]:items-stretch max-[760px]:flex-col'>
         <div>
           <h2 className='mb-2 text-[clamp(34px,3.4vw,40px)] tracking-normal'>
             Crowd Detection System
@@ -842,7 +831,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
         </button>
       </header>
 
-      <div className='grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_270px] gap-7 max-[1360px]:grid-cols-1'>
+      <div className='grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_310px] gap-4 max-[1359px]:grid-cols-1'>
         <section className={monitorCardClass}>
           <div className='flex min-h-[52px] flex-none items-center justify-between rounded-[25px] bg-[#151515] px-[25px]'>
             <h3 className='m-0 text-base leading-none text-white'>
@@ -854,9 +843,8 @@ export default function CrowdDetectionPage({ isVisible = true }) {
           </div>
 
           <div
-            className='relative mt-5 h-auto min-h-0 w-full flex-none overflow-hidden border-y border-[#444] bg-[#2c2c2c] after:absolute after:inset-x-0 after:bottom-0 after:z-0 after:h-[29%] after:rounded-t-2xl after:bg-[#111] max-[760px]:min-h-80'
+            className='relative mt-3 aspect-video min-h-0 w-full flex-none overflow-hidden border-y border-[#444] bg-[#2c2c2c] min-[1360px]:aspect-auto min-[1360px]:flex-1 after:absolute after:inset-x-0 after:bottom-0 after:z-0 after:h-[29%] after:rounded-t-2xl after:bg-[#111] max-[760px]:min-h-80'
             style={{
-              aspectRatio: sourceMode === 'image' ? '16 / 9' : videoAspectRatio,
               backgroundImage:
                 'linear-gradient(rgba(57, 230, 0, 0.38) 1px, transparent 1px)',
               backgroundPosition: '0 28px',
@@ -867,7 +855,6 @@ export default function CrowdDetectionPage({ isVisible = true }) {
               aria-label='Live gym camera preview'
               className={`absolute inset-0 z-[1] h-full w-full object-contain ${sourceMode === 'image' ? 'hidden' : ''}`}
               muted
-              onLoadedMetadata={updateVideoAspectRatio}
               playsInline
               ref={videoRef}
             ></video>
@@ -986,13 +973,13 @@ export default function CrowdDetectionPage({ isVisible = true }) {
           )}
         </section>
 
-        <aside className='admin-card mx-auto grid min-h-0 w-full max-w-[270px] content-start gap-4 rounded-[22px] border-[#424242] bg-[#252525] p-5 max-[1360px]:max-w-none max-[1360px]:grid-cols-3 max-[900px]:grid-cols-1'>
-          <div className='flex items-center justify-between gap-3 max-[1360px]:col-span-full'>
-            <h3 className='m-0 whitespace-nowrap text-xl leading-none'>
-              {sourceMode === 'image' ? 'Image Test Status' : 'Live Status'}
+        <aside className='admin-card mx-auto grid h-fit min-h-0 w-full max-w-[310px] content-start gap-3 rounded-[22px] border-[#424242] bg-[#252525] p-4 max-[1359px]:max-w-none max-[1359px]:grid-cols-3 max-[900px]:grid-cols-1'>
+          <div className='flex min-w-0 flex-wrap items-center justify-between gap-2 max-[1359px]:col-span-full'>
+            <h3 className='m-0 whitespace-nowrap text-lg leading-none'>
+              {sourceMode === 'image' ? 'Image Status' : 'Live Status'}
             </h3>
             <span
-              className={`inline-flex min-h-8 items-center gap-2 rounded-full border border-current px-3 text-[11px] font-black uppercase ${toneTextClasses[crowdStatus.tone]}`}
+              className={`inline-flex min-h-8 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-current px-2.5 text-[11px] font-black uppercase ${toneTextClasses[crowdStatus.tone]}`}
             >
               <span
                 className={`h-2.5 w-2.5 rounded-full ${toneDotClasses[crowdStatus.tone]}`}
@@ -1145,34 +1132,34 @@ export default function CrowdDetectionPage({ isVisible = true }) {
         </aside>
       </div>
 
-      <div className='mt-8 grid flex-none grid-cols-4 gap-6 max-[900px]:grid-cols-2 max-[760px]:grid-cols-1'>
+      <div className='mt-4 grid flex-none grid-cols-4 gap-4 max-[900px]:grid-cols-2 max-[760px]:grid-cols-1'>
         <article className={summaryCardClass}>
-          <strong className='pb-6 text-[clamp(27px,2.7vw,32px)] leading-none text-[#e6002e]'>
+          <strong className='pb-1 text-[clamp(27px,2.7vw,32px)] leading-none text-[#e6002e]'>
             {people.length}
           </strong>
-          <h3 className='mb-[9px] mt-4 text-sm leading-tight text-white'>
+          <h3 className='mb-0 mt-2 text-sm leading-tight text-white'>
             Detected People
           </h3>
         </article>
 
         <article className={summaryCardClass}>
-          <strong className='pb-6 text-[clamp(27px,2.7vw,32px)] leading-none text-[#e6002e]'>
+          <strong className='pb-1 text-[clamp(27px,2.7vw,32px)] leading-none text-[#e6002e]'>
             {people.length ? formatPercent(averageConfidence) : '0%'}
           </strong>
-          <h3 className='mb-[9px] mt-4 text-sm leading-tight text-white'>
+          <h3 className='mb-0 mt-2 text-sm leading-tight text-white'>
             {modelName}
           </h3>
         </article>
 
         <article className={summaryCardClass}>
           <strong
-            className={`pb-6 text-[clamp(27px,2.7vw,32px)] leading-none ${toneTextClasses[cameraStatus.tone]}`}
+            className={`pb-1 text-[clamp(27px,2.7vw,32px)] leading-none ${toneTextClasses[cameraStatus.tone]}`}
           >
             {sourceMode === 'image'
               ? sourceStatus === 'ready' ? 'Analyzed' : cameraStatus.label
               : cameraStatus.label}
           </strong>
-          <h3 className='mb-[9px] mt-4 text-sm leading-tight text-white'>
+          <h3 className='mb-0 mt-2 text-sm leading-tight text-white'>
             {sourceMode === 'image' ? 'Image Status' : 'Camera Status'}
           </h3>
           <p className='m-0 text-xs leading-snug text-[#a7a7a7]'>
@@ -1182,11 +1169,11 @@ export default function CrowdDetectionPage({ isVisible = true }) {
 
         <article className={summaryCardClass}>
           <strong
-            className={`pb-6 text-[clamp(27px,2.7vw,32px)] leading-none ${toneTextClasses[crowdStatus.tone]}`}
+            className={`pb-1 text-[clamp(27px,2.7vw,32px)] leading-none ${toneTextClasses[crowdStatus.tone]}`}
           >
             {crowdStatus.label}
           </strong>
-          <h3 className='mb-[9px] mt-4 text-sm leading-tight text-white'>
+          <h3 className='mb-0 mt-2 text-sm leading-tight text-white'>
             Alert Level
           </h3>
           <p className='m-0 text-xs leading-snug text-[#a7a7a7]'>
