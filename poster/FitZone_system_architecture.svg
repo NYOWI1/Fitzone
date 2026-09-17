@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="900" viewBox="0 0 1800 900" role="img" aria-label="FitZone system architecture and technology stack">
+<defs><style>text{font-family:Arial,Helvetica,sans-serif}.h{fill:#fff;font-size:48px;font-weight:800}.lane{fill:#855f65;font-size:19px;font-weight:800;letter-spacing:2px}.n{fill:#25272b;font-size:27px;font-weight:800}.d{fill:#5e636b;font-size:19px}.b{fill:#fff;font-size:22px;font-weight:800}</style></defs>
+<rect width="1800" height="900" fill="#210b10"/>
+<g transform="translate(85 37) scale(1.3)"><rect width="46" height="46" x="1" y="1" fill="#e6002e" rx="12"/><path fill="#fff" d="M10 9h22l-4 6H18v5h10l-4 6h-6v13h-8V9Z"/><path fill="#171717" d="M32 8h8l-7 13h7L24 40l5-14h-7L32 8Z"/></g>
+<text x="170" y="85" class="h">FITZONE / SYSTEM ARCHITECTURE &amp; TECH STACK</text>
+<text x="173" y="122" fill="#d9b8bf" font-size="21">Business application · member experience · gym operations</text>
+<rect x="48" y="162" width="1704" height="684" rx="30" fill="#fff"/>
+<rect x="82" y="199" width="264" height="599" rx="23" fill="#f3f5f7"/>
+<rect x="370" y="199" width="458" height="599" rx="23" fill="#edf6ff"/>
+<rect x="852" y="199" width="415" height="599" rx="23" fill="#fff7e7"/>
+<rect x="1291" y="199" width="426" height="599" rx="23" fill="#effaf2"/>
+<text x="110" y="240" class="lane">USERS</text><text x="398" y="240" class="lane">FRONTEND</text><text x="880" y="240" class="lane">BACKEND</text><text x="1319" y="240" class="lane">SERVICES &amp; DATA</text>
+<rect x="108" y="285" width="211" height="144" rx="18" fill="#fff"/>
+<circle cx="153" cy="338" r="22" fill="#fbd9e0"/><circle cx="153" cy="328" r="9" fill="#ee1741"/><path d="M134 356q19-25 38 0z" fill="#ee1741"/>
+<text x="188" y="337" class="n" font-size="23">Members</text><text x="128" y="390" class="d">Book &amp; manage</text>
+<rect x="108" y="450" width="211" height="144" rx="18" fill="#fff"/>
+<circle cx="153" cy="503" r="22" fill="#fbd9e0"/><circle cx="153" cy="493" r="9" fill="#ee1741"/><path d="M134 521q19-25 38 0z" fill="#ee1741"/>
+<text x="188" y="502" class="n" font-size="23">Admins</text><text x="128" y="555" class="d">Run operations</text>
+<rect x="108" y="660" width="211" height="89" rx="16" fill="#e6e9ed"/><rect x="133" y="677" width="69" height="45" rx="6" fill="#58606a"/><rect x="138" y="682" width="59" height="34" rx="3" fill="#fff"/><rect x="157" y="722" width="21" height="6" fill="#58606a"/><text x="218" y="710" fill="#5e636b" font-size="18" font-weight="700">Browser</text>
+<rect x="400" y="278" width="398" height="274" rx="22" fill="#fff"/>
+<circle cx="475" cy="355" r="47" fill="#ddf7ff"/><ellipse cx="475" cy="355" rx="37" ry="13" fill="#16aed1" transform="rotate(60 475 355)"/><ellipse cx="475" cy="355" rx="37" ry="13" fill="#16aed1" transform="rotate(-60 475 355)"/><ellipse cx="475" cy="355" rx="37" ry="13" fill="#16aed1"/><circle cx="475" cy="355" r="11" fill="#fff"/>
+<text x="548" y="347" class="n">React + Vite</text><text x="548" y="384" class="d">Member and admin web app</text>
+<rect x="431" y="433" width="157" height="73" rx="15" fill="#16171a"/><path d="M453 450l24 39 24-39z" fill="#fff"/><text x="511" y="478" class="b">Vercel</text>
+<rect x="603" y="433" width="163" height="73" rx="15" fill="#2e223e"/><path d="M627 452l22 0-14 29z" fill="#a65fff"/><text x="655" y="478" class="b">Vite</text>
+<rect x="400" y="577" width="398" height="169" rx="22" fill="#fff"/><rect x="431" y="609" width="94" height="94" rx="21" fill="#daf1de"/><circle cx="478" cy="656" r="30" fill="#429a50"/><text x="478" y="665" text-anchor="middle" class="b">AI</text><text x="545" y="645" class="n">ONNX Runtime</text><text x="545" y="681" class="d">Admin camera crowd detection</text><text x="545" y="714" fill="#6d737c" font-size="17">Runs inside the browser</text>
+<rect x="881" y="278" width="357" height="274" rx="22" fill="#fff"/><rect x="915" y="310" width="100" height="100" rx="22" fill="#50934f"/><text x="965" y="374" text-anchor="middle" class="b" font-size="37">JS</text><text x="1033" y="351" class="n">Node.js API</text><text x="915" y="450" class="d">REST endpoints</text><text x="915" y="484" class="d">Bookings · attendance · admin</text>
+<rect x="881" y="577" width="357" height="169" rx="22" fill="#fff"/><rect x="915" y="609" width="100" height="100" rx="22" fill="#16171a"/><circle cx="951" cy="654" r="16" fill="#fff"/><circle cx="979" cy="666" r="16" fill="#fff"/><text x="1033" y="645" class="n">Render</text><text x="1033" y="681" class="d">Backend hosting</text><text x="1033" y="714" fill="#6d737c" font-size="17">Server-side business rules</text>
+<rect x="1320" y="278" width="368" height="137" rx="21" fill="#fff"/><rect x="1345" y="303" width="89" height="88" rx="21" fill="#744cf1"/><text x="1389" y="365" text-anchor="middle" class="b" font-size="47">C</text><text x="1454" y="339" class="n">Clerk</text><text x="1454" y="374" class="d">Authentication</text>
+<rect x="1320" y="440" width="368" height="137" rx="21" fill="#fff"/><rect x="1345" y="465" width="89" height="88" rx="21" fill="#635bff"/><text x="1389" y="527" text-anchor="middle" class="b" font-size="47">S</text><text x="1454" y="501" class="n">Stripe</text><text x="1454" y="536" class="d">Payments &amp; renewals</text>
+<rect x="1320" y="602" width="368" height="144" rx="21" fill="#fff"/><rect x="1345" y="628" width="89" height="89" rx="21" fill="#e2f5e5"/><path d="M1391 641c-34 23-23 50-5 59 13-19 14-42 5-59z" fill="#27a04d"/><text x="1454" y="665" class="n">MongoDB</text><text x="1454" y="701" class="d">Gym operational records</text>
+<rect x="346" y="478" width="43" height="5" fill="#9aa5b1"/><path d="M389 470l18 10-18 10z" fill="#9aa5b1"/>
+<rect x="828" y="413" width="39" height="5" fill="#e51440"/><path d="M867 405l18 10-18 10z" fill="#e51440"/><text x="834" y="391" fill="#6d737c" font-size="17">API</text>
+<rect x="1267" y="347" width="42" height="5" fill="#9aa5b1"/><path d="M1309 339l18 10-18 10z" fill="#9aa5b1"/>
+<rect x="1267" y="510" width="42" height="5" fill="#9aa5b1"/><path d="M1309 502l18 10-18 10z" fill="#9aa5b1"/>
+<rect x="1267" y="671" width="42" height="5" fill="#9aa5b1"/><path d="M1309 663l18 10-18 10z" fill="#9aa5b1"/>
+<text x="82" y="826" fill="#726d70" font-size="16">Clerk verifies users · Stripe owns subscription payments · MongoDB stores FitZone schedules, bookings and attendance</text>
+</svg>
