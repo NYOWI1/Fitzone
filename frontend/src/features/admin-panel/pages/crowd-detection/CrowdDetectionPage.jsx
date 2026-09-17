@@ -853,7 +853,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
           >
             <video
               aria-label='Live gym camera preview'
-              className={`absolute inset-0 z-[1] h-full w-full object-contain ${sourceMode === 'image' ? 'hidden' : ''}`}
+              className={`absolute inset-0 z-[1] h-full w-full object-cover ${sourceMode === 'image' ? 'hidden' : ''}`}
               muted
               playsInline
               ref={videoRef}
@@ -880,7 +880,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
 
             <canvas
               aria-hidden='true'
-              className='pointer-events-none absolute inset-0 z-[2] h-full w-full object-contain'
+              className={`pointer-events-none absolute inset-0 z-[2] h-full w-full ${sourceMode === 'image' ? 'object-contain' : 'object-cover'}`}
               ref={canvasRef}
             ></canvas>
 
