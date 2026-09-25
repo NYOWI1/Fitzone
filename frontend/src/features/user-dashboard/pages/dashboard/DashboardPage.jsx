@@ -118,7 +118,7 @@ function getUpcomingBooking(
   bookings,
   dateKey,
   timeKey,
-  { availableUntilEnd = false } = {}
+  { availableThroughDay = false, availableUntilEnd = false } = {}
 ) {
   const now = Date.now();
 
@@ -126,11 +126,13 @@ function getUpcomingBooking(
     .map((booking) => ({
       booking,
       startAt: getBookingTimestamp(booking[dateKey], booking[timeKey]),
-      availableUntil: getBookingTimestamp(
-        booking[dateKey],
-        booking[timeKey],
-        availableUntilEnd
-      )
+      availableUntil: availableThroughDay
+        ? getBookingTimestamp(booking[dateKey], '23:59')
+        : getBookingTimestamp(
+            booking[dateKey],
+            booking[timeKey],
+            availableUntilEnd
+          )
     }))
     .filter(
       ({ availableUntil, startAt }) =>
@@ -212,7 +214,10 @@ export default function DashboardPage({
     [classBookings]
   );
   const nextTrainerSession = useMemo(
-    () => getUpcomingBooking(trainerBookings, 'sessionDate', 'sessionTime'),
+    () =>
+      getUpcomingBooking(trainerBookings, 'sessionDate', 'sessionTime', {
+        availableThroughDay: true
+      }),
     [trainerBookings]
   );
   const weekActivity = useMemo(
