@@ -408,6 +408,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
   const [modelName, setModelName] = useState('YOLO11');
   const [sourceStatus, setSourceStatus] = useState('idle');
   const [sourceMode, setSourceMode] = useState('camera');
+  const [sourceAspectRatio, setSourceAspectRatio] = useState(16 / 9);
   const [imageUrl, setImageUrl] = useState('');
   const [imageName, setImageName] = useState('');
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -670,6 +671,12 @@ export default function CrowdDetectionPage({ isVisible = true }) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
 
+        if (videoRef.current.videoWidth && videoRef.current.videoHeight) {
+          setSourceAspectRatio(
+            videoRef.current.videoWidth / videoRef.current.videoHeight
+          );
+        }
+
         if (
           !isMountedRef.current ||
           cameraSessionRef.current !== cameraSession
@@ -838,8 +845,9 @@ export default function CrowdDetectionPage({ isVisible = true }) {
           </div>
 
           <div
-            className='relative mt-3 aspect-video min-h-0 w-full flex-none overflow-hidden border-y border-[#444] bg-[#2c2c2c] after:absolute after:inset-x-0 after:bottom-0 after:z-0 after:h-[29%] after:rounded-t-2xl after:bg-[#111] max-[760px]:min-h-80'
+            className='relative mt-3 min-h-0 w-full flex-none overflow-hidden border-y border-[#444] bg-[#2c2c2c] after:absolute after:inset-x-0 after:bottom-0 after:z-0 after:h-[29%] after:rounded-t-2xl after:bg-[#111]'
             style={{
+              aspectRatio: sourceAspectRatio,
               backgroundImage:
                 'linear-gradient(rgba(57, 230, 0, 0.38) 1px, transparent 1px)',
               backgroundPosition: '0 28px',
@@ -861,6 +869,9 @@ export default function CrowdDetectionPage({ isVisible = true }) {
                 onLoad={(event) => {
                   const image = event.currentTarget;
                   if (image.naturalWidth && image.naturalHeight) {
+                    setSourceAspectRatio(
+                      image.naturalWidth / image.naturalHeight
+                    );
                     setImageLoaded(true);
                   }
                 }}
