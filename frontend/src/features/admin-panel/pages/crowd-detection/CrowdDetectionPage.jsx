@@ -826,7 +826,8 @@ export default function CrowdDetectionPage({ isVisible = true }) {
       </header>
 
       <div className='mx-auto grid w-full min-h-0 flex-1 grid-cols-[minmax(0,1fr)_310px] gap-4 min-[1360px]:max-w-[1380px] max-[1359px]:grid-cols-1'>
-        <section className={monitorCardClass}>
+        <div className='flex min-h-0 min-w-0 flex-col'>
+          <section className={`${monitorCardClass} flex-1`}>
           <div className='flex min-h-[52px] flex-none items-center justify-between rounded-[25px] bg-[#151515] px-[25px]'>
             <h3 className='m-0 text-base leading-none text-white'>
               {sourceMode === 'image' ? 'AI Model Image Preview' : 'AI Model Video Preview'}
@@ -943,7 +944,58 @@ export default function CrowdDetectionPage({ isVisible = true }) {
               </span>
             )}
           </footer>
-        </section>
+          </section>
+
+          <div className='mt-4 grid w-full flex-none grid-cols-4 gap-4 max-[900px]:grid-cols-2 max-[760px]:grid-cols-1'>
+            <article className={summaryCardClass}>
+              <strong className='pb-1 text-[clamp(27px,2.7vw,32px)] leading-none text-[#e6002e]'>
+                {people.length}
+              </strong>
+              <h3 className='mb-0 mt-2 text-sm leading-tight text-white'>
+                Detected People
+              </h3>
+            </article>
+
+            <article className={summaryCardClass}>
+              <strong className='pb-1 text-[clamp(27px,2.7vw,32px)] leading-none text-[#e6002e]'>
+                {people.length ? formatPercent(averageConfidence) : '0%'}
+              </strong>
+              <h3 className='mb-0 mt-2 text-sm leading-tight text-white'>
+                {modelName}
+              </h3>
+            </article>
+
+            <article className={summaryCardClass}>
+              <strong
+                className={`pb-1 text-[clamp(27px,2.7vw,32px)] leading-none ${toneTextClasses[cameraStatus.tone]}`}
+              >
+                {sourceMode === 'image'
+                  ? sourceStatus === 'ready' ? 'Analyzed' : cameraStatus.label
+                  : cameraStatus.label}
+              </strong>
+              <h3 className='mb-0 mt-2 text-sm leading-tight text-white'>
+                {sourceMode === 'image' ? 'Image Status' : 'Camera Status'}
+              </h3>
+              <p className='m-0 text-xs leading-snug text-[#a7a7a7]'>
+                {cameraStatus.note}
+              </p>
+            </article>
+
+            <article className={summaryCardClass}>
+              <strong
+                className={`pb-1 text-[clamp(27px,2.7vw,32px)] leading-none ${toneTextClasses[crowdStatus.tone]}`}
+              >
+                {crowdStatus.label}
+              </strong>
+              <h3 className='mb-0 mt-2 text-sm leading-tight text-white'>
+                Alert Level
+              </h3>
+              <p className='m-0 text-xs leading-snug text-[#a7a7a7]'>
+                {crowdStatus.note}
+              </p>
+            </article>
+          </div>
+        </div>
 
         <aside className='admin-card mx-auto grid h-fit min-h-0 w-full max-w-[310px] content-start gap-3 rounded-[22px] border-[#424242] bg-[#252525] p-4 max-[1359px]:max-w-none max-[1359px]:grid-cols-3 max-[900px]:grid-cols-1'>
           <div className='flex min-w-0 flex-wrap items-center justify-between gap-2 max-[1359px]:col-span-full'>
@@ -1102,56 +1154,6 @@ export default function CrowdDetectionPage({ isVisible = true }) {
             </div>
           </div>
         </aside>
-      </div>
-
-      <div className='mx-auto mt-4 grid w-full flex-none grid-cols-4 gap-4 min-[1360px]:max-w-[1380px] max-[900px]:grid-cols-2 max-[760px]:grid-cols-1'>
-        <article className={summaryCardClass}>
-          <strong className='pb-1 text-[clamp(27px,2.7vw,32px)] leading-none text-[#e6002e]'>
-            {people.length}
-          </strong>
-          <h3 className='mb-0 mt-2 text-sm leading-tight text-white'>
-            Detected People
-          </h3>
-        </article>
-
-        <article className={summaryCardClass}>
-          <strong className='pb-1 text-[clamp(27px,2.7vw,32px)] leading-none text-[#e6002e]'>
-            {people.length ? formatPercent(averageConfidence) : '0%'}
-          </strong>
-          <h3 className='mb-0 mt-2 text-sm leading-tight text-white'>
-            {modelName}
-          </h3>
-        </article>
-
-        <article className={summaryCardClass}>
-          <strong
-            className={`pb-1 text-[clamp(27px,2.7vw,32px)] leading-none ${toneTextClasses[cameraStatus.tone]}`}
-          >
-            {sourceMode === 'image'
-              ? sourceStatus === 'ready' ? 'Analyzed' : cameraStatus.label
-              : cameraStatus.label}
-          </strong>
-          <h3 className='mb-0 mt-2 text-sm leading-tight text-white'>
-            {sourceMode === 'image' ? 'Image Status' : 'Camera Status'}
-          </h3>
-          <p className='m-0 text-xs leading-snug text-[#a7a7a7]'>
-            {cameraStatus.note}
-          </p>
-        </article>
-
-        <article className={summaryCardClass}>
-          <strong
-            className={`pb-1 text-[clamp(27px,2.7vw,32px)] leading-none ${toneTextClasses[crowdStatus.tone]}`}
-          >
-            {crowdStatus.label}
-          </strong>
-          <h3 className='mb-0 mt-2 text-sm leading-tight text-white'>
-            Alert Level
-          </h3>
-          <p className='m-0 text-xs leading-snug text-[#a7a7a7]'>
-            {crowdStatus.note}
-          </p>
-        </article>
       </div>
 
       <article className='admin-card hidden'>
