@@ -825,9 +825,9 @@ export default function CrowdDetectionPage({ isVisible = true }) {
         </button>
       </header>
 
-      <div className='mx-auto grid w-full min-h-0 flex-1 grid-cols-[minmax(0,1fr)_310px] gap-4 min-[1360px]:max-w-[1380px] max-[1359px]:grid-cols-1'>
+      <div className='mx-auto grid w-full min-h-0 flex-1 grid-cols-[minmax(0,1fr)_310px] gap-4 min-[1360px]:max-w-[1200px] max-[1359px]:grid-cols-1'>
         <div className='flex min-h-0 min-w-0 flex-col'>
-          <section className={`${monitorCardClass} flex-1`}>
+          <section className={monitorCardClass}>
           <div className='flex min-h-[52px] flex-none items-center justify-between rounded-[25px] bg-[#151515] px-[25px]'>
             <h3 className='m-0 text-base leading-none text-white'>
               {sourceMode === 'image' ? 'AI Model Image Preview' : 'AI Model Video Preview'}
@@ -838,7 +838,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
           </div>
 
           <div
-            className='relative mt-3 aspect-video min-h-0 w-full flex-none overflow-hidden border-y border-[#444] bg-[#2c2c2c] min-[1360px]:aspect-auto min-[1360px]:flex-1 after:absolute after:inset-x-0 after:bottom-0 after:z-0 after:h-[29%] after:rounded-t-2xl after:bg-[#111] max-[760px]:min-h-80'
+            className='relative mt-3 aspect-video min-h-0 w-full flex-none overflow-hidden border-y border-[#444] bg-[#2c2c2c] after:absolute after:inset-x-0 after:bottom-0 after:z-0 after:h-[29%] after:rounded-t-2xl after:bg-[#111] max-[760px]:min-h-80'
             style={{
               backgroundImage:
                 'linear-gradient(rgba(57, 230, 0, 0.38) 1px, transparent 1px)',
