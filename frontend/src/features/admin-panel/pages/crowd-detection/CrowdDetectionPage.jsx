@@ -825,7 +825,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
         </button>
       </header>
 
-      <div className='mx-auto grid w-full min-h-0 flex-1 grid-cols-[minmax(0,1fr)_310px] gap-4 min-[1360px]:max-w-[1200px] max-[1359px]:grid-cols-1'>
+      <div className='mx-auto grid w-full min-h-0 flex-1 grid-cols-[minmax(0,1fr)_310px] gap-4 min-[1360px]:max-w-[1380px] max-[1359px]:grid-cols-1'>
         <div className='flex min-h-0 min-w-0 flex-col'>
           <section className={monitorCardClass}>
           <div className='flex min-h-[52px] flex-none items-center justify-between rounded-[25px] bg-[#151515] px-[25px]'>
