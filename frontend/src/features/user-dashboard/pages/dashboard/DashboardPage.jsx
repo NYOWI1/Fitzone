@@ -378,7 +378,9 @@ export default function DashboardPage({
                 className='mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#e6002e] px-5 text-sm font-black text-white no-underline transition hover:bg-[#ff1647] sm:w-auto sm:min-w-44'
                 href='#Trainers'
               >
-                {nextTrainerSession ? 'View trainers' : 'Book PT session'}
+                {nextTrainerSession
+                  ? 'Reschedule PT session'
+                  : 'Book PT session'}
               </a>
             </article>
 
