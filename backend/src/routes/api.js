@@ -779,14 +779,25 @@ function sanitizeTrainerBooking(payload) {
   const trainerName = String(payload.trainerName || "").trim();
   const sessionDate = String(payload.sessionDate || "").trim();
   const sessionTime = String(payload.sessionTime || "").trim();
-  const action = payload.action === "cancel" ? "cancel" : "book";
+  const action = ["book", "cancel", "reschedule"].includes(payload.action)
+    ? payload.action
+    : "book";
+  const originalSessionDate = String(
+    payload.originalSessionDate || "",
+  ).trim();
+  const originalSessionTime = String(
+    payload.originalSessionTime || "",
+  ).trim();
 
   if (
     !memberEmail ||
     !trainerSlug ||
     !trainerName ||
     !/^\d{4}-\d{2}-\d{2}$/.test(sessionDate) ||
-    !/^([01]\d|2[0-3]):[0-5]\d$/.test(sessionTime)
+    !/^([01]\d|2[0-3]):[0-5]\d$/.test(sessionTime) ||
+    (action === "reschedule" &&
+      (!/^\d{4}-\d{2}-\d{2}$/.test(originalSessionDate) ||
+        !/^([01]\d|2[0-3]):[0-5]\d$/.test(originalSessionTime)))
   ) {
     return null;
   }
@@ -799,6 +810,9 @@ function sanitizeTrainerBooking(payload) {
     trainerName,
     sessionDate,
     sessionTime,
+    ...(action === "reschedule"
+      ? { originalSessionDate, originalSessionTime }
+      : {}),
   };
 }
 
@@ -2781,6 +2795,17 @@ function updateLocalTrainerBooking(booking, membershipAccess) {
   const existingIndex = bookings.findIndex(
     (storedBooking) => match(storedBooking) && storedBooking.active !== false,
   );
+  const originalIndex =
+    booking.action === "reschedule"
+      ? bookings.findIndex(
+          (storedBooking) =>
+            storedBooking.memberEmail === booking.memberEmail &&
+            storedBooking.trainerSlug === booking.trainerSlug &&
+            storedBooking.sessionDate === booking.originalSessionDate &&
+            storedBooking.sessionTime === booking.originalSessionTime &&
+            storedBooking.active !== false,
+        )
+      : -1;
 
   if (booking.action === "cancel") {
     if (existingIndex !== -1) {
@@ -2793,9 +2818,17 @@ function updateLocalTrainerBooking(booking, membershipAccess) {
       writeLocalCollection("trainerBookings", bookings);
     }
   } else {
+    if (booking.action === "reschedule" && originalIndex === -1) {
+      return {
+        statusCode: 404,
+        payload: { message: "The original trainer session was not found." },
+      };
+    }
+
     const { startDate, endDate } = getClassBookingPeriod(membershipAccess);
     const periodBookingCount = bookings.filter(
-      (storedBooking) =>
+      (storedBooking, index) =>
+        index !== originalIndex &&
         storedBooking.memberEmail === booking.memberEmail &&
         storedBooking.active !== false &&
         storedBooking.sessionDate >= startDate &&
@@ -2812,7 +2845,8 @@ function updateLocalTrainerBooking(booking, membershipAccess) {
     }
 
     const slotTaken = bookings.some(
-      (storedBooking) =>
+      (storedBooking, index) =>
+        index !== originalIndex &&
         storedBooking.trainerSlug === booking.trainerSlug &&
         storedBooking.sessionDate === booking.sessionDate &&
         storedBooking.sessionTime === booking.sessionTime &&
@@ -2834,8 +2868,16 @@ function updateLocalTrainerBooking(booking, membershipAccess) {
     };
 
     delete nextBooking.action;
+    delete nextBooking.originalSessionDate;
+    delete nextBooking.originalSessionTime;
 
-    if (reusableIndex === -1) {
+    if (booking.action === "reschedule") {
+      bookings[originalIndex] = {
+        ...bookings[originalIndex],
+        ...nextBooking,
+        cancelledAt: null,
+      };
+    } else if (reusableIndex === -1) {
       bookings.push({
         ...nextBooking,
         createdAt: new Date().toISOString(),
@@ -2896,11 +2938,33 @@ async function updateTrainerBooking(request, response) {
         },
       });
     } else {
+      const originalBooking =
+        booking.action === "reschedule"
+          ? await collection.findOne({
+              memberEmail: booking.memberEmail,
+              trainerSlug: booking.trainerSlug,
+              sessionDate: booking.originalSessionDate,
+              sessionTime: booking.originalSessionTime,
+              active: { $ne: false },
+            })
+          : null;
+
+      if (booking.action === "reschedule" && !originalBooking) {
+        sendJson(response, 404, {
+          message: "The original trainer session was not found.",
+        });
+        return;
+      }
+
+      const excludeOriginal = originalBooking
+        ? { _id: { $ne: originalBooking._id } }
+        : {};
       const { startDate, endDate } = getClassBookingPeriod(membershipAccess);
       const periodBookingCount = await collection.countDocuments({
         memberEmail: booking.memberEmail,
         active: { $ne: false },
         sessionDate: { $gte: startDate, $lt: endDate },
+        ...excludeOriginal,
       });
       const ruleError = getTrainerBookingRuleError(
         membershipAccess,
@@ -2918,6 +2982,7 @@ async function updateTrainerBooking(request, response) {
         sessionDate: booking.sessionDate,
         sessionTime: booking.sessionTime,
         active: { $ne: false },
+        ...excludeOriginal,
       });
 
       if (slotTaken) {
@@ -2927,20 +2992,40 @@ async function updateTrainerBooking(request, response) {
         return;
       }
 
-      const { action, ...bookingDocument } = booking;
-      await collection.updateOne(
-        bookingKey,
-        {
-          $set: {
-            ...bookingDocument,
-            active: true,
-            cancelledAt: null,
-            updatedAt: new Date(),
+      const {
+        action,
+        originalSessionDate,
+        originalSessionTime,
+        ...bookingDocument
+      } = booking;
+
+      if (booking.action === "reschedule") {
+        await collection.updateOne(
+          { _id: originalBooking._id },
+          {
+            $set: {
+              ...bookingDocument,
+              active: true,
+              cancelledAt: null,
+              updatedAt: new Date(),
+            },
           },
-          $setOnInsert: { createdAt: new Date() },
-        },
-        { upsert: true },
-      );
+        );
+      } else {
+        await collection.updateOne(
+          bookingKey,
+          {
+            $set: {
+              ...bookingDocument,
+              active: true,
+              cancelledAt: null,
+              updatedAt: new Date(),
+            },
+            $setOnInsert: { createdAt: new Date() },
+          },
+          { upsert: true },
+        );
+      }
     }
 
     const bookings = await collection

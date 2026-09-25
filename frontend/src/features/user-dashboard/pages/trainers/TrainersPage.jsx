@@ -59,6 +59,7 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
   const [bookings, setBookings] = useState([]);
   const [status, setStatus] = useState('loading');
   const [selectedTrainer, setSelectedTrainer] = useState(null);
+  const [reschedulingBooking, setReschedulingBooking] = useState(null);
   const [sessionDate, setSessionDate] = useState(formatIsoDate(new Date()));
   const [sessionTime, setSessionTime] = useState('09:00');
   const [saving, setSaving] = useState(false);
@@ -130,12 +131,36 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
       return;
     }
 
+    setReschedulingBooking(null);
     setSelectedTrainer(trainer);
     setSessionDate(
       periodStart && periodStart > formatIsoDate(new Date())
         ? periodStart
         : formatIsoDate(new Date())
     );
+  }
+
+  function openReschedule(booking) {
+    const trainer = trainers.find(
+      (item) => item.slug === booking.trainerSlug
+    ) || {
+      slug: booking.trainerSlug,
+      name: booking.trainerName
+    };
+
+    setReschedulingBooking(booking);
+    setSelectedTrainer(trainer);
+    setSessionDate(
+      booking.sessionDate < formatIsoDate(new Date())
+        ? formatIsoDate(new Date())
+        : booking.sessionDate
+    );
+    setSessionTime(booking.sessionTime);
+  }
+
+  function closeBookingForm() {
+    setSelectedTrainer(null);
+    setReschedulingBooking(null);
   }
 
   async function saveBooking(event) {
@@ -145,17 +170,27 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
     try {
       setSaving(true);
       const result = await updateTrainerBooking({
-        action: 'book',
+        action: reschedulingBooking ? 'reschedule' : 'book',
         memberEmail,
         memberName,
         trainerSlug: selectedTrainer.slug,
         trainerName: selectedTrainer.name,
         sessionDate,
-        sessionTime
+        sessionTime,
+        ...(reschedulingBooking
+          ? {
+              originalSessionDate: reschedulingBooking.sessionDate,
+              originalSessionTime: reschedulingBooking.sessionTime
+            }
+          : {})
       });
       setBookings(result.bookings || []);
-      setSelectedTrainer(null);
-      setMessage('Trainer session booked successfully.');
+      closeBookingForm();
+      setMessage(
+        reschedulingBooking
+          ? 'Trainer session rescheduled successfully.'
+          : 'Trainer session booked successfully.'
+      );
     } catch (error) {
       console.error(error);
       setMessage(error.message || 'Unable to book trainer session.');
@@ -268,14 +303,24 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
                     {booking.sessionTime}
                   </span>
                 </div>
-                <button
-                  className='min-h-10 rounded-[12px] border border-[#414141] bg-[#2d2d2d] px-5 text-sm font-black text-white hover:border-[#e6002e] disabled:opacity-60'
-                  disabled={saving}
-                  onClick={() => cancelBooking(booking)}
-                  type='button'
-                >
-                  Cancel
-                </button>
+                <div className='flex flex-col gap-2 sm:flex-row'>
+                  <button
+                    className='min-h-10 rounded-[12px] border border-[#e6002e] bg-[rgba(230,0,46,0.08)] px-5 text-sm font-black text-white hover:bg-[rgba(230,0,46,0.16)] disabled:opacity-60'
+                    disabled={saving}
+                    onClick={() => openReschedule(booking)}
+                    type='button'
+                  >
+                    Reschedule
+                  </button>
+                  <button
+                    className='min-h-10 rounded-[12px] border border-[#414141] bg-[#2d2d2d] px-5 text-sm font-black text-white hover:border-[#e6002e] disabled:opacity-60'
+                    disabled={saving}
+                    onClick={() => cancelBooking(booking)}
+                    type='button'
+                  >
+                    Cancel
+                  </button>
+                </div>
               </article>
             ))}
           </div>
@@ -289,10 +334,13 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
             onSubmit={saveBooking}
           >
             <h2 className='m-0 text-2xl font-black'>
-              Book {selectedTrainer.name}
+              {reschedulingBooking ? 'Reschedule' : 'Book'}{' '}
+              {selectedTrainer.name}
             </h2>
             <p className='mb-5 mt-2 text-sm text-[#bdbdbd]'>
-              Select an available date and session time.
+              {reschedulingBooking
+                ? 'Choose a new date and time for this session.'
+                : 'Select an available date and session time.'}
             </p>
             <label
               className='block text-xs font-black text-[#bdbdbd]'
@@ -335,7 +383,7 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
             <div className='mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end'>
               <button
                 className='min-h-11 rounded-[13px] border border-[#414141] bg-[#303030] px-6 font-black text-white'
-                onClick={() => setSelectedTrainer(null)}
+                onClick={closeBookingForm}
                 type='button'
               >
                 Close
@@ -345,7 +393,9 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
                 disabled={saving}
                 type='submit'
               >
-                {saving ? 'Booking...' : 'Confirm Booking'}
+                {saving
+                  ? reschedulingBooking ? 'Rescheduling...' : 'Booking...'
+                  : reschedulingBooking ? 'Confirm Reschedule' : 'Confirm Booking'}
               </button>
             </div>
           </form>
