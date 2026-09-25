@@ -38,7 +38,7 @@ const toneDotClasses = {
   yellow: 'bg-[#ffd54f]'
 };
 const monitorCardClass =
-  'admin-card flex min-h-0 flex-col overflow-hidden rounded-[26px] border-[#424242] bg-[#252525] p-0';
+  'admin-card flex !h-auto min-h-0 flex-col overflow-hidden rounded-[26px] border-[#424242] bg-[#252525] p-0';
 const sourceButtonClass =
   'flex h-[30px] min-w-24 cursor-pointer items-center justify-center rounded-full border border-[#3e3e3e] bg-[#1a1a1a] px-[13px] text-[11px] font-black text-white hover:border-[#d90429] disabled:cursor-not-allowed disabled:opacity-55';
 const rangeInputClass =
