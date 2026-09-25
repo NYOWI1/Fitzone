@@ -808,7 +808,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
 
   return (
     <section
-      className='admin-content min-h-[calc(100vh_-_64px)] overflow-visible pt-5 min-[1360px]:h-[calc(100svh-64px)] min-[1360px]:min-h-0 min-[1360px]:overflow-hidden max-[1360px]:h-auto'
+      className='admin-content min-h-[calc(100vh_-_64px)] overflow-visible pb-8 pt-5'
       id='crowd-detection'
       style={isVisible ? undefined : hiddenCameraPageStyle}
     >
@@ -834,7 +834,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
 
       <div className='mx-auto grid w-full min-h-0 flex-1 grid-cols-[minmax(0,1fr)_310px] gap-4 min-[1360px]:max-w-[1380px] max-[1359px]:grid-cols-1'>
         <div className='flex min-h-0 min-w-0 flex-col'>
-          <section className={monitorCardClass}>
+          <section className={`${monitorCardClass} shrink-0`}>
           <div className='flex min-h-[52px] flex-none items-center justify-between rounded-[25px] bg-[#151515] px-[25px]'>
             <h3 className='m-0 text-base leading-none text-white'>
               {sourceMode === 'image' ? 'AI Model Image Preview' : 'AI Model Video Preview'}
