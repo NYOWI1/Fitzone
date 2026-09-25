@@ -848,7 +848,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
           >
             <video
               aria-label='Live gym camera preview'
-              className={`absolute inset-0 z-[1] h-full w-full object-cover ${sourceMode === 'image' ? 'hidden' : ''}`}
+              className={`absolute inset-0 z-[1] h-full w-full bg-black object-contain ${sourceMode === 'image' ? 'hidden' : ''}`}
               muted
               playsInline
               ref={videoRef}
@@ -857,7 +857,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
             {sourceMode === 'image' && imageUrl && (
               <img
                 alt={`Uploaded image: ${imageName}`}
-                className='absolute inset-0 z-[1] h-full w-full object-cover'
+                className='absolute inset-0 z-[1] h-full w-full bg-black object-contain'
                 onLoad={(event) => {
                   const image = event.currentTarget;
                   if (image.naturalWidth && image.naturalHeight) {
@@ -875,7 +875,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
 
             <canvas
               aria-hidden='true'
-              className='pointer-events-none absolute inset-0 z-[2] h-full w-full object-cover'
+              className='pointer-events-none absolute inset-0 z-[2] h-full w-full object-contain'
               ref={canvasRef}
             ></canvas>
 
