@@ -1,0 +1,104 @@
+.member-settings-page {
+  width: 100%;
+  max-width: 1120px;
+}
+
+.member-settings-eyebrow {
+  display: inline-flex;
+  margin-bottom: 14px;
+  padding: 7px 10px;
+  border: 1px solid #fecdca;
+  border-radius: 6px;
+  background: #fef3f2;
+  color: #b42318;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.member-settings-panel {
+  overflow: hidden;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.04),
+    0 10px 30px rgba(16, 24, 40, 0.06);
+}
+
+.member-settings-page .settings-clerk-root,
+.member-settings-page .settings-clerk-card-box,
+.member-settings-page .settings-clerk-card {
+  width: 100%;
+  max-width: none;
+}
+
+.member-settings-page .settings-clerk-card-box {
+  min-height: 600px;
+}
+
+.member-settings-page .settings-clerk-card {
+  min-height: 600px;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.member-settings-page .settings-clerk-navbar {
+  width: 238px;
+  padding: 28px 16px;
+}
+
+.member-settings-page :is(.cl-headerTitle, .cl-profileSectionTitleText) {
+  color: #1d2939;
+  letter-spacing: -0.02em;
+}
+
+.member-settings-page :is(.cl-headerSubtitle, .cl-profileSectionSubtitle) {
+  color: #667085;
+}
+
+.member-settings-page .cl-pageScrollBox {
+  background: #fff;
+}
+
+.member-settings-page .cl-profileSection {
+  border-color: #e4e7ec;
+}
+
+.member-settings-page .cl-profileSectionContent {
+  color: #344054;
+}
+
+.member-settings-page
+  :is(.cl-formFieldInput, .cl-formFieldInputShowPasswordButton) {
+  color: #1d2939;
+}
+
+.member-settings-page .cl-formFieldInput::placeholder {
+  color: #98a2b3;
+}
+
+.member-settings-page .cl-navbarButton:focus-visible,
+.member-settings-page .cl-profileSectionPrimaryButton:focus-visible,
+.member-settings-page .cl-formButtonPrimary:focus-visible {
+  outline: 3px solid rgba(180, 35, 24, 0.24);
+  outline-offset: 2px;
+}
+
+@media (max-width: 760px) {
+  .member-settings-page .settings-clerk-card-box,
+  .member-settings-page .settings-clerk-card {
+    min-height: 0;
+  }
+
+  .member-settings-page .settings-clerk-navbar {
+    width: 100%;
+    padding: 12px;
+    border-right: 0;
+    border-bottom: 1px solid #e4e7ec;
+  }
+
+  .member-settings-panel,
+  .member-settings-page .settings-clerk-card {
+    border-radius: 12px;
+  }
+}
