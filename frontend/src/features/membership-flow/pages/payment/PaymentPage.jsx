@@ -653,14 +653,31 @@ function PaymentPageContent({ clerkEmail = '' }) {
   );
 }
 
+function RedirectToLogin() {
+  useEffect(() => {
+    window.location.replace('/login');
+  }, []);
+  return null;
+}
+
 function AuthenticatedPaymentPage() {
-  const { user } = useUser();
+  const { isLoaded, isSignedIn, user } = useUser();
+
+  if (!isLoaded) {
+    return (
+      <main className='fitzone-ui grid min-h-screen place-items-center p-6'>
+        <p role='status' className='text-[#475467]'>Checking your session...</p>
+      </main>
+    );
+  }
+
+  if (!isSignedIn) return <RedirectToLogin />;
 
   return <PaymentPageContent clerkEmail={getUserEmail(user)} />;
 }
 
 function PaymentPage({ clerkEnabled }) {
-  return clerkEnabled ? <AuthenticatedPaymentPage /> : <PaymentPageContent />;
+  return clerkEnabled ? <AuthenticatedPaymentPage /> : <RedirectToLogin />;
 }
 
 export default PaymentPage;
