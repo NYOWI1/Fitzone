@@ -142,7 +142,7 @@ export function getEmptyPlanForm(nextSortOrder = 1) {
     desc: '',
     badge: '',
     popular: false,
-    title: '',
+    title: 'What you get',
     features: '',
     sortOrder: nextSortOrder,
     active: true
@@ -157,7 +157,7 @@ export function getPlanFormFromRecord(plan) {
     desc: plan.desc || '',
     badge: plan.popular ? 'MOST POPULAR' : '',
     popular: plan.popular === true,
-    title: plan.title || '',
+    title: 'What you get',
     features: (plan.features || []).join(', '),
     sortOrder: plan.sortOrder || 1,
     active: plan.active !== false
@@ -173,7 +173,7 @@ export function getPlanPayload(values) {
     badge: values.popular ? 'MOST POPULAR' : '',
     popular: values.popular,
     premium: false,
-    title: values.title,
+    title: 'What you get',
     features: values.features
       .split(',')
       .map((item) => item.trim())

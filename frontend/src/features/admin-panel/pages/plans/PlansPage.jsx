@@ -11,8 +11,7 @@ import {
   getEmptyPlanForm,
   getPlanFormFromRecord,
   getPlanPayload,
-  getPlanStats,
-  makeSlug
+  getPlanStats
 } from '../../adminPanelUtils';
 import AdminLoadingSkeleton from '../../components/AdminLoadingSkeleton';
 import './PlanForm.css';
@@ -466,17 +465,6 @@ export default function PlansPage() {
                 </label>
 
                 <label>
-                  <span>Slug</span>
-                  <input
-                    onChange={(event) =>
-                      updatePlanFormValue('slug', makeSlug(event.target.value))
-                    }
-                    value={planForm.values.slug}
-                  />
-                  <small>The plan’s identifier in links.</small>
-                </label>
-
-                <label>
                   <span>Price</span>
                   <input
                     onChange={(event) =>
@@ -484,17 +472,6 @@ export default function PlansPage() {
                     }
                     required
                     value={planForm.values.price}
-                  />
-                </label>
-
-                <label>
-                  <span>Section Title</span>
-                  <input
-                    onChange={(event) =>
-                      updatePlanFormValue('title', event.target.value)
-                    }
-                    required
-                    value={planForm.values.title}
                   />
                 </label>
 
