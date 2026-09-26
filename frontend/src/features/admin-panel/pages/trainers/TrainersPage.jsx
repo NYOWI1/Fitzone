@@ -19,14 +19,12 @@ import { getTrainerProfile } from '../../../trainer-detail/trainerProfileContent
 import './TrainerForm.css';
 
 const trainerTableGridClass =
-  'grid min-w-0 items-center gap-2.5 [grid-template-columns:minmax(180px,1.35fr)_minmax(106px,0.8fr)_minmax(80px,0.6fr)_minmax(104px,0.78fr)_minmax(70px,0.52fr)_minmax(58px,0.44fr)] max-[980px]:[grid-template-columns:minmax(0,1fr)_auto] max-[980px]:items-start max-[980px]:gap-x-3.5 max-[980px]:gap-y-2.5 max-[560px]:[grid-template-columns:minmax(0,1fr)]';
+  'grid min-w-0 items-center gap-2.5 [grid-template-columns:minmax(180px,1.35fr)_minmax(150px,1.1fr)_minmax(104px,0.78fr)_minmax(70px,0.52fr)_minmax(58px,0.44fr)] max-[980px]:[grid-template-columns:minmax(0,1fr)_auto] max-[980px]:items-start max-[980px]:gap-x-3.5 max-[980px]:gap-y-2.5 max-[560px]:[grid-template-columns:minmax(0,1fr)]';
 const mutedTrainerCellClass =
   'min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-xs text-[#b8b8b8] max-[980px]:flex max-[980px]:min-h-[34px] max-[980px]:items-center max-[980px]:rounded-[11px] max-[980px]:bg-[rgba(15,15,15,0.35)] max-[980px]:px-2.5';
 const filterTabClass =
   'min-h-[30px] rounded-[10px] bg-transparent px-3.5 text-xs font-extrabold text-[#b8b8b8] max-[980px]:flex-1 max-[980px]:basis-auto';
 const activeFilterTabClass = `${filterTabClass} bg-[#d90429] text-white`;
-const categoryPillClass =
-  'inline-flex justify-center rounded-full bg-[rgba(217,4,41,0.12)] px-2.5 py-[7px] text-[11px] font-black text-[#d90429] max-[980px]:min-h-[34px] max-[980px]:items-center max-[560px]:justify-center';
 const rowActionClass =
   'min-h-[34px] rounded-[11px] border border-[#393939] bg-transparent text-xs font-extrabold text-[#eaeaea] max-[980px]:flex max-[980px]:items-center max-[980px]:justify-center';
 const emptyRowClass =
@@ -310,7 +308,6 @@ export default function TrainersPage() {
                 >
                   <span>Trainer</span>
                   <span>Role</span>
-                  <span>Category</span>
                   <span>Coach Type</span>
                   <span>Status</span>
                   <span>Action</span>
@@ -353,9 +350,6 @@ export default function TrainersPage() {
                       className={`${mutedTrainerCellClass} !whitespace-normal !overflow-visible !text-clip leading-relaxed`}
                     >
                       {trainer.role}
-                    </span>
-                    <span className={categoryPillClass}>
-                      {trainer.category}
                     </span>
                     <span className={mutedTrainerCellClass}>
                       {trainer.coach}
