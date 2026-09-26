@@ -819,7 +819,7 @@ function Home({ clerkEnabled }) {
         {trainersStatus === 'ready' && trainers.length > 0 && (
           <div className='home-trainer-grid'>
             {trainers
-              .filter((trainer) => !trainer.deleted)
+              .filter((trainer) => !trainer.deleted && trainer.active !== false)
               .map((trainer, index) => (
                 <div
                   className='group home-trainer-card'

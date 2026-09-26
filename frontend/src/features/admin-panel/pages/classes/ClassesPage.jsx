@@ -282,7 +282,9 @@ export default function ClassesPage() {
         ...getEmptyClassForm(activeDay),
         trainerIndex: Math.max(
           0,
-          trainers.findIndex((trainer) => !trainer.deleted)
+          trainers.findIndex(
+            (trainer) => !trainer.deleted && trainer.active !== false
+          )
         ),
         ...defaultTimeValues
       }
@@ -753,7 +755,7 @@ export default function ClassesPage() {
                     : [{ name: 'Unassigned trainer' }]
                   ).map((trainer, index) => (
                     <option
-                      disabled={trainer.deleted}
+                      disabled={trainer.deleted || trainer.active === false}
                       key={trainer.slug || trainer.name || index}
                       value={index}
                     >

@@ -30,7 +30,7 @@
 .trainer-editor .admin-form-grid label {
   min-width: 0;
 }
-.trainer-editor .admin-form-grid :is(input, textarea) {
+.trainer-editor .admin-form-grid :is(input, textarea, select) {
   width: 100%;
   min-width: 0;
   font-size: 14px;

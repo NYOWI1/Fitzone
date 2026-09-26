@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   addTrainer,
   deleteTrainer,
-  getTrainers,
+  getAdminTrainers,
   updateTrainer
 } from '../../../../shared/api';
 import { prepareTrainerPhoto } from '../../../../shared/trainers/prepareTrainerPhoto';
@@ -34,6 +34,7 @@ export default function TrainersPage() {
   const [trainers, setTrainers] = useState([]);
   const [status, setStatus] = useState('loading');
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeFilter, setActiveFilter] = useState('All');
   const [selectedTrainerSlug, setSelectedTrainerSlug] = useState('');
   const [trainerForm, setTrainerForm] = useState(null);
   const [trainerFormStatus, setTrainerFormStatus] = useState('idle');
@@ -57,7 +58,13 @@ export default function TrainersPage() {
       expertise: profile.expertise.join(', ')
     };
   });
-  const visibleTrainers = filterTrainers(directoryTrainers, searchTerm);
+  const visibleTrainers = filterTrainers(directoryTrainers, searchTerm).filter(
+    (trainer) =>
+      activeFilter === 'All' ||
+      (activeFilter === 'Active'
+        ? trainer.active !== false
+        : trainer.active === false)
+  );
   const categoryBreakdown = getTrainerCategoryBreakdown(directoryTrainers);
   const selectedTrainer =
     visibleTrainers.find((trainer) => trainer.slug === selectedTrainerSlug) ||
@@ -72,7 +79,7 @@ export default function TrainersPage() {
 
     async function loadTrainersData() {
       try {
-        const nextTrainers = await getTrainers();
+        const nextTrainers = await getAdminTrainers();
 
         if (isCurrent) {
           const attachedTrainers = nextTrainers.map(attachTrainerImage);
@@ -103,7 +110,7 @@ export default function TrainersPage() {
   const openAddTrainerForm = async () => {
     let allTrainers;
     try {
-      allTrainers = await getTrainers({ includeDeleted: true });
+      allTrainers = await getAdminTrainers({ includeDeleted: true });
     } catch (error) {
       allTrainers = trainers;
     }
@@ -290,15 +297,21 @@ export default function TrainersPage() {
                   className='flex gap-1 rounded-[14px] border border-[#393939] bg-[#2b2b2b] p-1 max-[980px]:w-full max-[980px]:overflow-x-auto'
                   aria-label='Filter trainers'
                 >
-                  <button className={activeFilterTabClass} type='button'>
-                    All
-                  </button>
-                  <button className={filterTabClass} type='button'>
-                    Active
-                  </button>
-                  <button className={filterTabClass} type='button'>
-                    Featured
-                  </button>
+                  {['All', 'Active', 'Inactive'].map((filter) => (
+                    <button
+                      key={filter}
+                      className={
+                        activeFilter === filter
+                          ? activeFilterTabClass
+                          : filterTabClass
+                      }
+                      aria-pressed={activeFilter === filter}
+                      onClick={() => setActiveFilter(filter)}
+                      type='button'
+                    >
+                      {filter}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -378,7 +391,7 @@ export default function TrainersPage() {
 
                 {visibleTrainers.length === 0 && (
                   <p className={emptyRowClass}>
-                    No trainers match your search.
+                    No trainers match this status and search.
                   </p>
                 )}
               </div>
@@ -524,6 +537,21 @@ export default function TrainersPage() {
                   }
                   placeholder='Your coaching philosophy'
                 />
+              </label>
+              <label className='wide'>
+                <span>Trainer status</span>
+                <select
+                  value={trainerForm.values.active ? 'active' : 'inactive'}
+                  onChange={(event) =>
+                    updateTrainerFormValue(
+                      'active',
+                      event.target.value === 'active'
+                    )
+                  }
+                >
+                  <option value='active'>Active</option>
+                  <option value='inactive'>Inactive</option>
+                </select>
               </label>
               <label className='wide'>
                 <span>About the trainer</span>

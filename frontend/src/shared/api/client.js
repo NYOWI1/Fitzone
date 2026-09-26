@@ -157,7 +157,20 @@ export function getStripeRevenueOverview() {
 }
 
 export async function getTrainers({ includeDeleted = false } = {}) {
-  const trainers = await getJson('/api/trainers', 'Unable to load trainers.');
+  const trainers = await getJson(
+    includeDeleted ? '/api/admin/trainers' : '/api/trainers',
+    'Unable to load trainers.'
+  );
+  return includeDeleted
+    ? trainers
+    : trainers.filter((trainer) => !trainer.deleted);
+}
+
+export async function getAdminTrainers({ includeDeleted = false } = {}) {
+  const trainers = await getJson(
+    '/api/admin/trainers',
+    'Unable to load trainers.'
+  );
   return includeDeleted
     ? trainers
     : trainers.filter((trainer) => !trainer.deleted);

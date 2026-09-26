@@ -236,9 +236,9 @@ function getLocalMembershipPlans(options = {}) {
   });
 }
 
-function getLocalTrainers() {
+function getLocalTrainers({ includeInactive = false } = {}) {
   return readLocalCollection("trainers")
-    .filter((trainer) => trainer.active !== false)
+    .filter((trainer) => includeInactive || trainer.active !== false)
     .sort((firstTrainer, secondTrainer) => {
       const sortDelta =
         Number(firstTrainer.sortOrder || 0) -
@@ -2030,10 +2030,10 @@ async function getMembershipPlanDocuments(db, options = {}) {
     .toArray();
 }
 
-async function getTrainerDocuments(db) {
+async function getTrainerDocuments(db, { includeInactive = false } = {}) {
   return db
     .collection("trainers")
-    .find({ active: { $ne: false } })
+    .find(includeInactive ? {} : { active: { $ne: false } })
     .sort({ sortOrder: 1, name: 1 })
     .project({ _id: 0 })
     .toArray();
@@ -2375,21 +2375,21 @@ async function updateMembershipPlan(request, response) {
   }
 }
 
-async function getTrainers(response) {
+async function getTrainers(response, { includeInactive = false } = {}) {
   try {
-    const trainers = await getCachedDbRead("trainers:active", async () => {
+    const trainers = await getCachedDbRead(includeInactive ? "trainers:all" : "trainers:active", async () => {
       const db = await withTimeout(
         getDb(),
         PUBLIC_API_TIMEOUT_MS,
         "Trainers database connection timed out.",
       );
-      return getTrainerDocuments(db);
+      return getTrainerDocuments(db, { includeInactive });
     });
 
     sendJson(response, 200, trainers);
   } catch (error) {
     logApiError("Trainers API error", error);
-    sendJson(response, 200, getLocalTrainers());
+    sendJson(response, 200, getLocalTrainers({ includeInactive }));
   }
 }
 
@@ -2422,9 +2422,9 @@ async function addTrainer(request, response) {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-    clearDbReadCache("trainers:active");
+    clearDbReadCache("trainers:active", "trainers:all");
 
-    sendJson(response, 200, await getTrainerDocuments(db));
+    sendJson(response, 200, await getTrainerDocuments(db, { includeInactive: true }));
   } catch (error) {
     const trainers = readLocalCollection("trainers");
 
@@ -2446,7 +2446,7 @@ async function addTrainer(request, response) {
         updatedAt: new Date().toISOString(),
       });
       writeLocalCollection("trainers", trainers);
-      sendJson(response, 200, getLocalTrainers());
+      sendJson(response, 200, getLocalTrainers({ includeInactive: true }));
       return;
     }
 
@@ -2498,9 +2498,9 @@ async function updateTrainer(request, response) {
       sendJson(response, 404, { message: "Trainer was not found." });
       return;
     }
-    clearDbReadCache("trainers:active");
+    clearDbReadCache("trainers:active", "trainers:all");
 
-    sendJson(response, 200, await getTrainerDocuments(db));
+    sendJson(response, 200, await getTrainerDocuments(db, { includeInactive: true }));
   } catch (error) {
     const trainers = readLocalCollection("trainers");
 
@@ -2532,7 +2532,7 @@ async function updateTrainer(request, response) {
         updatedAt: new Date().toISOString(),
       };
       writeLocalCollection("trainers", trainers);
-      sendJson(response, 200, getLocalTrainers());
+      sendJson(response, 200, getLocalTrainers({ includeInactive: true }));
       return;
     }
 
@@ -3617,7 +3617,7 @@ async function deleteTrainer(request, response) {
     const slug = makeSlug(body.slug);
     let db;
     try { db = await getDb(); } catch (error) { logApiError("Delete trainer database connection error", error); }
-    const trainers = db ? await getTrainerDocuments(db) : getLocalTrainers();
+    const trainers = db ? await getTrainerDocuments(db, { includeInactive: true }) : getLocalTrainers({ includeInactive: true });
     const trainerIndex = trainers.findIndex(trainer => trainer.slug === slug && !trainer.deleted);
     if (trainerIndex === -1) {
       sendJson(response, 404, { message: "Trainer was not found." });
@@ -3641,14 +3641,14 @@ async function deleteTrainer(request, response) {
     if (db) {
       const result = await db.collection("trainers").updateOne({ slug, deleted: { $ne: true } }, { $set: { deleted: true, deletedAt: new Date(), updatedAt: new Date() } });
       if (result.matchedCount === 0) { sendJson(response, 404, { message: "Trainer was not found." }); return; }
-      clearDbReadCache("trainers:active");
-      sendJson(response, 200, await getTrainerDocuments(db));
+      clearDbReadCache("trainers:active", "trainers:all");
+      sendJson(response, 200, await getTrainerDocuments(db, { includeInactive: true }));
     } else {
       const records = readLocalCollection("trainers");
       const index = records.findIndex(trainer => trainer.slug === slug);
       records[index] = { ...records[index], deleted: true, deletedAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
       writeLocalCollection("trainers", records);
-      sendJson(response, 200, getLocalTrainers());
+      sendJson(response, 200, getLocalTrainers({ includeInactive: true }));
     }
   } catch (error) {
     logApiError("Delete trainer API error", error);
@@ -3957,6 +3957,11 @@ function handleApiRequest(request, response) {
 
   if (request.method === "GET" && requestPath === "/api/trainers") {
     getTrainers(response);
+    return true;
+  }
+
+  if (request.method === "GET" && requestPath === "/api/admin/trainers") {
+    getTrainers(response, { includeInactive: true });
     return true;
   }
 
