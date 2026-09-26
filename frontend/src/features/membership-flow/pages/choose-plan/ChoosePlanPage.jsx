@@ -116,7 +116,7 @@ function ChoosePlanPage() {
   };
 
   return (
-    <main className='relative min-h-screen overflow-x-hidden overflow-y-auto bg-[#0d0d0d] p-4 font-[Inter,Arial,sans-serif] text-white sm:px-6 sm:pb-6 sm:pt-7 lg:px-[clamp(28px,5vw,70px)] lg:pt-[38px]'>
+    <main className='fitzone-ui relative min-h-screen overflow-x-hidden overflow-y-auto bg-[#f8f9fb] p-4 font-[Inter,Arial,sans-serif] text-[#1d2939] sm:px-6 sm:pb-6 sm:pt-7 lg:px-[clamp(28px,5vw,70px)] lg:pt-[38px]'>
       <div className='pointer-events-none absolute -left-[130px] -top-[100px] h-[470px] w-[470px] rounded-full bg-[rgba(230,0,46,0.16)]'></div>
       <div className='pointer-events-none absolute -bottom-[140px] -right-5 h-[430px] w-[430px] rounded-full bg-[rgba(255,213,79,0.09)]'></div>
 

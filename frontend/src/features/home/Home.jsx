@@ -42,7 +42,7 @@ const outlineButton = `${buttonBase} border border-[#454545] bg-[rgba(255,255,25
 const redButton = `${buttonBase} bg-[#e6002e] text-white shadow-[0_12px_26px_rgba(230,0,46,0.2)] transition hover:bg-[#ff123e]`;
 const goldButton = redButton;
 const sectionClass =
-  'flex min-h-screen w-full flex-col justify-center bg-[linear-gradient(180deg,#171717,#111)] px-[max(36px,5vw)] py-[90px] max-[980px]:min-h-0 max-[980px]:justify-start max-[980px]:px-[22px] max-[980px]:py-[72px] max-[560px]:px-4 max-[560px]:py-14 min-[1200px]:px-[6vw]';
+  'flex min-h-screen w-full flex-col justify-center bg-[#f8f9fb] px-[max(36px,5vw)] py-[90px] max-[980px]:min-h-0 max-[980px]:justify-start max-[980px]:px-[22px] max-[980px]:py-[72px] max-[560px]:px-4 max-[560px]:py-14 min-[1200px]:px-[6vw]';
 const sectionTitle =
   'm-0 text-center text-[clamp(36px,5vw,52px)] leading-[1.1] max-[980px]:text-[clamp(31px,9vw,42px)] max-[560px]:text-[clamp(28px,9vw,36px)]';
 const redLine =
@@ -97,7 +97,7 @@ function ScheduleBlock({
   return (
     <section
       id={title === 'Class Schedule' ? 'schedule' : undefined}
-      className='mx-auto mb-[72px] w-[calc(100%_-_72px)] rounded-lg border border-[#343434] border-t-[6px] border-t-[#e6002e] bg-[#1c1c1c] px-6 pb-[34px] pt-9 shadow-[0_22px_44px_rgba(0,0,0,0.32)] last:mb-0 max-[980px]:mb-[42px] max-[980px]:w-[calc(100%_-_28px)] max-[980px]:px-4 max-[980px]:pb-[26px] max-[980px]:pt-7 max-[560px]:mb-8 max-[560px]:w-[calc(100%_-_20px)] max-[560px]:rounded-lg max-[560px]:px-3.5 max-[560px]:pb-5 max-[560px]:pt-5'
+      className='mx-auto mb-[72px] w-[calc(100%_-_72px)] rounded-xl border border-[#e4e7ec] border-t-[6px] border-t-[#b42318] bg-white px-6 pb-[34px] pt-9 shadow-[0_1px_2px_rgba(16,24,40,0.05)] last:mb-0 max-[980px]:mb-[42px] max-[980px]:w-[calc(100%_-_28px)] max-[980px]:px-4 max-[980px]:pb-[26px] max-[980px]:pt-7 max-[560px]:mb-8 max-[560px]:w-[calc(100%_-_20px)] max-[560px]:px-3.5 max-[560px]:pb-5 max-[560px]:pt-5'
     >
       <div className='mb-12 grid grid-cols-2 items-end gap-[60px] max-[980px]:mb-[30px] max-[980px]:grid-cols-1 max-[980px]:gap-3.5 max-[560px]:mb-5'>
         <div>
@@ -421,21 +421,21 @@ function Home({ clerkEnabled }) {
   }
 
   return (
-    <div className='min-h-screen w-full overflow-x-hidden bg-[#0f0f0f] font-sans text-white'>
-      <nav className='fixed left-1/2 top-5 z-10 flex h-16 w-[min(1240px,calc(100%_-_56px))] -translate-x-1/2 items-center justify-between rounded-[18px] border border-[#303030] border-b-4 border-b-[#e6002e] bg-[rgba(13,13,13,0.92)] px-[18px] shadow-[0_12px_30px_rgba(0,0,0,0.45)] backdrop-blur-md max-[980px]:sticky max-[980px]:left-0 max-[980px]:top-0 max-[980px]:h-auto max-[980px]:w-full max-[980px]:translate-x-0 max-[980px]:flex-col max-[980px]:gap-3 max-[980px]:rounded-none max-[980px]:p-3 max-[640px]:items-stretch max-[640px]:gap-0 max-[640px]:border-b-2 max-[640px]:bg-[rgba(13,13,13,0.98)] max-[640px]:p-0'>
-        <div className='hidden min-h-[58px] grid-cols-[48px_1fr_auto] items-center border-b border-[#272727] px-3 max-[640px]:grid'>
+    <div className='fitzone-ui min-h-screen w-full overflow-x-hidden bg-[#f8f9fb] font-sans text-[#1d2939]'>
+      <nav className='fixed inset-x-0 top-0 z-10 flex h-18 items-center justify-between border-b border-[#e4e7ec] bg-[rgba(255,255,255,0.96)] px-[max(24px,5vw)] shadow-[0_1px_2px_rgba(16,24,40,0.05)] backdrop-blur-md max-[980px]:sticky max-[980px]:h-auto max-[980px]:flex-col max-[980px]:gap-3 max-[980px]:p-3 max-[640px]:items-stretch max-[640px]:gap-0 max-[640px]:p-0'>
+        <div className='hidden min-h-[64px] grid-cols-[48px_1fr_auto] items-center border-b border-[#e4e7ec] px-3 max-[640px]:grid'>
           <button
             aria-controls='home-mobile-menu'
             aria-expanded={isMobileMenuOpen}
             aria-label='Toggle navigation menu'
-            className='grid h-11 w-11 cursor-pointer place-items-center rounded-lg bg-transparent text-white'
+            className='grid h-11 w-11 cursor-pointer place-items-center rounded-lg bg-transparent text-[#344054]'
             onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
             type='button'
           >
             <span className='grid gap-[5px]'>
-              <span className='block h-0.5 w-5 rounded-full bg-white'></span>
-              <span className='block h-0.5 w-5 rounded-full bg-white'></span>
-              <span className='block h-0.5 w-5 rounded-full bg-white'></span>
+              <span className='block h-0.5 w-5 rounded-full bg-[#344054]'></span>
+              <span className='block h-0.5 w-5 rounded-full bg-[#344054]'></span>
+              <span className='block h-0.5 w-5 rounded-full bg-[#344054]'></span>
             </span>
           </button>
 
@@ -499,7 +499,7 @@ function Home({ clerkEnabled }) {
         </div>
 
         <div
-          className={`${isMobileMenuOpen ? 'grid' : 'hidden'} border-b border-[#272727] bg-[#111] px-3 py-3 max-[640px]:grid-cols-1 min-[641px]:hidden`}
+          className={`${isMobileMenuOpen ? 'grid' : 'hidden'} border-b border-[#e4e7ec] bg-white px-3 py-3 max-[640px]:grid-cols-1 min-[641px]:hidden`}
           id='home-mobile-menu'
         >
           <div className='grid gap-2'>
@@ -588,7 +588,7 @@ function Home({ clerkEnabled }) {
           {navItems.map(([sectionId, label]) => (
             <a
               href={`#${sectionId}`}
-              className={`shrink-0 cursor-pointer rounded-[18px] px-3.5 py-[7px] text-[10px] font-bold no-underline transition-colors ${activeSection === sectionId ? 'border border-[#e6002e] bg-[#1e1114] text-white' : 'text-[#a3a3a3] hover:text-white'}`}
+              className={`shrink-0 cursor-pointer rounded-lg px-3.5 py-[7px] text-[11px] font-bold no-underline transition-colors ${activeSection === sectionId ? 'border border-[#fecdca] bg-[#fef3f2] text-[#b42318]' : 'text-[#475467] hover:bg-[#f9fafb] hover:text-[#1d2939]'}`}
               onClick={() => handleNavClick(sectionId)}
               key={sectionId}
             >
@@ -791,10 +791,7 @@ function Home({ clerkEnabled }) {
         )}
       </section>
 
-      <section
-        id='trainers'
-        className={`${sectionClass} bg-[linear-gradient(180deg,#0d0d0d,#151515)]`}
-      >
+      <section id='trainers' className={sectionClass}>
         <h2 className={sectionTitle}>MEET THE TEAMS...</h2>
         <div className={redLine}></div>
         <p className='-mt-[30px] mb-[58px] text-center text-sm font-bold text-[#a9a9a9] max-[980px]:-mt-[18px] max-[980px]:mb-9 max-[560px]:mx-auto max-[560px]:max-w-[280px] max-[560px]:text-xs'>
@@ -873,7 +870,7 @@ function Home({ clerkEnabled }) {
         )}
       </section>
 
-      <div className='flex min-h-screen w-full flex-col justify-center bg-[radial-gradient(circle_at_-8%_16%,rgba(230,0,46,0.13),transparent_18%),radial-gradient(circle_at_102%_72%,rgba(255,211,77,0.08),transparent_22%),#111] py-[90px] max-[980px]:min-h-0 max-[980px]:py-[70px] max-[560px]:py-12'>
+      <div className='flex min-h-screen w-full flex-col justify-center bg-[#f8f9fb] py-[90px] max-[980px]:min-h-0 max-[980px]:py-[70px] max-[560px]:py-12'>
         {scheduleStatus === 'loading' && (
           <p className='text-center text-[13px] font-extrabold text-[#d5d5d5]'>
             Loading class schedule...

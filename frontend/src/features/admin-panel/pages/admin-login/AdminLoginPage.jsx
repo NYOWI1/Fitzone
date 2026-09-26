@@ -75,7 +75,7 @@ function getSecondFactorPreparePayload(factor) {
 function AdminLoginShell({ children }) {
   return (
     <main
-      className='relative grid min-h-screen place-items-center overflow-hidden bg-[#0f0f0f] p-5 font-sans text-white'
+      className='fitzone-ui relative grid min-h-screen place-items-center overflow-hidden bg-[#f8f9fb] p-5 font-sans text-[#1d2939]'
       style={adminThemeStyle}
     >
       <div className='pointer-events-none absolute left-[-120px] top-20 h-100 w-100 rounded-full bg-[rgba(217,4,41,0.12)]'></div>
@@ -87,7 +87,7 @@ function AdminLoginShell({ children }) {
 
 function AdminLoginCard({ children, label = 'ADMIN LOGIN', title }) {
   return (
-    <section className='relative z-[1] grid w-[min(100%,430px)] gap-5 rounded-[28px] border border-[#393939] bg-[#242424] p-7 shadow-[0_24px_70px_rgba(0,0,0,0.45)] max-[520px]:rounded-[22px] max-[520px]:p-5'>
+    <section className='relative z-[1] grid w-[min(100%,430px)] gap-5 rounded-2xl border border-[#e4e7ec] bg-white p-7 shadow-[0_24px_70px_rgba(16,24,40,0.12)] max-[520px]:p-5'>
       <div className={brandClass}>
         <FitZoneLogo className={logoClass} />
         <div>

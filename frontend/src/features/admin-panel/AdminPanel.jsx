@@ -22,34 +22,34 @@ import { getSiteSettings } from '../../shared/api';
 import FitZoneLogo from '../../shared/ui/FitZoneLogo';
 
 const adminThemeStyle = {
-  '--admin-red': '#d90429',
-  '--admin-red-dark': '#b00020',
-  '--admin-green': '#39e600',
+  '--admin-red': '#b42318',
+  '--admin-red-dark': '#8f1d14',
+  '--admin-green': '#16803c',
   '--admin-yellow': '#ffd54f',
   '--admin-blue': '#4da3ff',
-  '--admin-bg': '#0f0f0f',
-  '--admin-panel': '#242424',
-  '--admin-panel-soft': '#2b2b2b',
-  '--admin-border': '#393939',
-  '--admin-muted': '#b8b8b8'
+  '--admin-bg': '#f8f9fb',
+  '--admin-panel': '#ffffff',
+  '--admin-panel-soft': '#f9fafb',
+  '--admin-border': '#e4e7ec',
+  '--admin-muted': '#667085'
 };
 const brandClass = 'flex items-center gap-3.5';
 const logoClass = 'h-11.5 w-11.5';
-const brandTitleClass = 'm-0 mb-1.25 text-[23px] leading-none text-white';
-const brandLabelClass = 'block text-[10px] font-extrabold text-[#d90429]';
+const brandTitleClass = 'm-0 mb-1.25 text-[20px] leading-none text-[#1d2939]';
+const brandLabelClass = 'block text-[10px] font-extrabold text-[#b42318]';
 const mobileBarClass =
-  'sticky top-3 z-12 mb-6 hidden items-center justify-between gap-4 rounded-[22px] border border-[#393939] bg-[rgba(15,15,15,0.92)] p-3 max-[980px]:flex';
+  'fixed inset-x-0 top-0 z-12 hidden h-18 items-center justify-between gap-4 border-b border-[#e4e7ec] bg-[rgba(255,255,255,0.96)] px-4 shadow-[0_1px_2px_rgba(16,24,40,0.05)] backdrop-blur max-[980px]:flex';
 const mobileMenuButtonClass =
-  'hidden h-11.5 w-11.5 flex-[0_0_46px] flex-col items-center justify-center gap-1.25 rounded-[14px] border border-[#393939] bg-[#242424] p-0 max-[980px]:flex';
-const mobileMenuLineClass = 'block h-0.5 w-5 rounded-full bg-white';
+  'hidden h-11.5 w-11.5 flex-[0_0_46px] flex-col items-center justify-center gap-1.25 rounded-lg border border-[#d0d5dd] bg-white p-0 max-[980px]:flex';
+const mobileMenuLineClass = 'block h-0.5 w-5 rounded-full bg-[#344054]';
 const sidebarBaseClass =
-  'fixed left-8 top-8 z-2 flex h-[calc(100vh_-_64px)] w-62.5 flex-col gap-8.5 overflow-y-auto rounded-[28px] border border-[#393939] bg-[rgba(24,24,24,0.98)] px-4.75 py-6.75 max-[1359px]:static max-[1359px]:h-auto max-[1359px]:w-full max-[980px]:fixed max-[980px]:left-0 max-[980px]:top-0 max-[980px]:z-15 max-[980px]:h-[100svh] max-[980px]:w-[min(330px,88vw)] max-[980px]:max-w-[88vw] max-[980px]:rounded-r-3xl max-[980px]:rounded-l-none max-[980px]:px-4.5 max-[980px]:py-5.5 max-[980px]:transition-transform max-[980px]:duration-[180ms]';
-const menuClass = 'grid gap-3 max-[1359px]:grid-cols-3 max-[980px]:grid-cols-1';
+  'fixed left-0 top-0 z-11 flex h-[100svh] w-58 flex-col gap-7 overflow-y-auto border-r border-[#e4e7ec] bg-white px-4 py-5 max-[980px]:z-15 max-[980px]:w-[min(320px,88vw)] max-[980px]:max-w-[88vw] max-[980px]:shadow-[20px_0_60px_rgba(16,24,40,0.16)] max-[980px]:transition-transform max-[980px]:duration-[180ms]';
+const menuClass = 'grid gap-1.5';
 const menuItemBaseClass =
-  'flex min-h-10 items-center gap-3.5 rounded-[14px] border px-3.5 text-sm font-bold no-underline transition';
-const menuItemActiveClass = 'border-[#d90429] bg-[#241216] text-white';
+  'flex min-h-11 items-center gap-3 rounded-lg border px-3 text-sm font-bold no-underline transition';
+const menuItemActiveClass = 'border-[#fecdca] bg-[#fef3f2] text-[#b42318]';
 const menuItemInactiveClass =
-  'border-transparent text-[#b8b8b8] hover:border-[#d90429] hover:bg-[#241216] hover:text-white';
+  'border-transparent text-[#475467] hover:border-[#e4e7ec] hover:bg-[#f9fafb] hover:text-[#1d2939]';
 
 function getAdminProfile(user) {
   const email =
@@ -73,13 +73,13 @@ function getAdminProfile(user) {
 function AdminAccessMessage({ action, brandName, message, title }) {
   return (
     <main
-      className='relative grid min-h-screen place-items-center overflow-hidden bg-[#0f0f0f] p-5 font-sans text-white'
+      className='fitzone-ui relative grid min-h-screen place-items-center overflow-hidden bg-[#f8f9fb] p-5 font-sans text-[#1d2939]'
       style={adminThemeStyle}
     >
       <div className='pointer-events-none absolute -left-30 top-20 h-100 w-100 rounded-full bg-[rgba(217,4,41,0.12)]'></div>
       <div className='pointer-events-none absolute -bottom-35 -right-27.5 h-95 w-95 rounded-full bg-[rgba(77,163,255,0.06)]'></div>
 
-      <section className='relative z-1 grid w-[min(100%,430px)] gap-5 rounded-[28px] border border-[#393939] bg-[#242424] p-7 shadow-[0_24px_70px_rgba(0,0,0,0.45)] max-[520px]:rounded-[22px] max-[520px]:p-5'>
+      <section className='relative z-1 grid w-[min(100%,430px)] gap-5 rounded-2xl border border-[#e4e7ec] bg-white p-7 shadow-[0_24px_70px_rgba(16,24,40,0.12)] max-[520px]:p-5'>
         <div className={brandClass}>
           <FitZoneLogo className={logoClass} />
           <div>
@@ -203,12 +203,9 @@ function AdminPanelShell({ onAdminSignOut }) {
 
   return (
     <main
-      className='relative min-h-screen overflow-x-hidden bg-[#0f0f0f] p-8 font-sans text-white max-[980px]:p-5 max-[560px]:p-3.5 max-[400px]:p-2.5'
+      className='fitzone-ui relative min-h-screen overflow-x-hidden bg-[#f8f9fb] font-sans text-[#1d2939]'
       style={adminThemeStyle}
     >
-      <div className='pointer-events-none absolute left-42.5 top-32.5 h-130 w-130 rounded-full bg-[rgba(217,4,41,0.08)]'></div>
-      <div className='pointer-events-none absolute -right-30 top-140 h-95 w-95 rounded-full bg-[rgba(77,163,255,0.04)]'></div>
-
       <header className={mobileBarClass}>
         <div className={brandClass}>
           <FitZoneLogo className={logoClass} />
@@ -315,6 +312,18 @@ function AdminPanelShell({ onAdminSignOut }) {
           Logout
         </button>
       </aside>
+
+      <header className='admin-topbar'>
+        <div>
+          <p className='shell-topbar-title'>
+            {activePage === 'pt-bookings'
+              ? 'PT Bookings'
+              : activePage.charAt(0).toUpperCase() + activePage.slice(1)}
+          </p>
+          <span className='shell-topbar-context'>FitZone administration</span>
+        </div>
+        <span className='shell-topbar-context'>{adminProfile.email}</span>
+      </header>
 
       {activePage === 'classes' && <ClassesPage />}
       {activePage === 'trainers' && <TrainersPage />}

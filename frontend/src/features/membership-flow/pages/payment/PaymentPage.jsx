@@ -20,7 +20,7 @@ import FitZoneLogo from '../../../../shared/ui/FitZoneLogo';
 
 const stripeScriptUrl = 'https://js.stripe.com/v3/';
 const pageClass =
-  'relative min-h-screen overflow-x-hidden bg-[#0d0d0d] p-4 font-[Inter,Arial,sans-serif] text-white sm:px-6 sm:py-7 lg:px-[clamp(28px,5vw,70px)] lg:py-9';
+  'fitzone-ui relative min-h-screen overflow-x-hidden bg-[#f8f9fb] p-4 font-[Inter,Arial,sans-serif] text-[#1d2939] sm:px-6 sm:py-7 lg:px-[clamp(28px,5vw,70px)] lg:py-9';
 const containerClass = 'relative z-1 mx-auto w-full max-w-6xl';
 const cardClass =
   'rounded-3xl border border-[#3a3a3a] bg-[#252525] shadow-[0_24px_70px_rgba(0,0,0,0.48)]';

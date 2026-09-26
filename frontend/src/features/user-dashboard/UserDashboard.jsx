@@ -27,24 +27,23 @@ const navItems = [
   'Settings'
 ];
 const dashboardShellClass =
-  'relative grid min-h-[100svh] grid-cols-1 overflow-x-clip bg-[#0d0d0d] p-3 pt-[92px] font-[Inter,Arial,sans-serif] text-white sm:p-4 sm:pt-[96px] md:p-6 md:pt-[104px] min-[981px]:pt-6 xl:h-screen xl:min-h-0 xl:grid-cols-[238px_minmax(0,1fr)] xl:overflow-hidden xl:p-8';
+  'fitzone-ui relative min-h-[100svh] overflow-x-hidden bg-[#f8f9fb] font-[Inter,Arial,sans-serif] text-[#1d2939]';
 const mobileBarClass =
-  'fixed left-3 right-3 top-3 z-12 hidden items-center justify-between gap-4 rounded-[20px] border border-[#414141] bg-[rgba(13,13,13,0.96)] p-3 shadow-[0_14px_34px_rgba(0,0,0,0.35)] backdrop-blur max-[980px]:flex sm:left-4 sm:right-4 sm:top-4 md:left-6 md:right-6 md:top-6';
+  'fixed inset-x-0 top-0 z-12 hidden h-18 items-center justify-between gap-4 border-b border-[#e4e7ec] bg-[rgba(255,255,255,0.96)] px-4 shadow-[0_1px_2px_rgba(16,24,40,0.05)] backdrop-blur max-[980px]:flex';
 const mobileMenuButtonClass =
-  'hidden h-11 w-11 flex-[0_0_44px] cursor-pointer flex-col items-center justify-center gap-1.25 rounded-[14px] border border-[#414141] bg-[#252525] p-0 max-[980px]:flex';
-const mobileMenuLineClass = 'block h-0.5 w-5 rounded-full bg-white';
+  'hidden h-11 w-11 flex-[0_0_44px] cursor-pointer flex-col items-center justify-center gap-1.25 rounded-lg border border-[#d0d5dd] bg-white p-0 max-[980px]:flex';
+const mobileMenuLineClass = 'block h-0.5 w-5 rounded-full bg-[#344054]';
 const sidebarClass =
-  'relative z-1 flex min-h-[calc(100vh_-_64px)] flex-col rounded-[34px] border border-[#414141] bg-[#181818] px-4.75 py-6.75 shadow-[0_24px_70px_rgba(0,0,0,0.32)] max-[1120px]:min-h-0 max-[980px]:fixed max-[980px]:left-0 max-[980px]:top-0 max-[980px]:z-15 max-[980px]:h-[100svh] max-[980px]:w-[min(330px,88vw)] max-[980px]:max-w-[88vw] max-[980px]:overflow-y-auto max-[980px]:rounded-l-none max-[980px]:rounded-r-3xl max-[980px]:px-4.5 max-[980px]:py-5.5 max-[980px]:transition-transform max-[980px]:duration-[180ms] xl:h-[calc(100vh_-_64px)] xl:min-h-0 xl:overflow-hidden';
-const navClass =
-  'mt-11.75 grid gap-2.5 max-[1120px]:mt-7 max-[1120px]:grid-cols-4 max-[980px]:mt-8 max-[980px]:grid-cols-1';
+  'fixed left-0 top-0 z-11 flex h-[100svh] w-58 flex-col overflow-y-auto border-r border-[#e4e7ec] bg-white px-4 py-5 max-[980px]:z-15 max-[980px]:w-[min(320px,88vw)] max-[980px]:max-w-[88vw] max-[980px]:shadow-[20px_0_60px_rgba(16,24,40,0.16)] max-[980px]:transition-transform max-[980px]:duration-[180ms]';
+const navClass = 'mt-8 grid gap-1.5';
 const navItemClass =
-  'flex min-h-11 items-center gap-3.5 rounded-full border border-transparent px-4 text-sm font-black text-[#a7a7a7] no-underline transition hover:bg-[#252525] hover:text-white';
+  'flex min-h-11 items-center gap-3 rounded-lg border border-transparent px-3 text-sm font-bold text-[#475467] no-underline transition hover:border-[#e4e7ec] hover:bg-[#f9fafb] hover:text-[#1d2939]';
 const mainContentClass =
-  'relative z-1 min-w-0 pt-5 pl-8.5 max-[1120px]:pt-7 max-[1120px]:pl-0 max-[980px]:pt-2 xl:h-[calc(100vh_-_64px)] xl:overflow-y-auto xl:pr-1';
+  'relative z-1 min-w-0 px-4 pb-10 pt-24 sm:px-6 min-[981px]:ml-58 min-[981px]:px-8 min-[981px]:pt-28 min-[1440px]:px-10';
 const authShellClass =
-  'relative grid min-h-screen place-items-center bg-[#0d0d0d] p-8 font-[Inter,Arial,sans-serif] text-white max-[680px]:p-4';
+  'fitzone-ui relative grid min-h-screen place-items-center bg-[#f8f9fb] p-8 font-[Inter,Arial,sans-serif] text-[#1d2939] max-[680px]:p-4';
 const authCardClass =
-  'rounded-5.5 border border-[#414141] bg-[#252525] p-8 text-center';
+  'rounded-2xl border border-[#e4e7ec] bg-white p-8 text-center shadow-[0_16px_40px_rgba(16,24,40,0.08)]';
 const authLinkClass =
   'inline-flex min-h-10.5 min-w-37.5 items-center justify-center rounded-xl bg-[#e6002e] px-5 text-[13px] font-black text-white no-underline';
 
@@ -74,12 +73,9 @@ function DashboardLayout({ activePage, children, membershipAccess, user }) {
 
   return (
     <main className={dashboardShellClass}>
-      <div className='pointer-events-none absolute -left-40 -top-27.5 h-125 w-125 rounded-full bg-[rgba(230,0,46,0.14)]'></div>
-      <div className='pointer-events-none absolute -bottom-47.5 -right-30 h-107.5 w-107.5 rounded-full bg-[rgba(48,255,0,0.08)]'></div>
-
       <header className={mobileBarClass}>
         <a
-          className='flex min-w-0 items-center gap-3 text-white no-underline'
+          className='flex min-w-0 items-center gap-3 text-[#1d2939] no-underline'
           href='/'
         >
           <FitZoneLogo className='h-10 w-10' />
@@ -127,7 +123,7 @@ function DashboardLayout({ activePage, children, membershipAccess, user }) {
         id='member-sidebar'
       >
         <a
-          className='flex items-center gap-3.5 px-2 text-white no-underline max-[680px]:gap-2.5 max-[680px]:px-1'
+          className='flex items-center gap-3 px-2 text-[#1d2939] no-underline max-[680px]:gap-2.5 max-[680px]:px-1'
           href='/'
         >
           <FitZoneLogo className='h-11.75 w-11.75 drop-shadow-[0_14px_14px_rgba(230,0,46,0.24)] max-[680px]:h-10 max-[680px]:w-10' />
@@ -147,7 +143,7 @@ function DashboardLayout({ activePage, children, membershipAccess, user }) {
 
             return (
               <a
-                className={`${navItemClass} ${isActive ? 'border-[#e6002e] bg-[rgba(230,0,46,0.1)] text-white shadow-[0_12px_28px_rgba(230,0,46,0.12)]' : ''}`}
+                className={`${navItemClass} ${isActive ? 'border-[#fecdca] bg-[#fef3f2] text-[#b42318]' : ''}`}
                 href={`#${encodeURIComponent(item)}`}
                 key={item}
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -184,6 +180,14 @@ function DashboardLayout({ activePage, children, membershipAccess, user }) {
           </button>
         </div>
       </aside>
+
+      <header className='member-topbar'>
+        <div>
+          <p className='shell-topbar-title'>{activePage}</p>
+          <span className='shell-topbar-context'>FitZone member portal</span>
+        </div>
+        <span className='shell-topbar-context'>{fullName}</span>
+      </header>
 
       <section className={mainContentClass}>{children}</section>
     </main>

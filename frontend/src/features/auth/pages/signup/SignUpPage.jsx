@@ -311,7 +311,7 @@ function SignUpForm({ clerkEnabled }) {
 
 function SignUpPage({ clerkEnabled }) {
   return (
-    <main className='relative min-h-screen overflow-x-hidden overflow-y-auto bg-[#0d0d0d] p-2 font-[Inter,Arial,sans-serif] text-white sm:px-6 sm:py-6 lg:px-[clamp(28px,5vw,70px)] lg:py-[38px]'>
+    <main className='fitzone-ui relative min-h-screen overflow-x-hidden overflow-y-auto bg-[#f8f9fb] p-2 font-[Inter,Arial,sans-serif] text-[#1d2939] sm:px-6 sm:py-6 lg:px-[clamp(28px,5vw,70px)] lg:py-[38px]'>
       <div className='pointer-events-none absolute -left-[130px] -top-[94px] h-[470px] w-[470px] rounded-full bg-[rgba(230,0,46,0.16)]'></div>
       <div className='pointer-events-none absolute -right-[90px] -top-[126px] h-[340px] w-[340px] rounded-full bg-[rgba(230,0,46,0.15)]'></div>
       <div className='pointer-events-none absolute -bottom-[145px] -right-[22px] h-[430px] w-[430px] rounded-full bg-[rgba(255,213,79,0.09)]'></div>

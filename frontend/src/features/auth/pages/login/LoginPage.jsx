@@ -815,7 +815,7 @@ function LoginPage({ clerkEnabled }) {
   }
 
   return (
-    <main className='relative min-h-screen overflow-x-hidden overflow-y-auto bg-[#0d0d0d] font-[Inter,Arial,sans-serif] text-white'>
+    <main className='fitzone-ui relative min-h-screen overflow-x-hidden overflow-y-auto bg-[#f8f9fb] font-[Inter,Arial,sans-serif] text-[#1d2939]'>
       <div className='pointer-events-none absolute left-[-210px] top-[70px] h-[480px] w-[560px] rounded-full bg-[rgba(230,0,46,0.15)]'></div>
       <div className='pointer-events-none absolute bottom-[-150px] right-[-110px] h-[430px] w-[430px] rounded-full bg-[rgba(230,0,46,0.15)]'></div>
 
