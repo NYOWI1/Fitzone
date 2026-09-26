@@ -33,16 +33,18 @@ export default function PlansPage() {
   const [plans, setPlans] = useState([]);
   const [status, setStatus] = useState('loading');
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeFilter, setActiveFilter] = useState('All');
   const [selectedPlanSlug, setSelectedPlanSlug] = useState('');
   const [planForm, setPlanForm] = useState(null);
   const [planFormStatus, setPlanFormStatus] = useState('idle');
   const [planFormError, setPlanFormError] = useState('');
   const planStats = getPlanStats(plans);
-  const visiblePlans = filterPlans(plans, searchTerm);
+  const visiblePlans = filterPlans(plans, searchTerm).filter(
+    (plan) => activeFilter === 'All' || plan.popular === true
+  );
   const selectedPlan =
     visiblePlans.find((plan) => plan.slug === selectedPlanSlug) ||
-    visiblePlans[0] ||
-    plans[0];
+    visiblePlans[0];
 
   useEffect(() => {
     let isCurrent = true;
@@ -219,12 +221,21 @@ export default function PlansPage() {
                   className='flex gap-1 rounded-[14px] border border-[#393939] bg-[#2b2b2b] p-1 max-[980px]:w-full max-[980px]:overflow-x-auto'
                   aria-label='Filter plans'
                 >
-                  <button className={activeFilterTabClass} type='button'>
-                    All
-                  </button>
-                  <button className={filterTabClass} type='button'>
-                    Popular
-                  </button>
+                  {['All', 'Popular'].map((filter) => (
+                    <button
+                      key={filter}
+                      className={
+                        activeFilter === filter
+                          ? activeFilterTabClass
+                          : filterTabClass
+                      }
+                      aria-pressed={activeFilter === filter}
+                      onClick={() => setActiveFilter(filter)}
+                      type='button'
+                    >
+                      {filter}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -244,8 +255,8 @@ export default function PlansPage() {
                   <div
                     className={
                       selectedPlan?.slug === plan.slug
-                        ? `${planTableGridClass} min-h-[76px] cursor-pointer rounded-2xl border border-[rgba(234,0,48,0.72)] bg-[rgba(48,34,38,0.82)] px-3 py-2.5 shadow-[0_0_0_1px_rgba(234,0,48,0.14)] outline-none transition max-[980px]:min-h-0 max-[980px]:p-3.5`
-                        : `${planTableGridClass} min-h-[76px] cursor-pointer rounded-2xl border border-[rgba(57,57,57,0.82)] bg-[rgba(43,43,43,0.72)] px-3 py-2.5 transition hover:border-[rgba(234,0,48,0.72)] hover:bg-[rgba(48,34,38,0.82)] hover:shadow-[0_0_0_1px_rgba(234,0,48,0.14)] focus-visible:border-[rgba(234,0,48,0.72)] focus-visible:bg-[rgba(48,34,38,0.82)] focus-visible:shadow-[0_0_0_1px_rgba(234,0,48,0.14)] focus-visible:outline-none max-[980px]:min-h-0 max-[980px]:p-3.5`
+                        ? `${planTableGridClass} min-h-[76px] cursor-pointer rounded-2xl border border-[#b42318] bg-[#fef3f2] px-3 py-2.5 shadow-[0_0_0_1px_#fecdca] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b42318] max-[980px]:min-h-0 max-[980px]:p-3.5`
+                        : `${planTableGridClass} min-h-[76px] cursor-pointer rounded-2xl border border-[rgba(57,57,57,0.82)] bg-[rgba(43,43,43,0.72)] px-3 py-2.5 transition hover:border-[#fecdca] hover:!bg-[#fef3f2] focus-visible:border-[#b42318] focus-visible:!bg-[#fef3f2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b42318] max-[980px]:min-h-0 max-[980px]:p-3.5`
                     }
                     key={plan.slug || plan.name}
                     onClick={() => setSelectedPlanSlug(plan.slug)}
@@ -311,7 +322,9 @@ export default function PlansPage() {
                 ))}
 
                 {visiblePlans.length === 0 && (
-                  <p className={emptyRowClass}>No plans match your search.</p>
+                  <p className={emptyRowClass}>
+                    No plans match this filter and search.
+                  </p>
                 )}
               </div>
             </section>
@@ -319,35 +332,42 @@ export default function PlansPage() {
             <aside className='grid min-h-0 grid-rows-[minmax(230px,0.8fr)_minmax(260px,1fr)] gap-6 max-[1360px]:grid-cols-2 max-[1360px]:grid-rows-none max-[980px]:grid-cols-1'>
               <section className='admin-card min-h-0'>
                 <h3>Plan Preview</h3>
-                <div
-                  className={
-                    selectedPlan?.popular
-                      ? 'mt-[22px] grid gap-2.5 rounded-[18px] border border-[rgba(57,57,57,0.82)] border-t-[5px] border-t-[#d90429] bg-[rgba(43,43,43,0.72)] p-[18px]'
-                      : 'mt-[22px] grid gap-2.5 rounded-[18px] border border-[rgba(57,57,57,0.82)] border-t-[5px] border-t-[#4da3ff] bg-[rgba(43,43,43,0.72)] p-[18px]'
-                  }
-                >
-                  <span
+                {!selectedPlan && (
+                  <p className='mt-5 text-sm text-[#667085]'>
+                    Select a matching plan to preview its details.
+                  </p>
+                )}
+                {selectedPlan && (
+                  <div
                     className={
                       selectedPlan?.popular
-                        ? 'text-[11px] font-black text-[#d90429]'
-                        : 'text-[11px] font-black text-[#d90429]'
+                        ? 'mt-[22px] grid gap-2.5 rounded-[18px] border border-[rgba(57,57,57,0.82)] border-t-[5px] border-t-[#d90429] bg-[rgba(43,43,43,0.72)] p-[18px]'
+                        : 'mt-[22px] grid gap-2.5 rounded-[18px] border border-[rgba(57,57,57,0.82)] border-t-[5px] border-t-[#4da3ff] bg-[rgba(43,43,43,0.72)] p-[18px]'
                     }
                   >
-                    {selectedPlan?.popular ? 'MOST POPULAR' : 'MEMBERSHIP'}
-                  </span>
-                  <strong className='text-[22px] text-white'>
-                    {selectedPlan?.name}
-                  </strong>
-                  <b className='text-3xl text-white'>
-                    {selectedPlan?.price}
-                    <small className='ml-2 text-xs text-[#b8b8b8]'>
-                      /month
-                    </small>
-                  </b>
-                  <p className='m-0 text-xs leading-normal text-[#b8b8b8]'>
-                    {selectedPlan?.desc}
-                  </p>
-                </div>
+                    <span
+                      className={
+                        selectedPlan?.popular
+                          ? 'text-[11px] font-black text-[#d90429]'
+                          : 'text-[11px] font-black text-[#d90429]'
+                      }
+                    >
+                      {selectedPlan?.popular ? 'MOST POPULAR' : 'MEMBERSHIP'}
+                    </span>
+                    <strong className='text-[22px] text-white'>
+                      {selectedPlan?.name}
+                    </strong>
+                    <b className='text-3xl text-white'>
+                      {selectedPlan?.price}
+                      <small className='ml-2 text-xs text-[#b8b8b8]'>
+                        /month
+                      </small>
+                    </b>
+                    <p className='m-0 text-xs leading-normal text-[#b8b8b8]'>
+                      {selectedPlan?.desc}
+                    </p>
+                  </div>
+                )}
               </section>
 
               <section className='admin-card min-h-0'>
