@@ -6,10 +6,11 @@ import {
   getEmptyTrainerForm,
   getTrainerCategoryBreakdown,
   getTrainerFormFromRecord,
-  getTrainerPayload,
-  trainerImageKeys
+  getTrainerPayload
 } from '../../adminPanelUtils';
 import AdminLoadingSkeleton from '../../components/AdminLoadingSkeleton';
+import { getTrainerProfile } from '../../../trainer-detail/trainerProfileContent';
+import './TrainerForm.css';
 
 const trainerTableGridClass =
   'grid min-w-0 items-center gap-2.5 [grid-template-columns:minmax(180px,1.35fr)_minmax(106px,0.8fr)_minmax(80px,0.6fr)_minmax(104px,0.78fr)_minmax(70px,0.52fr)_minmax(58px,0.44fr)] max-[980px]:[grid-template-columns:minmax(0,1fr)_auto] max-[980px]:items-start max-[980px]:gap-x-3.5 max-[980px]:gap-y-2.5 max-[560px]:[grid-template-columns:minmax(0,1fr)]';
@@ -39,6 +40,9 @@ export default function TrainersPage() {
     visibleTrainers.find((trainer) => trainer.slug === selectedTrainerSlug) ||
     visibleTrainers[0] ||
     trainers[0];
+  const selectedProfile = selectedTrainer
+    ? getTrainerProfile(selectedTrainer)
+    : null;
 
   useEffect(() => {
     let isCurrent = true;
@@ -82,11 +86,19 @@ export default function TrainersPage() {
   };
 
   const openEditTrainerForm = (trainer) => {
+    const profile = getTrainerProfile(trainer);
     setTrainerFormError('');
     setTrainerForm({
       mode: 'edit',
       originalSlug: trainer.slug,
-      values: getTrainerFormFromRecord(trainer)
+      values: {
+        ...getTrainerFormFromRecord(trainer),
+        role: profile.role,
+        coach: profile.training,
+        quote: profile.quote,
+        bio: profile.paragraphs.join('\n\n'),
+        expertise: profile.expertise.join(', ')
+      }
     });
   };
 
@@ -309,10 +321,10 @@ export default function TrainersPage() {
                     {selectedTrainer.name}
                   </strong>
                   <span className='text-xs font-black text-[#d90429]'>
-                    {selectedTrainer.role}
+                    {selectedProfile.role}
                   </span>
                   <p className='m-0 text-xs leading-normal text-[#b8b8b8]'>
-                    {selectedTrainer.bio}
+                    {selectedProfile.paragraphs.join(' ')}
                   </p>
                 </div>
               </section>
@@ -344,18 +356,21 @@ export default function TrainersPage() {
       {trainerForm && (
         <div className='admin-modal-backdrop' role='presentation'>
           <form
-            className='admin-class-form w-[min(760px,100%)]'
+            className='admin-class-form trainer-editor'
             onSubmit={saveTrainerForm}
+            role='dialog'
+            aria-modal='true'
+            aria-labelledby='trainer-editor-title'
           >
             <div className='admin-form-header'>
               <div>
-                <h3>
+                <h3 id='trainer-editor-title'>
                   {trainerForm.mode === 'edit' ? 'Edit Trainer' : 'Add Trainer'}
                 </h3>
                 <p>
                   {trainerForm.mode === 'edit'
-                    ? 'Update this database trainer profile.'
-                    : 'Create a new trainer profile in the database.'}
+                    ? 'Edit the information displayed on the trainer profile.'
+                    : 'Introduce a new coach to FitZone.'}
                 </p>
               </div>
               <button
@@ -368,177 +383,67 @@ export default function TrainersPage() {
             </div>
 
             <div className='admin-form-grid'>
+              {[
+                ['name', 'Trainer name'],
+                ['role', 'Role / subtitle']
+              ].map(([field, label]) => (
+                <label key={field}>
+                  <span>{label}</span>
+                  <input
+                    required
+                    value={trainerForm.values[field]}
+                    onChange={(event) =>
+                      updateTrainerFormValue(field, event.target.value)
+                    }
+                  />
+                </label>
+              ))}
               <label>
-                <span>Name</span>
+                <span>Training type</span>
                 <input
-                  onChange={(event) =>
-                    updateTrainerFormValue('name', event.target.value)
-                  }
                   required
-                  value={trainerForm.values.name}
-                />
-              </label>
-
-              <label>
-                <span>Slug</span>
-                <input
-                  onChange={(event) =>
-                    updateTrainerFormValue('slug', makeSlug(event.target.value))
-                  }
-                  value={trainerForm.values.slug}
-                />
-              </label>
-
-              <label>
-                <span>Role</span>
-                <input
-                  onChange={(event) =>
-                    updateTrainerFormValue('role', event.target.value)
-                  }
-                  required
-                  value={trainerForm.values.role}
-                />
-              </label>
-
-              <label>
-                <span>Coach Type</span>
-                <input
+                  value={trainerForm.values.coach}
                   onChange={(event) =>
                     updateTrainerFormValue('coach', event.target.value)
                   }
-                  required
-                  value={trainerForm.values.coach}
+                  placeholder='Private Training or Class Training'
                 />
               </label>
-
               <label>
-                <span>Category</span>
+                <span>Quote</span>
                 <input
+                  value={trainerForm.values.quote}
                   onChange={(event) =>
-                    updateTrainerFormValue('category', event.target.value)
+                    updateTrainerFormValue('quote', event.target.value)
                   }
-                  required
-                  value={trainerForm.values.category}
+                  placeholder='Your coaching philosophy'
                 />
               </label>
-
-              <label>
-                <span>Image</span>
-                <select
-                  onChange={(event) =>
-                    updateTrainerFormValue('imageKey', event.target.value)
-                  }
-                  value={trainerForm.values.imageKey}
-                >
-                  {trainerImageKeys.map((imageKey) => (
-                    <option key={imageKey} value={imageKey}>
-                      {imageKey}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label>
-                <span>Badge</span>
-                <input
-                  onChange={(event) =>
-                    updateTrainerFormValue('badge', event.target.value)
-                  }
-                  value={trainerForm.values.badge}
-                />
-              </label>
-
-              <label>
-                <span>Sort Order</span>
-                <input
-                  min='1'
-                  onChange={(event) =>
-                    updateTrainerFormValue(
-                      'sortOrder',
-                      Number(event.target.value)
-                    )
-                  }
-                  required
-                  type='number'
-                  value={trainerForm.values.sortOrder}
-                />
-              </label>
-
               <label className='wide'>
-                <span>Bio</span>
+                <span>About the trainer</span>
                 <textarea
+                  required
+                  rows='5'
+                  value={trainerForm.values.bio}
                   onChange={(event) =>
                     updateTrainerFormValue('bio', event.target.value)
                   }
-                  required
-                  rows='4'
-                  value={trainerForm.values.bio}
-                ></textarea>
+                />
+                <small>Separate paragraphs with a blank line.</small>
               </label>
-
               <label className='wide'>
                 <span>Expertise</span>
                 <textarea
+                  required
+                  rows='2'
+                  value={trainerForm.values.expertise}
                   onChange={(event) =>
                     updateTrainerFormValue('expertise', event.target.value)
                   }
-                  required
-                  rows='3'
-                  value={trainerForm.values.expertise}
-                ></textarea>
-              </label>
-
-              <label className='wide'>
-                <span>Specialties</span>
-                <input
-                  onChange={(event) =>
-                    updateTrainerFormValue('specialties', event.target.value)
-                  }
-                  value={trainerForm.values.specialties}
                 />
-              </label>
-
-              {[1, 2, 3].map((number) => (
-                <div className='admin-stat-fieldset' key={number}>
-                  <label>
-                    <span>Stat {number}</span>
-                    <input
-                      onChange={(event) =>
-                        updateTrainerFormValue(
-                          `statValue${number}`,
-                          event.target.value
-                        )
-                      }
-                      value={trainerForm.values[`statValue${number}`]}
-                    />
-                  </label>
-                  <label>
-                    <span>Label {number}</span>
-                    <input
-                      onChange={(event) =>
-                        updateTrainerFormValue(
-                          `statLabel${number}`,
-                          event.target.value
-                        )
-                      }
-                      value={trainerForm.values[`statLabel${number}`]}
-                    />
-                  </label>
-                </div>
-              ))}
-
-              <label className='admin-checkbox-label'>
-                <input
-                  checked={trainerForm.values.active}
-                  onChange={(event) =>
-                    updateTrainerFormValue('active', event.target.checked)
-                  }
-                  type='checkbox'
-                />
-                <span>Active trainer</span>
+                <small>Separate expertise tags with commas.</small>
               </label>
             </div>
-
             {trainerFormError && (
               <p className='admin-form-error'>{trainerFormError}</p>
             )}

@@ -569,6 +569,8 @@ function sanitizeTrainer(payload) {
     badge: String(payload.badge || "").trim(),
     coach,
     bio,
+    quote: String(payload.quote || "").trim(),
+    profileContentUpdated: payload.profileContentUpdated === true,
     expertise,
     stats: sanitizeTrainerStats(payload.stats),
     specialties: sanitizeStringArray(payload.specialties),

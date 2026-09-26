@@ -49,3 +49,21 @@ export const trainerProfileContent = {
     expertise
   }
 };
+
+export function getTrainerProfile(trainer) {
+  if (!trainer.profileContentUpdated && trainerProfileContent[trainer.slug]) {
+    return trainerProfileContent[trainer.slug];
+  }
+  return {
+    role: trainer.role,
+    training: trainer.coach,
+    quote: trainer.quote || '',
+    paragraphs: String(trainer.bio || '')
+      .split(/\n\s*\n/)
+      .filter(Boolean),
+    expertise: String(trainer.expertise || '')
+      .split(',')
+      .map((item) => item.trim().replace(/\.$/, ''))
+      .filter(Boolean)
+  };
+}

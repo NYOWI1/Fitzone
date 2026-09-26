@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { getTrainers } from '../../shared/api';
 import { attachTrainerImage } from '../../shared/trainers';
-import { trainerProfileContent } from './trainerProfileContent';
+import { getTrainerProfile } from './trainerProfileContent';
 import './TrainerDetail.css';
 
 function TrainerDetail({ trainer, onBack }) {
-  const profile = trainerProfileContent[trainer.slug];
+  const profile = getTrainerProfile(trainer);
   const paragraphs = profile?.paragraphs || [trainer.bio];
   const expertise = profile?.expertise || trainer.specialties || [];
   return (
