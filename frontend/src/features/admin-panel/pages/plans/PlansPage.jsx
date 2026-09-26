@@ -554,7 +554,7 @@ export default function PlansPage() {
               </div>
 
               {planFormError && (
-                <p className='admin-form-error'>{planFormError}</p>
+                <p className='admin-form-error' role='alert'>{planFormError}</p>
               )}
 
               <div className='admin-form-actions'>

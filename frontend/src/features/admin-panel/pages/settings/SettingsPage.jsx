@@ -197,7 +197,7 @@ export default function SettingsPage() {
               </label>
             </div>
 
-            {formError && <p className='admin-form-error'>{formError}</p>}
+            {formError && <p className='admin-form-error' role='alert'>{formError}</p>}
 
             <div className='admin-form-actions'>
               <button

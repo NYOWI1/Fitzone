@@ -404,7 +404,7 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
 
       {message && (
         <p
-          className='fixed right-4 top-4 z-50 m-0 w-[calc(100%_-_32px)] max-w-sm rounded-[18px] border border-[#555] bg-[#252525] px-5 py-4 text-sm font-black text-white shadow-[0_20px_60px_rgba(0,0,0,0.55)] sm:right-6 sm:top-6'
+          className='fz-notice fz-toast'
           role='status'
           aria-live='polite'
         >

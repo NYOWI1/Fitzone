@@ -18,8 +18,7 @@ const fieldClass = 'grid gap-2.5 max-[640px]:gap-1';
 const labelClass = 'text-xs font-black text-[#dedede] max-[640px]:text-[11px]';
 const inputClass =
   'min-h-10 w-full rounded-xl border border-[#414141] bg-[#2d2d2d] px-3 font-[inherit] text-sm text-white placeholder:text-[#a8a8a8] focus:border-[#e6002e] focus:outline-none focus:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] disabled:cursor-not-allowed disabled:opacity-65 sm:min-h-[52px] sm:rounded-2xl sm:px-[18px] sm:text-base';
-const messageClass =
-  'm-0 rounded-[14px] border border-[rgba(230,0,46,0.35)] bg-[rgba(230,0,46,0.12)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#ff8ea2] max-[640px]:px-3 max-[640px]:py-2 max-[640px]:text-xs';
+const messageClass = 'fz-notice fz-notice-error m-0';
 const primaryButton =
   'min-h-[54px] w-full cursor-pointer rounded-2xl border-0 bg-[#e6002e] text-[15px] font-black text-white shadow-[0_18px_28px_rgba(230,0,46,0.2)] transition hover:-translate-y-px hover:bg-[#ff1744] disabled:cursor-not-allowed disabled:opacity-65 disabled:hover:translate-y-0 max-[640px]:min-h-10 max-[640px]:rounded-xl max-[640px]:text-sm';
 const secondaryButton =
@@ -164,7 +163,11 @@ function SignUpForm({ clerkEnabled }) {
           />
         </label>
 
-        {formMessage && <p className={messageClass}>{formMessage}</p>}
+        {formMessage && (
+          <p className={messageClass} role='alert'>
+            {formMessage}
+          </p>
+        )}
 
         <button className={primaryButton} disabled={isBusy} type='submit'>
           {isBusy ? 'Verifying...' : 'Verify Account'}
@@ -300,7 +303,11 @@ function SignUpForm({ clerkEnabled }) {
         <span>I agree to FitZone terms and privacy policy</span>
       </label>
 
-      {formMessage && <p className={messageClass}>{formMessage}</p>}
+      {formMessage && (
+        <p className={messageClass} role='alert'>
+          {formMessage}
+        </p>
+      )}
 
       <button className={primaryButton} disabled={isBusy} type='submit'>
         {isBusy ? 'Creating account...' : 'Create Account'}

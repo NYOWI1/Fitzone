@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './shared/ui/Notifications.css';
 
 @layer base {
   :root {

@@ -609,7 +609,7 @@ export default function TrainersPage() {
               )}
             </div>
             {trainerFormError && (
-              <p className='admin-form-error'>{trainerFormError}</p>
+              <p className='admin-form-error' role='alert'>{trainerFormError}</p>
             )}
 
             <div className='admin-form-actions'>

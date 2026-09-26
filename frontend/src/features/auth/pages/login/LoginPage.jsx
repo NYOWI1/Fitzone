@@ -29,12 +29,9 @@ const fieldClass = 'grid gap-2.5 max-[640px]:gap-2';
 const labelClass = 'text-[13px] font-black text-[#344054]';
 const inputClass =
   'min-h-11 w-full rounded-xl border border-[#414141] bg-[#2d2d2d] px-3.5 font-[inherit] text-white placeholder:text-[#667085] focus:border-[#e6002e] focus:outline-none focus:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] disabled:cursor-not-allowed disabled:opacity-65 sm:min-h-[57px] sm:rounded-2xl sm:px-[19px]';
-const messageClass =
-  'mt-[-4px] rounded-[14px] border border-[rgba(230,0,46,0.35)] bg-[rgba(230,0,46,0.12)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#ff8ea2]';
-const successMessageClass =
-  'mt-[-4px] rounded-[14px] border border-[rgba(48,230,0,0.32)] bg-[rgba(48,230,0,0.1)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#a6ff8f]';
-const infoMessageClass =
-  'mt-[-4px] rounded-[14px] border border-[rgba(77,163,255,0.32)] bg-[rgba(77,163,255,0.1)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#9dc8ff]';
+const messageClass = 'fz-notice fz-notice-error mt-0';
+const successMessageClass = 'fz-notice fz-notice-success mt-0';
+const infoMessageClass = 'fz-notice fz-notice-info mt-0';
 const primaryButton =
   'min-h-11 w-full cursor-pointer rounded-xl border-0 bg-[#e6002e] text-[15px] font-black text-white shadow-[0_18px_28px_rgba(230,0,46,0.2)] transition hover:-translate-y-px hover:bg-[#ff1744] disabled:cursor-not-allowed disabled:opacity-65 disabled:hover:translate-y-0 sm:min-h-14 sm:rounded-2xl';
 const secondaryButton =
@@ -724,6 +721,11 @@ function LoginForm({ clerkEnabled }) {
 
       {formMessage && (
         <p
+          role={
+            formMessageKind === 'success' || formMessageKind === 'info'
+              ? 'status'
+              : 'alert'
+          }
           className={
             formMessageKind === 'success'
               ? successMessageClass

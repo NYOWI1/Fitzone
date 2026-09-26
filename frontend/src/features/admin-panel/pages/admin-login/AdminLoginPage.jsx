@@ -328,7 +328,7 @@ function AdminLoginForm() {
       )}
 
       {formMessage && (
-        <p className='m-0 rounded-[14px] border border-[rgba(217,4,41,0.35)] bg-[rgba(217,4,41,0.12)] px-4 py-3 text-sm font-bold text-[#ff8ea2]'>
+        <p className='fz-notice fz-notice-error m-0' role='alert'>
           {formMessage}
         </p>
       )}

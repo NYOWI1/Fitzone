@@ -28,10 +28,8 @@ const inputClass =
   'min-h-12 w-full rounded-2xl border border-[#414141] bg-[#2d2d2d] px-4 text-white outline-none placeholder:text-[#a8a8a8] focus:border-[#e6002e] disabled:cursor-not-allowed disabled:opacity-65';
 const labelClass = 'grid gap-2.5';
 const labelTextClass = 'text-xs font-black text-[#dedede]';
-const messageClass =
-  'mb-3.5 mt-0 rounded-2xl border border-[rgba(230,0,46,0.35)] bg-[rgba(230,0,46,0.12)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#ff8ea2]';
-const successMessageClass =
-  'mb-3.5 mt-0 rounded-2xl border border-[rgba(57,230,0,0.28)] bg-[rgba(57,230,0,0.1)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#a6ff8f]';
+const messageClass = 'fz-notice fz-notice-error mb-3.5 mt-0';
+const successMessageClass = 'fz-notice fz-notice-success mb-3.5 mt-0';
 
 function loadStripeScript() {
   return new Promise((resolve, reject) => {
@@ -575,15 +573,19 @@ function PaymentPageContent({ clerkEmail = '' }) {
             )}
 
             {!isStripeEnabled && (
-              <p className={messageClass}>
+              <p className={messageClass} role='alert'>
                 Add VITE_STRIPE_PUBLISHABLE_KEY to `.env`.
               </p>
             )}
             {stripeStatus === 'error' && (
-              <p className={messageClass}>Stripe.js could not load.</p>
+              <p className={messageClass} role='alert'>
+                Stripe.js could not load.
+              </p>
             )}
             {!isPromptPay && cardError && (
-              <p className={messageClass}>{cardError}</p>
+              <p className={messageClass} role='alert'>
+                {cardError}
+              </p>
             )}
           </section>
 
@@ -623,6 +625,7 @@ function PaymentPageContent({ clerkEmail = '' }) {
 
             {paymentMessage && (
               <p
+                role={paymentStatus === 'success' ? 'status' : 'alert'}
                 className={
                   paymentStatus === 'success'
                     ? successMessageClass
@@ -666,7 +669,9 @@ function AuthenticatedPaymentPage() {
   if (!isLoaded) {
     return (
       <main className='fitzone-ui grid min-h-screen place-items-center p-6'>
-        <p role='status' className='text-[#475467]'>Checking your session...</p>
+        <p role='status' className='text-[#475467]'>
+          Checking your session...
+        </p>
       </main>
     );
   }

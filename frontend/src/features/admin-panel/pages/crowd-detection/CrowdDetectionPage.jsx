@@ -733,12 +733,20 @@ export default function CrowdDetectionPage({ isVisible = true }) {
   };
 
   useEffect(() => {
-    if (sourceMode !== 'image' || !imageLoaded || modelStatus !== 'ready') return;
+    if (sourceMode !== 'image' || !imageLoaded || modelStatus !== 'ready')
+      return;
     const image = imageRef.current;
     if (!image) return;
     setSourceStatus('loading');
     runDetection(image, 'image', imageSessionRef.current);
-  }, [confidence, imageLoaded, imageUrl, modelStatus, runDetection, sourceMode]);
+  }, [
+    confidence,
+    imageLoaded,
+    imageUrl,
+    modelStatus,
+    runDetection,
+    sourceMode
+  ]);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -835,126 +843,137 @@ export default function CrowdDetectionPage({ isVisible = true }) {
       <div className='mx-auto grid w-full min-h-0 flex-1 grid-cols-[minmax(0,1fr)_310px] gap-4 min-[1360px]:max-w-[1380px] max-[1359px]:grid-cols-1'>
         <div className='flex min-h-0 min-w-0 flex-col'>
           <section className={`${monitorCardClass} shrink-0`}>
-          <div className='flex min-h-[52px] flex-none items-center justify-between rounded-[25px] bg-[#151515] px-[25px]'>
-            <h3 className='m-0 text-base leading-none text-white'>
-              {sourceMode === 'image' ? 'AI Model Image Preview' : 'AI Model Video Preview'}
-            </h3>
-            <span className='inline-flex h-7 min-w-[86px] items-center justify-center rounded-full bg-[#d90429] text-[11px] font-black text-white'>
-              {sourceMode === 'image' ? 'TEST IMAGE' : 'LIVE'}
-            </span>
-          </div>
-
-          <div
-            className='relative mt-3 min-h-0 w-full flex-none overflow-hidden border-y border-[#444] bg-[#2c2c2c] after:absolute after:inset-x-0 after:bottom-0 after:z-0 after:h-[29%] after:rounded-t-2xl after:bg-[#111]'
-            style={{
-              aspectRatio: sourceAspectRatio,
-              backgroundImage:
-                'linear-gradient(rgba(57, 230, 0, 0.38) 1px, transparent 1px)',
-              backgroundPosition: '0 28px',
-              backgroundSize: '100% 82px'
-            }}
-          >
-            <video
-              aria-label='Live gym camera preview'
-              className={`absolute inset-0 z-[1] h-full w-full bg-black object-contain ${sourceMode === 'image' ? 'hidden' : ''}`}
-              muted
-              playsInline
-              ref={videoRef}
-            ></video>
-
-            {sourceMode === 'image' && imageUrl && (
-              <img
-                alt={`Uploaded image: ${imageName}`}
-                className='absolute inset-0 z-[1] h-full w-full bg-black object-contain'
-                onLoad={(event) => {
-                  const image = event.currentTarget;
-                  if (image.naturalWidth && image.naturalHeight) {
-                    setSourceAspectRatio(
-                      image.naturalWidth / image.naturalHeight
-                    );
-                    setImageLoaded(true);
-                  }
-                }}
-                onError={() => {
-                  setErrorMessage('The image could not be opened. Try another file.');
-                  setSourceStatus('error');
-                }}
-                ref={imageRef}
-                src={imageUrl}
-              />
-            )}
-
-            <canvas
-              aria-hidden='true'
-              className='pointer-events-none absolute inset-0 z-[2] h-full w-full object-contain'
-              ref={canvasRef}
-            ></canvas>
-
-            {modelStatus !== 'error' &&
-              ((modelStatus === 'loading' && sourceStatus !== 'ready') ||
-                sourceStatus === 'loading') && (
-              <div className='absolute inset-0 z-[3] flex flex-col items-center justify-center gap-2.5 bg-[rgba(17,17,17,0.88)] p-7 text-center'>
-                <strong className='text-[clamp(20px,2.2vw,30px)] leading-tight text-white'>
-                  {modelStatus === 'loading'
-                    ? `Loading ${modelName} detection model`
-                    : sourceMode === 'image' ? 'Detecting people in image' : 'Preparing source'}
-                </strong>
-                <span className='max-w-[360px] text-sm leading-normal text-[#b8b8b8]'>
-                  {modelStatus === 'loading'
-                    ? 'YOLO11 ONNX is starting in the browser.'
-                    : sourceMode === 'image'
-                      ? 'Processing this image in your browser.'
-                      : 'Waiting for a usable frame.'}
-                </span>
-              </div>
-            )}
-
-            {(sourceStatus === 'error' ||
-              (modelStatus === 'error' && sourceStatus !== 'ready')) && (
-              <div className='absolute inset-0 z-[3] flex flex-col items-center justify-center gap-2.5 bg-[rgba(17,17,17,0.88)] p-7 text-center'>
-                <strong className='text-[clamp(20px,2.2vw,30px)] leading-tight text-[#d90429]'>
-                  Detection unavailable
-                </strong>
-                <span className='max-w-[360px] text-sm leading-normal text-[#b8b8b8]'>
-                  {errorMessage}
-                </span>
-              </div>
-            )}
-          </div>
-
-          <footer className='flex min-h-[42px] flex-none items-center justify-between gap-[18px] px-[23px] pb-[13px] pt-3 max-[760px]:items-stretch max-[760px]:flex-col'>
-            <div
-              className='flex flex-none gap-2 max-[760px]:flex-wrap'
-              aria-label='Detection source controls'
-            >
-              <button
-                className={`${sourceButtonClass} ${sourceMode === 'camera' ? 'border-[#d90429]' : ''} max-[760px]:flex-[1_1_140px]`}
-                disabled={sourceMode === 'camera' && sourceStatus === 'loading'}
-                onClick={startCamera}
-                type='button'
-              >
-                Live camera
-              </button>
-              <input
-                accept='image/*'
-                className='sr-only'
-                id='crowd-test-image'
-                onChange={selectImage}
-                type='file'
-              />
-              <label
-                className={`${sourceButtonClass} ${sourceMode === 'image' ? 'border-[#d90429]' : ''} max-[760px]:flex-[1_1_140px]`}
-                htmlFor='crowd-test-image'
-              >
-                Upload image
-              </label>
-            </div>
-            {sourceMode === 'image' && (
-              <span className='min-w-0 truncate text-xs text-[#b8b8b8]'>
-                {imageName} · admin test only
+            <div className='flex min-h-[52px] flex-none items-center justify-between rounded-[25px] bg-[#151515] px-[25px]'>
+              <h3 className='m-0 text-base leading-none text-white'>
+                {sourceMode === 'image'
+                  ? 'AI Model Image Preview'
+                  : 'AI Model Video Preview'}
+              </h3>
+              <span className='inline-flex h-7 min-w-[86px] items-center justify-center rounded-full bg-[#d90429] text-[11px] font-black text-white'>
+                {sourceMode === 'image' ? 'TEST IMAGE' : 'LIVE'}
               </span>
-            )}
-          </footer>
+            </div>
+
+            <div
+              className='relative mt-3 min-h-0 w-full flex-none overflow-hidden border-y border-[#444] bg-[#2c2c2c] after:absolute after:inset-x-0 after:bottom-0 after:z-0 after:h-[29%] after:rounded-t-2xl after:bg-[#111]'
+              style={{
+                aspectRatio: sourceAspectRatio,
+                backgroundImage:
+                  'linear-gradient(rgba(57, 230, 0, 0.38) 1px, transparent 1px)',
+                backgroundPosition: '0 28px',
+                backgroundSize: '100% 82px'
+              }}
+            >
+              <video
+                aria-label='Live gym camera preview'
+                className={`absolute inset-0 z-[1] h-full w-full bg-black object-contain ${sourceMode === 'image' ? 'hidden' : ''}`}
+                muted
+                playsInline
+                ref={videoRef}
+              ></video>
+
+              {sourceMode === 'image' && imageUrl && (
+                <img
+                  alt={`Uploaded image: ${imageName}`}
+                  className='absolute inset-0 z-[1] h-full w-full bg-black object-contain'
+                  onLoad={(event) => {
+                    const image = event.currentTarget;
+                    if (image.naturalWidth && image.naturalHeight) {
+                      setSourceAspectRatio(
+                        image.naturalWidth / image.naturalHeight
+                      );
+                      setImageLoaded(true);
+                    }
+                  }}
+                  onError={() => {
+                    setErrorMessage(
+                      'The image could not be opened. Try another file.'
+                    );
+                    setSourceStatus('error');
+                  }}
+                  ref={imageRef}
+                  src={imageUrl}
+                />
+              )}
+
+              <canvas
+                aria-hidden='true'
+                className='pointer-events-none absolute inset-0 z-[2] h-full w-full object-contain'
+                ref={canvasRef}
+              ></canvas>
+
+              {modelStatus !== 'error' &&
+                ((modelStatus === 'loading' && sourceStatus !== 'ready') ||
+                  sourceStatus === 'loading') && (
+                  <div className='absolute inset-0 z-[3] flex flex-col items-center justify-center gap-2.5 bg-[rgba(17,17,17,0.88)] p-7 text-center'>
+                    <strong className='text-[clamp(20px,2.2vw,30px)] leading-tight text-white'>
+                      {modelStatus === 'loading'
+                        ? `Loading ${modelName} detection model`
+                        : sourceMode === 'image'
+                          ? 'Detecting people in image'
+                          : 'Preparing source'}
+                    </strong>
+                    <span className='max-w-[360px] text-sm leading-normal text-[#b8b8b8]'>
+                      {modelStatus === 'loading'
+                        ? 'YOLO11 ONNX is starting in the browser.'
+                        : sourceMode === 'image'
+                          ? 'Processing this image in your browser.'
+                          : 'Waiting for a usable frame.'}
+                    </span>
+                  </div>
+                )}
+
+              {(sourceStatus === 'error' ||
+                (modelStatus === 'error' && sourceStatus !== 'ready')) && (
+                <div className='detection-error-overlay absolute inset-0 z-[3] flex flex-col items-center justify-center p-7'>
+                  <div
+                    className='fz-notice fz-notice-error max-w-md'
+                    role='alert'
+                  >
+                    <strong className='block mb-1 font-semibold'>
+                      Detection unavailable
+                    </strong>
+                    <span>{errorMessage}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <footer className='flex min-h-[42px] flex-none items-center justify-between gap-[18px] px-[23px] pb-[13px] pt-3 max-[760px]:items-stretch max-[760px]:flex-col'>
+              <div
+                className='flex flex-none gap-2 max-[760px]:flex-wrap'
+                aria-label='Detection source controls'
+              >
+                <button
+                  className={`${sourceButtonClass} ${sourceMode === 'camera' ? 'border-[#d90429]' : ''} max-[760px]:flex-[1_1_140px]`}
+                  disabled={
+                    sourceMode === 'camera' && sourceStatus === 'loading'
+                  }
+                  onClick={startCamera}
+                  type='button'
+                >
+                  Live camera
+                </button>
+                <input
+                  accept='image/*'
+                  className='sr-only'
+                  id='crowd-test-image'
+                  onChange={selectImage}
+                  type='file'
+                />
+                <label
+                  className={`${sourceButtonClass} ${sourceMode === 'image' ? 'border-[#d90429]' : ''} max-[760px]:flex-[1_1_140px]`}
+                  htmlFor='crowd-test-image'
+                >
+                  Upload image
+                </label>
+              </div>
+              {sourceMode === 'image' && (
+                <span className='min-w-0 truncate text-xs text-[#b8b8b8]'>
+                  {imageName} · admin test only
+                </span>
+              )}
+            </footer>
           </section>
 
           <div className='mt-4 grid w-full flex-none grid-cols-4 gap-4 max-[900px]:grid-cols-2 max-[760px]:grid-cols-1'>
@@ -981,7 +1000,9 @@ export default function CrowdDetectionPage({ isVisible = true }) {
                 className={`pb-1 text-[clamp(27px,2.7vw,32px)] leading-none ${toneTextClasses[cameraStatus.tone]}`}
               >
                 {sourceMode === 'image'
-                  ? sourceStatus === 'ready' ? 'Analyzed' : cameraStatus.label
+                  ? sourceStatus === 'ready'
+                    ? 'Analyzed'
+                    : cameraStatus.label
                   : cameraStatus.label}
               </strong>
               <h3 className='mb-0 mt-2 text-sm leading-tight text-white'>

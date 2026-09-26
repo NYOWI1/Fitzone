@@ -783,7 +783,7 @@ export default function ClassesPage() {
               </label>
             </div>
 
-            {formError && <p className='admin-form-error'>{formError}</p>}
+            {formError && <p className='admin-form-error' role='alert'>{formError}</p>}
 
             {confirmDelete && (
               <div className='class-delete-confirmation' role='alert'>

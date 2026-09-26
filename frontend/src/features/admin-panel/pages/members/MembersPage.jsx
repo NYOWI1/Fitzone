@@ -451,7 +451,7 @@ export default function MembersPage() {
             </div>
 
             {attendanceError && (
-              <p className='admin-form-error'>{attendanceError}</p>
+              <p className='admin-form-error' role='alert'>{attendanceError}</p>
             )}
 
             <div className='admin-form-actions'>
