@@ -16,6 +16,7 @@ import {
   periodFilters
 } from '../../adminPanelUtils';
 import AdminLoadingSkeleton from '../../components/AdminLoadingSkeleton';
+import './ClassForm.css';
 
 const tableGridClass =
   'grid min-w-0 items-center gap-2.5 [grid-template-columns:minmax(170px,1.4fr)_minmax(98px,0.85fr)_minmax(62px,0.45fr)_minmax(94px,0.8fr)_minmax(72px,0.56fr)_minmax(70px,0.52fr)_minmax(58px,0.44fr)] max-[980px]:[grid-template-columns:minmax(0,1fr)_auto] max-[980px]:items-start max-[980px]:gap-x-3.5 max-[980px]:gap-y-2.5 max-[560px]:[grid-template-columns:minmax(0,1fr)]';
@@ -147,7 +148,7 @@ function ClassSchedulePicker({ duration, onChange, time }) {
   };
 
   return (
-    <fieldset className='wide grid gap-3 rounded-2xl border border-[#393939] bg-[#171717] p-4'>
+    <fieldset className='class-schedule-picker wide grid gap-3 rounded-2xl border border-[#393939] bg-[#171717] p-4'>
       <legend className='px-1 text-xs font-extrabold text-[#eaeaea]'>
         Schedule
       </legend>
@@ -174,7 +175,7 @@ function ClassSchedulePicker({ duration, onChange, time }) {
                 aria-pressed={durationMinutes === timeParts.durationMinutes}
                 className={
                   durationMinutes === timeParts.durationMinutes
-                    ? 'min-h-11 rounded-xl border border-[#d90429] bg-[#241216] text-xs font-black text-white'
+                    ? 'min-h-11 rounded-xl border border-[#d90429] bg-[#d90429] text-xs font-black text-white'
                     : 'min-h-11 rounded-xl border border-[#393939] bg-[#242424] text-xs font-black text-[#b8b8b8] transition hover:border-[#666] hover:text-white'
                 }
                 key={durationMinutes}
@@ -620,15 +621,21 @@ export default function ClassesPage() {
 
       {classForm && (
         <div className='admin-modal-backdrop' role='presentation'>
-          <form className='admin-class-form' onSubmit={saveClassForm}>
+          <form
+            className='admin-class-form class-editor'
+            onSubmit={saveClassForm}
+            role='dialog'
+            aria-modal='true'
+            aria-labelledby='class-editor-title'
+          >
             <div className='admin-form-header'>
               <div>
-                <h3>
+                <h3 id='class-editor-title'>
                   {classForm.mode === 'edit' ? 'Edit Class' : 'Add Class'}
                 </h3>
                 <p>
                   {classForm.mode === 'edit'
-                    ? 'Update this database schedule item.'
+                    ? 'Update the class details and weekly schedule.'
                     : 'Create a new class in the weekly schedule.'}
                 </p>
               </div>
@@ -662,7 +669,7 @@ export default function ClassesPage() {
                 </select>
               </label>
 
-              <label className='wide'>
+              <label>
                 <span>Class Name</span>
                 <input
                   onChange={(event) =>
