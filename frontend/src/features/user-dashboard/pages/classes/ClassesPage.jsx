@@ -226,7 +226,7 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
         const [nextSchedule, nextTrainers, nextCounts, nextBookings] =
           await Promise.all([
             getClassSchedule(),
-            getTrainers(),
+            getTrainers({ includeDeleted: true }),
             getClassBookingCounts().catch(() => ({})),
             memberEmail ? getClassBookings(memberEmail).catch(() => []) : []
           ]);
@@ -497,13 +497,13 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
                           : 'Cancel booking'
                         : classStarted
                           ? 'Class started'
-                        : awaitingRenewal
-                          ? 'Available after renewal'
-                        : basicBlocked
-                          ? 'Not included'
-                          : standardBlocked
-                            ? 'Limit reached'
-                            : 'Book Class'}
+                          : awaitingRenewal
+                            ? 'Available after renewal'
+                            : basicBlocked
+                              ? 'Not included'
+                              : standardBlocked
+                                ? 'Limit reached'
+                                : 'Book Class'}
                   </button>
                 </div>
               </article>

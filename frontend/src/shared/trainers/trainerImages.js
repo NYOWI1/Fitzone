@@ -13,6 +13,6 @@ const trainerImages = {
 export function attachTrainerImage(trainer) {
   return {
     ...trainer,
-    image: trainerImages[trainer.imageKey] || trainer1Img
+    image: trainer.photo || trainerImages[trainer.imageKey] || trainer1Img
   };
 }

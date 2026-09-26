@@ -546,8 +546,10 @@ function sanitizeTrainer(payload) {
   const expertise = String(payload.expertise || "").trim();
   const sortOrder = Number(payload.sortOrder);
   const slug = makeSlug(payload.slug || name);
+  const photo = String(payload.photo || "");
 
   if (
+    (photo && (photo.length > 750_000 || !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(photo))) ||
     !slug ||
     !name ||
     !role ||
@@ -565,6 +567,7 @@ function sanitizeTrainer(payload) {
     name,
     role,
     imageKey,
+    photo,
     category,
     badge: String(payload.badge || "").trim(),
     coach,
@@ -2788,6 +2791,9 @@ async function getAdminTrainerBookings(response) {
 }
 
 function updateLocalTrainerBooking(booking, membershipAccess) {
+  if (booking.action !== "cancel" && readLocalCollection("trainers").some(trainer => trainer.slug === booking.trainerSlug && trainer.deleted)) {
+    return { statusCode: 409, payload: { message: "This trainer is no longer available. Choose another trainer." } };
+  }
   const bookings = readLocalCollection("trainerBookings");
   const match = (storedBooking) =>
     storedBooking.memberEmail === booking.memberEmail &&
@@ -2924,6 +2930,10 @@ async function updateTrainerBooking(request, response) {
     );
     const db = await getDbWithTimeout();
     const collection = db.collection("trainerBookings");
+    if (booking.action !== "cancel" && await db.collection("trainers").findOne({ slug: booking.trainerSlug, deleted: true })) {
+      sendJson(response, 409, { message: "This trainer is no longer available. Choose another trainer." });
+      return;
+    }
     const bookingKey = {
       memberEmail: booking.memberEmail,
       trainerSlug: booking.trainerSlug,
@@ -3597,6 +3607,55 @@ async function deleteClassScheduleItem(request, response) {
   }
 }
 
+async function deleteTrainer(request, response) {
+  try {
+    const body = await readJsonBody(request);
+    if (typeof body.slug !== "string" || !body.slug.trim()) {
+      sendJson(response, 400, { message: "Choose a trainer to delete." });
+      return;
+    }
+    const slug = makeSlug(body.slug);
+    let db;
+    try { db = await getDb(); } catch (error) { logApiError("Delete trainer database connection error", error); }
+    const trainers = db ? await getTrainerDocuments(db) : getLocalTrainers();
+    const trainerIndex = trainers.findIndex(trainer => trainer.slug === slug && !trainer.deleted);
+    if (trainerIndex === -1) {
+      sendJson(response, 404, { message: "Trainer was not found." });
+      return;
+    }
+    const schedule = db ? await getClassScheduleDocuments(db) : getLocalClassSchedule();
+    if (schedule.some(day => ["morning", "evening"].some(period =>
+      (day[period] || []).some(item => Number(item.trainerIndex) === trainerIndex)))) {
+      sendJson(response, 409, { message: "This trainer has scheduled classes. Reassign or delete those classes before deleting the trainer." });
+      return;
+    }
+    const today = new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const upcoming = db
+      ? await db.collection("trainerBookings").findOne({ trainerSlug: slug, active: { $ne: false }, sessionDate: { $gte: today } })
+      : readLocalCollection("trainerBookings").find(booking => booking.trainerSlug === slug && booking.active !== false && booking.sessionDate >= today);
+    if (upcoming) {
+      sendJson(response, 409, { message: "This trainer has upcoming PT bookings. Reschedule or cancel them before deleting the trainer." });
+      return;
+    }
+    // Retain the record's sorted position: class schedules reference trainer indexes.
+    if (db) {
+      const result = await db.collection("trainers").updateOne({ slug, deleted: { $ne: true } }, { $set: { deleted: true, deletedAt: new Date(), updatedAt: new Date() } });
+      if (result.matchedCount === 0) { sendJson(response, 404, { message: "Trainer was not found." }); return; }
+      clearDbReadCache("trainers:active");
+      sendJson(response, 200, await getTrainerDocuments(db));
+    } else {
+      const records = readLocalCollection("trainers");
+      const index = records.findIndex(trainer => trainer.slug === slug);
+      records[index] = { ...records[index], deleted: true, deletedAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+      writeLocalCollection("trainers", records);
+      sendJson(response, 200, getLocalTrainers());
+    }
+  } catch (error) {
+    logApiError("Delete trainer API error", error);
+    sendJson(response, 500, { message: "Unable to delete trainer." });
+  }
+}
+
 async function getSiteSettings(response) {
   try {
     const settings = await getCachedDbRead("siteSettings:site", async () => {
@@ -3916,6 +3975,11 @@ function handleApiRequest(request, response) {
 
   if (request.method === "PUT" && requestPath === "/api/trainers") {
     updateTrainer(request, response);
+    return true;
+  }
+
+  if (request.method === "DELETE" && requestPath === "/api/trainers") {
+    deleteTrainer(request, response);
     return true;
   }
 

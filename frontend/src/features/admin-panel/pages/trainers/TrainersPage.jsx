@@ -1,5 +1,11 @@
-import { useEffect, useState } from 'react';
-import { addTrainer, getTrainers, updateTrainer } from '../../../../shared/api';
+import { useEffect, useRef, useState } from 'react';
+import {
+  addTrainer,
+  deleteTrainer,
+  getTrainers,
+  updateTrainer
+} from '../../../../shared/api';
+import { prepareTrainerPhoto } from '../../../../shared/trainers/prepareTrainerPhoto';
 import { attachTrainerImage } from '../../../../shared/trainers';
 import {
   filterTrainers,
@@ -34,6 +40,14 @@ export default function TrainersPage() {
   const [trainerForm, setTrainerForm] = useState(null);
   const [trainerFormStatus, setTrainerFormStatus] = useState('idle');
   const [trainerFormError, setTrainerFormError] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const confirmationRef = useRef(null);
+  useEffect(() => {
+    if (confirmDelete) {
+      confirmationRef.current?.scrollIntoView({ block: 'nearest' });
+      confirmationRef.current?.querySelector('button')?.focus();
+    }
+  }, [confirmDelete]);
   const visibleTrainers = filterTrainers(trainers, searchTerm);
   const categoryBreakdown = getTrainerCategoryBreakdown(trainers);
   const selectedTrainer =
@@ -77,15 +91,28 @@ export default function TrainersPage() {
     };
   }, []);
 
-  const openAddTrainerForm = () => {
+  const openAddTrainerForm = async () => {
+    let allTrainers;
+    try {
+      allTrainers = await getTrainers({ includeDeleted: true });
+    } catch (error) {
+      allTrainers = trainers;
+    }
+    setConfirmDelete(false);
     setTrainerFormError('');
     setTrainerForm({
       mode: 'add',
-      values: getEmptyTrainerForm(trainers.length + 1)
+      values: getEmptyTrainerForm(
+        Math.max(
+          0,
+          ...allTrainers.map((trainer) => Number(trainer.sortOrder) || 0)
+        ) + 1
+      )
     });
   };
 
   const openEditTrainerForm = (trainer) => {
+    setConfirmDelete(false);
     const profile = getTrainerProfile(trainer);
     setTrainerFormError('');
     setTrainerForm({
@@ -113,16 +140,55 @@ export default function TrainersPage() {
   };
 
   const closeTrainerForm = () => {
-    if (trainerFormStatus === 'saving') {
+    if (trainerFormStatus !== 'idle') {
       return;
     }
 
     setTrainerForm(null);
     setTrainerFormError('');
+    setConfirmDelete(false);
+  };
+
+  const uploadPhoto = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    setTrainerFormStatus('uploading');
+    setTrainerFormError('');
+    try {
+      updateTrainerFormValue('photo', await prepareTrainerPhoto(file));
+    } catch (error) {
+      setTrainerFormError(error.message || 'Unable to read this photo.');
+    } finally {
+      setTrainerFormStatus('idle');
+    }
+  };
+
+  const removeTrainer = async () => {
+    if (trainerFormStatus !== 'idle' || trainerForm?.mode !== 'edit') return;
+    setTrainerFormStatus('deleting');
+    setTrainerFormError('');
+    try {
+      const nextTrainers = await deleteTrainer({
+        slug: trainerForm.originalSlug
+      });
+      const visible = nextTrainers
+        .filter((trainer) => !trainer.deleted)
+        .map(attachTrainerImage);
+      setTrainers(visible);
+      setSelectedTrainerSlug(visible[0]?.slug || '');
+      setTrainerForm(null);
+      setConfirmDelete(false);
+    } catch (error) {
+      setTrainerFormError(error.message || 'Unable to delete trainer.');
+    } finally {
+      setTrainerFormStatus('idle');
+    }
   };
 
   const saveTrainerForm = async (event) => {
     event.preventDefault();
+    if (trainerFormStatus !== 'idle' || confirmDelete) return;
 
     if (!trainerForm) {
       return;
@@ -140,7 +206,9 @@ export default function TrainersPage() {
               trainer
             })
           : await addTrainer({ trainer });
-      const attachedTrainers = nextTrainers.map(attachTrainerImage);
+      const attachedTrainers = nextTrainers
+        .filter((trainer) => !trainer.deleted)
+        .map(attachTrainerImage);
 
       setTrainers(attachedTrainers);
       setSelectedTrainerSlug(trainer.slug);
@@ -383,6 +451,36 @@ export default function TrainersPage() {
             </div>
 
             <div className='admin-form-grid'>
+              <div className='trainer-photo-field'>
+                <img
+                  src={attachTrainerImage(trainerForm.values).image}
+                  alt='Trainer photo preview'
+                />
+                <div>
+                  <strong>Trainer photo</strong>
+                  <p>JPG, PNG, or WebP · up to 5 MB</p>
+                  <label className='trainer-photo-upload'>
+                    {trainerFormStatus === 'uploading'
+                      ? 'Preparing photo...'
+                      : 'Upload photo'}
+                    <input
+                      type='file'
+                      accept='image/jpeg,image/png,image/webp'
+                      disabled={trainerFormStatus !== 'idle'}
+                      onChange={uploadPhoto}
+                    />
+                  </label>
+                  {trainerForm.values.photo && (
+                    <button
+                      type='button'
+                      disabled={trainerFormStatus !== 'idle'}
+                      onClick={() => updateTrainerFormValue('photo', '')}
+                    >
+                      Use original photo
+                    </button>
+                  )}
+                </div>
+              </div>
               {[
                 ['name', 'Trainer name'],
                 ['role', 'Role / subtitle']
@@ -443,18 +541,58 @@ export default function TrainersPage() {
                 />
                 <small>Separate expertise tags with commas.</small>
               </label>
+              {confirmDelete && (
+                <div
+                  ref={confirmationRef}
+                  className='trainer-delete-confirmation'
+                  role='alert'
+                >
+                  <strong>Delete {trainerForm.values.name}?</strong>
+                  <p>
+                    The trainer will be removed from the directory. Historical
+                    records will be preserved.
+                  </p>
+                  <button
+                    type='button'
+                    disabled={trainerFormStatus !== 'idle'}
+                    onClick={() => setConfirmDelete(false)}
+                  >
+                    Keep Trainer
+                  </button>
+                  <button
+                    type='button'
+                    className='danger'
+                    disabled={trainerFormStatus !== 'idle'}
+                    onClick={removeTrainer}
+                  >
+                    {trainerFormStatus === 'deleting'
+                      ? 'Deleting...'
+                      : 'Confirm Delete'}
+                  </button>
+                </div>
+              )}
             </div>
             {trainerFormError && (
               <p className='admin-form-error'>{trainerFormError}</p>
             )}
 
             <div className='admin-form-actions'>
+              {trainerForm.mode === 'edit' && (
+                <button
+                  className='trainer-delete-button'
+                  disabled={trainerFormStatus !== 'idle' || confirmDelete}
+                  type='button'
+                  onClick={() => setConfirmDelete(true)}
+                >
+                  Delete Trainer
+                </button>
+              )}
               <button onClick={closeTrainerForm} type='button'>
                 Cancel
               </button>
               <button
                 className='primary'
-                disabled={trainerFormStatus === 'saving'}
+                disabled={trainerFormStatus !== 'idle' || confirmDelete}
                 type='submit'
               >
                 {trainerFormStatus === 'saving' ? 'Saving...' : 'Save Trainer'}

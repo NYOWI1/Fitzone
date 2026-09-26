@@ -365,7 +365,7 @@ function Home({ clerkEnabled }) {
 
     async function loadTrainers() {
       try {
-        const nextTrainers = await getTrainers();
+        const nextTrainers = await getTrainers({ includeDeleted: true });
 
         if (isCurrent) {
           setTrainers(nextTrainers.map(attachTrainerImage));
@@ -818,58 +818,60 @@ function Home({ clerkEnabled }) {
 
         {trainersStatus === 'ready' && trainers.length > 0 && (
           <div className='home-trainer-grid'>
-            {trainers.map((trainer, index) => (
-              <div
-                className='group home-trainer-card'
-                key={trainer.slug || trainer.name}
-                role='button'
-                tabIndex='0'
-                onClick={() => openTrainerProfile(trainer)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    openTrainerProfile(trainer);
-                  }
-                }}
-              >
-                <div className='absolute left-3.5 right-3.5 top-3 z-[2] flex justify-between gap-2 max-[560px]:flex-wrap'>
-                  <span className='rounded-[14px] bg-[#242424] px-[13px] py-1.5 text-[8px] font-black text-white min-[1200px]:px-[15px] min-[1200px]:py-[7px] min-[1200px]:text-[9px]'>
-                    {trainer.category}
-                  </span>
-                  {trainer.badge && (
-                    <span className='rounded-[14px] bg-[#e6002e] px-[13px] py-1.5 text-[8px] font-black text-white min-[1200px]:px-[15px] min-[1200px]:py-[7px] min-[1200px]:text-[9px]'>
-                      {trainer.badge}
-                    </span>
-                  )}
-                </div>
-                <div className='flex h-[70%] items-end justify-center bg-[linear-gradient(180deg,#f8f8f8,#dedede)]'>
-                  <img
-                    className={`block h-full w-full object-cover ${index === 1 ? 'object-[center_-45px]' : 'object-top'}`}
-                    src={trainer.image}
-                    alt={trainer.name}
-                  />
-                </div>
-                <div className='home-trainer-copy'>
-                  <div className='mb-2.5 h-1.5 w-[52px] rounded-lg bg-[#e6002e]'></div>
-                  <h3 className='mb-1.5 mt-0 text-[15px] min-[1200px]:text-lg'>
-                    {trainer.name}
-                  </h3>
-                  <p className='mb-4 mt-0 text-[11px] font-bold text-[#b8b8b8] min-[1200px]:mb-5 min-[1200px]:text-[13px] max-[560px]:mb-3'>
-                    {trainer.role}
-                  </p>
-                  <button
-                    className='w-full cursor-pointer rounded-[10px] border border-[#e6002e] bg-transparent p-[9px] text-[10px] font-black text-white transition group-hover:bg-[#e6002e] min-[1200px]:p-[11px] min-[1200px]:text-[11px]'
-                    onClick={(event) => {
-                      event.stopPropagation();
+            {trainers
+              .filter((trainer) => !trainer.deleted)
+              .map((trainer, index) => (
+                <div
+                  className='group home-trainer-card'
+                  key={trainer.slug || trainer.name}
+                  role='button'
+                  tabIndex='0'
+                  onClick={() => openTrainerProfile(trainer)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
                       openTrainerProfile(trainer);
-                    }}
-                    type='button'
-                  >
-                    View Profile
-                  </button>
+                    }
+                  }}
+                >
+                  <div className='absolute left-3.5 right-3.5 top-3 z-[2] flex justify-between gap-2 max-[560px]:flex-wrap'>
+                    <span className='rounded-[14px] bg-[#242424] px-[13px] py-1.5 text-[8px] font-black text-white min-[1200px]:px-[15px] min-[1200px]:py-[7px] min-[1200px]:text-[9px]'>
+                      {trainer.category}
+                    </span>
+                    {trainer.badge && (
+                      <span className='rounded-[14px] bg-[#e6002e] px-[13px] py-1.5 text-[8px] font-black text-white min-[1200px]:px-[15px] min-[1200px]:py-[7px] min-[1200px]:text-[9px]'>
+                        {trainer.badge}
+                      </span>
+                    )}
+                  </div>
+                  <div className='flex h-[70%] items-end justify-center bg-[linear-gradient(180deg,#f8f8f8,#dedede)]'>
+                    <img
+                      className={`block h-full w-full object-cover ${index === 1 ? 'object-[center_-45px]' : 'object-top'}`}
+                      src={trainer.image}
+                      alt={trainer.name}
+                    />
+                  </div>
+                  <div className='home-trainer-copy'>
+                    <div className='mb-2.5 h-1.5 w-[52px] rounded-lg bg-[#e6002e]'></div>
+                    <h3 className='mb-1.5 mt-0 text-[15px] min-[1200px]:text-lg'>
+                      {trainer.name}
+                    </h3>
+                    <p className='mb-4 mt-0 text-[11px] font-bold text-[#b8b8b8] min-[1200px]:mb-5 min-[1200px]:text-[13px] max-[560px]:mb-3'>
+                      {trainer.role}
+                    </p>
+                    <button
+                      className='w-full cursor-pointer rounded-[10px] border border-[#e6002e] bg-transparent p-[9px] text-[10px] font-black text-white transition group-hover:bg-[#e6002e] min-[1200px]:p-[11px] min-[1200px]:text-[11px]'
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        openTrainerProfile(trainer);
+                      }}
+                      type='button'
+                    >
+                      View Profile
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         )}
       </section>

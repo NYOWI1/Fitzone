@@ -241,7 +241,7 @@ export default function ClassesPage() {
       try {
         const [nextSchedule, nextTrainers] = await Promise.all([
           getClassSchedule(),
-          getTrainers()
+          getTrainers({ includeDeleted: true })
         ]);
 
         if (isCurrent) {
@@ -280,6 +280,10 @@ export default function ClassesPage() {
       mode: 'add',
       values: {
         ...getEmptyClassForm(activeDay),
+        trainerIndex: Math.max(
+          0,
+          trainers.findIndex((trainer) => !trainer.deleted)
+        ),
         ...defaultTimeValues
       }
     });
@@ -749,6 +753,7 @@ export default function ClassesPage() {
                     : [{ name: 'Unassigned trainer' }]
                   ).map((trainer, index) => (
                     <option
+                      disabled={trainer.deleted}
                       key={trainer.slug || trainer.name || index}
                       value={index}
                     >

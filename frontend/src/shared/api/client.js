@@ -156,8 +156,20 @@ export function getStripeRevenueOverview() {
   );
 }
 
-export function getTrainers() {
-  return getJson('/api/trainers', 'Unable to load trainers.');
+export async function getTrainers({ includeDeleted = false } = {}) {
+  const trainers = await getJson('/api/trainers', 'Unable to load trainers.');
+  return includeDeleted
+    ? trainers
+    : trainers.filter((trainer) => !trainer.deleted);
+}
+
+export function deleteTrainer(payload) {
+  return sendJson(
+    '/api/trainers',
+    'DELETE',
+    payload,
+    'Unable to delete trainer.'
+  );
 }
 
 export function addTrainer(payload) {
