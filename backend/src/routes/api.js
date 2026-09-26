@@ -2846,6 +2846,14 @@ async function getAdminTrainerBookings(response) {
   }
 }
 
+function isTrainerReschedulingClosed(booking, now = Date.now()) {
+  const startTime = getClassStartTimeMs({
+    classDate: booking.sessionDate,
+    classTime: booking.sessionTime,
+  });
+  return !Number.isFinite(startTime) || now >= startTime - 30 * 60 * 1000;
+}
+
 function updateLocalTrainerBooking(booking, membershipAccess) {
   if (booking.action !== "cancel" && readLocalCollection("trainers").some(trainer => trainer.slug === booking.trainerSlug && trainer.deleted)) {
     return { statusCode: 409, payload: { message: "This trainer is no longer available. Choose another trainer." } };
@@ -2887,6 +2895,10 @@ function updateLocalTrainerBooking(booking, membershipAccess) {
         statusCode: 404,
         payload: { message: "The original trainer session was not found." },
       };
+    }
+
+    if (booking.action === "reschedule" && isTrainerReschedulingClosed(bookings[originalIndex])) {
+      return { statusCode: 403, payload: { message: "PT sessions cannot be rescheduled within 30 minutes of their start time or after they have started." } };
     }
 
     const { startDate, endDate } = getClassBookingPeriod(membershipAccess);
@@ -3021,6 +3033,11 @@ async function updateTrainerBooking(request, response) {
         sendJson(response, 404, {
           message: "The original trainer session was not found.",
         });
+        return;
+      }
+
+      if (booking.action === "reschedule" && isTrainerReschedulingClosed(originalBooking)) {
+        sendJson(response, 403, { message: "PT sessions cannot be rescheduled within 30 minutes of their start time or after they have started." });
         return;
       }
 

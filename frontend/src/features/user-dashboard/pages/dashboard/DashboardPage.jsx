@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { isTrainerReschedulingClosed } from '../../../../shared/trainers/rescheduling';
 import {
   getClassBookings,
   getCrowdStatus,
@@ -198,6 +199,11 @@ export default function DashboardPage({
   const [trainerBookings, setTrainerBookings] = useState([]);
   const [crowdData, setCrowdData] = useState(emptyCrowdStatus);
   const [status, setStatus] = useState('loading');
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
   const memberEmail =
     user?.primaryEmailAddress?.emailAddress ||
     user?.emailAddresses?.[0]?.emailAddress ||
@@ -374,14 +380,16 @@ export default function DashboardPage({
                 )}
               </div>
 
-              <a
+              {nextTrainerSession && isTrainerReschedulingClosed(nextTrainerSession, now) ? (
+                <p className='fz-notice fz-notice-warning mt-5'>Rescheduling closed. Changes must be made more than 30 minutes before your PT session.</p>
+              ) : <a
                 className='mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#e6002e] px-5 text-sm font-black text-white no-underline transition hover:bg-[#ff1647] sm:w-auto sm:min-w-44'
                 href='#Trainers'
               >
                 {nextTrainerSession
                   ? 'Reschedule PT session'
                   : 'Book PT session'}
-              </a>
+              </a>}
             </article>
 
             <article className='relative overflow-hidden rounded-[22px] border border-[#414141] bg-[#252525] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.3)] before:absolute before:inset-x-0 before:top-0 before:h-1.5 before:bg-[#e6002e] sm:rounded-[28px] sm:p-6'>

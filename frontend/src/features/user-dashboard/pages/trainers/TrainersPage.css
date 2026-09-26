@@ -1,0 +1,53 @@
+.member-trainers { max-width: 1280px; margin-inline: auto; }
+.member-trainers .trainer-session-quota {
+  padding: 12px 16px; border: 1px solid #fecdca; border-radius: 10px;
+  background: #fef3f2; color: #b42318 !important; white-space: nowrap;
+}
+.member-trainers .trainer-directory { gap: 20px; }
+.member-trainers .trainer-directory > article {
+  border: 1px solid #e4e7ec !important; border-radius: 16px;
+  box-shadow: 0 2px 6px rgb(16 24 40 / 4%); padding: 24px;
+  grid-template-columns: 100px minmax(0, 1fr); align-items: start;
+}
+.member-trainers .trainer-photo {
+  width: 100px; height: 124px; object-fit: cover; border-radius: 12px;
+  background: #f2f4f7; border: 1px solid #e4e7ec;
+}
+.member-trainers .trainer-directory h2 { font-size: 21px; line-height: 1.35; }
+.member-trainers .trainer-directory p { line-height: 1.6; }
+.member-trainers .trainer-directory p.text-xs { color: #667085 !important; }
+.member-trainers button { min-height: 44px; border-radius: 8px; transition: background-color .15s; }
+.member-trainers button:focus-visible {
+  outline: 3px solid #fecdca; outline-offset: 3px;
+}
+.member-trainers button:disabled { cursor: not-allowed; }
+.member-trainers .trainer-sessions {
+  padding: 24px; border: 1px solid #e4e7ec; border-radius: 16px; background: white;
+}
+.member-trainers .trainer-sessions > div { grid-template-columns: 1fr; }
+.member-trainers .trainer-sessions article {
+  background: #f8f9fb !important; border-color: #e4e7ec !important;
+  border-radius: 12px; padding: 18px;
+}
+.member-trainers .reschedule-policy { color: #667085; font-size: 14px; margin: 8px 0 0; line-height: 1.6; }
+.member-trainers .reschedule-closed {
+  display: inline-block; margin-top: 8px; font-size: 12px; font-weight: 600;
+  color: #b54708; background: #fffaeb; border-radius: 6px; padding: 4px 8px;
+}
+.member-trainers .trainer-sessions button:disabled {
+  color: #667085 !important; background: #f2f4f7 !important; border-color: #d0d5dd !important; opacity: 1;
+}
+.member-trainers .trainer-booking-overlay { z-index: 1000; overflow-y: auto; }
+.member-trainers .trainer-booking-overlay form {
+  max-height: calc(100dvh - 32px); overflow-y: auto; border-radius: 16px;
+  border-color: #e4e7ec !important; box-shadow: 0 24px 48px rgb(16 24 40 / 18%);
+}
+.member-trainers .trainer-booking-overlay h2 { font-size: 24px; line-height: 1.35; }
+@media (max-width: 600px) {
+  .member-trainers .trainer-session-quota { align-self: flex-start; white-space: normal; }
+  .member-trainers .trainer-directory > article { padding: 18px; gap: 16px; grid-template-columns: 72px minmax(0, 1fr); }
+  .member-trainers .trainer-photo { width: 72px; height: 94px; }
+  .member-trainers .trainer-directory h2 { font-size: 18px; }
+  .member-trainers .trainer-directory button { padding-inline: 12px; }
+  .member-trainers .trainer-sessions { padding: 18px; }
+}

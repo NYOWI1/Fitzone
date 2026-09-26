@@ -5,6 +5,9 @@ import {
   updateTrainerBooking
 } from '../../../../shared/api';
 import DefaultProfileAvatar from '../../../../shared/ui/DefaultProfileAvatar';
+import { attachTrainerImage } from '../../../../shared/trainers';
+import { isTrainerReschedulingClosed } from '../../../../shared/trainers/rescheduling';
+import './TrainersPage.css';
 
 const sessionTimes = [
   '08:00',
@@ -64,6 +67,11 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
   const [sessionTime, setSessionTime] = useState('09:00');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
   const memberEmail =
     user?.primaryEmailAddress?.emailAddress ||
     user?.emailAddresses?.[0]?.emailAddress ||
@@ -94,7 +102,7 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
         ]);
 
         if (isCurrent) {
-          setTrainers(nextTrainers);
+          setTrainers(nextTrainers.map(attachTrainerImage));
           setBookings(nextBookings);
           setStatus('ready');
         }
@@ -141,6 +149,10 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
   }
 
   function openReschedule(booking) {
+    if (isTrainerReschedulingClosed(booking)) {
+      setMessage('Rescheduling closes 30 minutes before your PT session starts.');
+      return;
+    }
     const trainer = trainers.find(
       (item) => item.slug === booking.trainerSlug
     ) || {
@@ -166,6 +178,10 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
   async function saveBooking(event) {
     event.preventDefault();
     if (!selectedTrainer) return;
+    if (reschedulingBooking && isTrainerReschedulingClosed(reschedulingBooking)) {
+      setMessage('Rescheduling closes 30 minutes before your PT session starts.');
+      return;
+    }
 
     try {
       setSaving(true);
@@ -218,7 +234,7 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
   }
 
   return (
-    <section className='min-w-0 pb-6'>
+    <section className='member-trainers min-w-0 pb-6'>
       <header className='flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between'>
         <div>
           <h1 className='m-0 mb-2 text-3xl font-black leading-none sm:text-[38px]'>
@@ -228,7 +244,7 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
             Meet your coaches, view specialties, and book a personal session.
           </p>
         </div>
-        <p className='m-0 text-sm font-black text-[#bdbdbd]'>
+        <p className='trainer-session-quota m-0 text-sm font-black text-[#bdbdbd]'>
           {limit === 0
             ? 'No sessions included'
             : `${remaining} of ${limit} sessions left`}
@@ -247,16 +263,13 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
       )}
 
       {status === 'ready' && (
-        <div className='mt-7 grid grid-cols-1 gap-6 lg:grid-cols-2'>
+        <div className='trainer-directory mt-7 grid grid-cols-1 gap-6 lg:grid-cols-2'>
           {trainers.map((trainer) => (
             <article
               className='grid min-h-54 grid-cols-1 gap-5 rounded-[28px] border border-[#414141] bg-[#252525] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.32)] sm:grid-cols-[82px_minmax(0,1fr)]'
               key={trainer.slug}
             >
-              <DefaultProfileAvatar
-                className='h-20.5 w-20.5'
-                name={trainer.name}
-              />
+              {trainer.image ? <img className='trainer-photo' src={trainer.image} alt={trainer.name} /> : <DefaultProfileAvatar className='h-20.5 w-20.5' name={trainer.name} />}
               <div className='min-w-0'>
                 <h2 className='m-0 break-words text-xl font-black sm:text-2xl'>
                   {trainer.name}
@@ -286,8 +299,9 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
       )}
 
       {bookings.length > 0 && (
-        <section className='mt-8'>
+        <section className='trainer-sessions mt-8'>
           <h2 className='m-0 text-xl font-black'>Your sessions</h2>
+          <p className='reschedule-policy'>Rescheduling closes 30 minutes before the session starts.</p>
           <div className='mt-4 grid grid-cols-1 gap-3 lg:grid-cols-2'>
             {bookings.map((booking) => (
               <article
@@ -302,11 +316,12 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
                     {formatSessionDate(booking.sessionDate)} ·{' '}
                     {booking.sessionTime}
                   </span>
+                  {isTrainerReschedulingClosed(booking, now) && <small className='reschedule-closed'>Rescheduling closed</small>}
                 </div>
                 <div className='flex flex-col gap-2 sm:flex-row'>
                   <button
                     className='min-h-10 rounded-[12px] border border-[#e6002e] bg-[rgba(230,0,46,0.08)] px-5 text-sm font-black text-white hover:bg-[rgba(230,0,46,0.16)] disabled:opacity-60'
-                    disabled={saving}
+                    disabled={saving || isTrainerReschedulingClosed(booking, now)}
                     onClick={() => openReschedule(booking)}
                     type='button'
                   >
@@ -328,12 +343,15 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
       )}
 
       {selectedTrainer && (
-        <div className='fixed inset-0 z-40 grid place-items-center bg-[rgba(0,0,0,0.72)] p-4'>
+        <div className='trainer-booking-overlay fixed inset-0 z-40 grid place-items-center bg-[rgba(0,0,0,0.72)] p-4'>
           <form
+            role='dialog'
+            aria-modal='true'
+            aria-labelledby='trainer-booking-heading'
             className='w-full max-w-md rounded-[26px] border border-[#414141] bg-[#252525] p-6 shadow-[0_30px_90px_rgba(0,0,0,0.6)]'
             onSubmit={saveBooking}
           >
-            <h2 className='m-0 text-2xl font-black'>
+            <h2 id='trainer-booking-heading' className='m-0 text-2xl font-black'>
               {reschedulingBooking ? 'Reschedule' : 'Book'}{' '}
               {selectedTrainer.name}
             </h2>
@@ -390,7 +408,7 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
               </button>
               <button
                 className='min-h-11 rounded-[13px] border-0 bg-[#e6002e] px-6 font-black text-white disabled:opacity-60'
-                disabled={saving}
+                disabled={saving || Boolean(reschedulingBooking && isTrainerReschedulingClosed(reschedulingBooking, now))}
                 type='submit'
               >
                 {saving
