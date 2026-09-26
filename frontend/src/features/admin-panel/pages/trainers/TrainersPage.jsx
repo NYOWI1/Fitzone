@@ -228,8 +228,8 @@ export default function TrainersPage() {
                   <div
                     className={
                       selectedTrainer?.slug === trainer.slug
-                        ? `${trainerTableGridClass} min-h-[72px] cursor-pointer rounded-2xl border border-[rgba(234,0,48,0.72)] bg-[rgba(48,34,38,0.82)] px-3 py-2.5 shadow-[0_0_0_1px_rgba(234,0,48,0.14)] outline-none transition max-[980px]:min-h-0 max-[980px]:p-3.5`
-                        : `${trainerTableGridClass} min-h-[72px] cursor-pointer rounded-2xl border border-[rgba(57,57,57,0.82)] bg-[rgba(43,43,43,0.72)] px-3 py-2.5 transition hover:border-[rgba(234,0,48,0.72)] hover:bg-[rgba(48,34,38,0.82)] hover:shadow-[0_0_0_1px_rgba(234,0,48,0.14)] focus-visible:border-[rgba(234,0,48,0.72)] focus-visible:bg-[rgba(48,34,38,0.82)] focus-visible:shadow-[0_0_0_1px_rgba(234,0,48,0.14)] focus-visible:outline-none max-[980px]:min-h-0 max-[980px]:p-3.5`
+                        ? `${trainerTableGridClass} min-h-[72px] cursor-pointer rounded-2xl border border-[#b42318] bg-[#fef3f2] px-3 py-2.5 shadow-[0_0_0_1px_#fecdca] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b42318] max-[980px]:min-h-0 max-[980px]:p-3.5`
+                        : `${trainerTableGridClass} min-h-[72px] cursor-pointer rounded-2xl border border-[rgba(57,57,57,0.82)] bg-[rgba(43,43,43,0.72)] px-3 py-2.5 transition hover:border-[#fecdca] hover:!bg-[#fef3f2] focus-visible:border-[#b42318] focus-visible:!bg-[#fef3f2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b42318] max-[980px]:min-h-0 max-[980px]:p-3.5`
                     }
                     key={trainer.slug || trainer.name}
                     onClick={() => setSelectedTrainerSlug(trainer.slug)}
