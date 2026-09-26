@@ -27,6 +27,33 @@
   border-color: #fecdca;
   background: #fef3f2;
 }
+.home-page .cl-userButtonTrigger {
+  box-sizing: border-box;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  min-height: 36px !important;
+  padding: 4px !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.home-page .cl-userButtonTrigger:hover {
+  background: #fef3f2 !important;
+}
+.home-page .cl-userButtonTrigger:focus,
+.home-page .cl-userButtonTrigger:focus-visible {
+  border-radius: 50% !important;
+  background: #fef3f2 !important;
+  outline: 2px solid #b42318;
+  outline-offset: 2px;
+  box-shadow: none !important;
+}
+.home-page .cl-avatarBox {
+  width: 28px;
+  height: 28px;
+}
 .home-page :is(button, a) {
   transition:
     background-color 150ms,
