@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useUser } from '@clerk/clerk-react';
 import { getMembershipPlans } from '../../../../shared/api';
 import {
   getPlanCtaLabel,
@@ -55,7 +56,7 @@ function PlanCard({ plan, onChoose }) {
   );
 }
 
-function ChoosePlanPage() {
+function ChoosePlanContent() {
   const [plans, setPlans] = useState([]);
   const [status, setStatus] = useState('loading');
 
@@ -159,6 +160,33 @@ function ChoosePlanPage() {
       )}
     </main>
   );
+}
+
+function RedirectToLogin() {
+  useEffect(() => {
+    window.location.replace('/login');
+  }, []);
+  return null;
+}
+
+function AuthenticatedChoosePlanPage() {
+  const { isLoaded, isSignedIn } = useUser();
+
+  if (!isLoaded) {
+    return (
+      <main className='fitzone-ui grid min-h-screen place-items-center p-6'>
+        <p role='status' className='text-[#475467]'>Checking your session...</p>
+      </main>
+    );
+  }
+
+  if (!isSignedIn) return <RedirectToLogin />;
+
+  return <ChoosePlanContent />;
+}
+
+function ChoosePlanPage({ clerkEnabled }) {
+  return clerkEnabled ? <AuthenticatedChoosePlanPage /> : <RedirectToLogin />;
 }
 
 export default ChoosePlanPage;
