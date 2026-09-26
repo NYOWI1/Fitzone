@@ -16,6 +16,10 @@
 .member-trainers .trainer-directory h2 { font-size: 21px; line-height: 1.35; }
 .member-trainers .trainer-directory p { line-height: 1.6; }
 .member-trainers .trainer-directory p.text-xs { color: #667085 !important; }
+.member-trainers .trainer-card-expertise { margin-top: 16px; }
+.member-trainers .trainer-card-expertise h3 { margin: 0 0 8px; font-size: 12px; font-weight: 600; color: #475467; }
+.member-trainers .trainer-card-expertise ul { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 0; list-style: none; }
+.member-trainers .trainer-card-expertise li { padding: 5px 8px; border: 1px solid #e4e7ec; border-radius: 6px; color: #475467; background: white; font-size: 12px; line-height: 1.5; }
 .member-trainers button { min-height: 44px; border-radius: 8px; transition: background-color .15s; }
 .member-trainers button:focus-visible {
   outline: 3px solid #fecdca; outline-offset: 3px;

@@ -6,6 +6,7 @@ import {
 } from '../../../../shared/api';
 import DefaultProfileAvatar from '../../../../shared/ui/DefaultProfileAvatar';
 import { attachTrainerImage } from '../../../../shared/trainers';
+import { getTrainerProfile } from '../../../trainer-detail/trainerProfileContent';
 import { isTrainerReschedulingClosed } from '../../../../shared/trainers/rescheduling';
 import './TrainersPage.css';
 
@@ -264,7 +265,10 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
 
       {status === 'ready' && (
         <div className='trainer-directory mt-7 grid grid-cols-1 gap-6 lg:grid-cols-2'>
-          {trainers.map((trainer) => (
+          {trainers.map((trainer) => {
+            const profile = getTrainerProfile(trainer);
+            const expertise = profile?.expertise || trainer.specialties || [];
+            return (
             <article
               className='grid min-h-54 grid-cols-1 gap-5 rounded-[28px] border border-[#414141] bg-[#252525] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.32)] sm:grid-cols-[82px_minmax(0,1fr)]'
               key={trainer.slug}
@@ -275,15 +279,16 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
                   {trainer.name}
                 </h2>
                 <p className='mb-0 mt-2 text-sm font-bold text-[#e6002e]'>
-                  {trainer.role}
+                  {profile?.role || trainer.role}
                 </p>
-                <p className='mb-0 mt-3 break-words text-sm text-[#bdbdbd]'>
-                  {(trainer.specialties || []).slice(0, 2).join(' · ') ||
-                    trainer.category}
-                </p>
-                <p className='mb-0 mt-3 text-xs text-[#d7d7d7]'>
-                  4.9 rating · Available this month
-                </p>
+                {expertise.length > 0 && (
+                  <div className='trainer-card-expertise'>
+                    <h3>Expertise</h3>
+                    <ul aria-label={`${trainer.name} expertise`}>
+                      {expertise.map((item) => <li key={item}>{item}</li>)}
+                    </ul>
+                  </div>
+                )}
                 <button
                   className='mt-5 min-h-10 w-full cursor-pointer rounded-[13px] border-0 bg-[#e6002e] px-6 font-[inherit] text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-55 sm:w-auto sm:min-w-40'
                   disabled={limit === 0 || remaining === 0}
@@ -294,7 +299,8 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
                 </button>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
       )}
 
