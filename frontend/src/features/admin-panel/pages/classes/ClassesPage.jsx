@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   addClassScheduleItem,
+  deleteClassScheduleItem,
   getClassSchedule,
   getTrainers,
   updateClassScheduleItem
@@ -207,6 +208,7 @@ export default function ClassesPage() {
   const [classForm, setClassForm] = useState(null);
   const [formStatus, setFormStatus] = useState('idle');
   const [formError, setFormError] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const currentDaySchedule = schedule.find(
     (daySchedule) => daySchedule.weekday === activeDay
   );
@@ -266,6 +268,7 @@ export default function ClassesPage() {
   }, []);
 
   const openAddClassForm = () => {
+    setConfirmDelete(false);
     const defaultTimeValues = buildTimeValues({
       durationMinutes: 45,
       hour: 5,
@@ -283,13 +286,16 @@ export default function ClassesPage() {
   };
 
   const openEditClassForm = (classItem) => {
+    setConfirmDelete(false);
     setFormError('');
     setClassForm({
       mode: 'edit',
       original: {
         weekday: activeDay,
         period: classItem.periodKey,
-        index: classItem.periodIndex
+        index: classItem.periodIndex,
+        name: classItem.name,
+        time: classItem.time
       },
       values: {
         weekday: activeDay,
@@ -326,16 +332,36 @@ export default function ClassesPage() {
   };
 
   const closeClassForm = () => {
-    if (formStatus === 'saving') {
+    if (formStatus !== 'idle') {
       return;
     }
 
     setClassForm(null);
     setFormError('');
+    setConfirmDelete(false);
+  };
+
+  const deleteClass = async () => {
+    if (!classForm || classForm.mode !== 'edit' || formStatus !== 'idle')
+      return;
+    setFormStatus('deleting');
+    setFormError('');
+    try {
+      const nextSchedule = await deleteClassScheduleItem(classForm.original);
+      setSchedule(nextSchedule);
+      setClassForm(null);
+      setConfirmDelete(false);
+    } catch (error) {
+      setFormError(error.message || 'Unable to delete this class.');
+    } finally {
+      setFormStatus('idle');
+    }
   };
 
   const saveClassForm = async (event) => {
     event.preventDefault();
+
+    if (confirmDelete || formStatus !== 'idle') return;
 
     if (!classForm) {
       return;
@@ -752,13 +778,50 @@ export default function ClassesPage() {
 
             {formError && <p className='admin-form-error'>{formError}</p>}
 
+            {confirmDelete && (
+              <div className='class-delete-confirmation' role='alert'>
+                <strong>Delete {classForm.original.name}?</strong>
+                <p>
+                  This removes the class from the weekly schedule. This action
+                  cannot be undone.
+                </p>
+                <div>
+                  <button
+                    type='button'
+                    disabled={formStatus !== 'idle'}
+                    onClick={() => setConfirmDelete(false)}
+                  >
+                    Keep Class
+                  </button>
+                  <button
+                    type='button'
+                    className='confirm-delete'
+                    disabled={formStatus !== 'idle'}
+                    onClick={deleteClass}
+                  >
+                    {formStatus === 'deleting' ? 'Deleting...' : 'Delete Class'}
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className='admin-form-actions'>
+              {classForm.mode === 'edit' && (
+                <button
+                  className='class-delete-button'
+                  disabled={formStatus !== 'idle' || confirmDelete}
+                  onClick={() => setConfirmDelete(true)}
+                  type='button'
+                >
+                  Delete Class
+                </button>
+              )}
               <button onClick={closeClassForm} type='button'>
                 Cancel
               </button>
               <button
                 className='primary'
-                disabled={formStatus === 'saving'}
+                disabled={formStatus !== 'idle' || confirmDelete}
                 type='submit'
               >
                 {formStatus === 'saving' ? 'Saving...' : 'Save Class'}

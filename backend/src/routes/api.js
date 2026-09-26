@@ -3540,6 +3540,61 @@ async function updateClassScheduleItem(request, response) {
   }
 }
 
+async function deleteClassScheduleItem(request, response) {
+  try {
+    const body = await readJsonBody(request);
+    const weekday = Number(body.weekday);
+    const period = body.period;
+    const index = Number(body.index);
+    if (!isValidWeekday(weekday) || !isValidSchedulePeriod(period) ||
+        !Number.isInteger(index) || index < 0 ||
+        typeof body.name !== "string" || typeof body.time !== "string") {
+      sendJson(response, 400, { message: "Invalid class schedule payload." });
+      return;
+    }
+
+    let db;
+    try {
+      db = await getDb();
+    } catch (error) {
+      logApiError("Delete class database connection error", error);
+    }
+    const schedule = db ? await getClassScheduleDocuments(db) : getLocalClassSchedule();
+    const dayIndex = schedule.findIndex(day => Number(day.weekday) === weekday);
+    const day = schedule[dayIndex];
+    const classes = day?.[period] || [];
+    const item = classes[index];
+    if (!item) {
+      sendJson(response, 404, { message: "Class was not found." });
+      return;
+    }
+    if (item.name !== body.name || item.time !== body.time) {
+      sendJson(response, 409, { message: "The schedule has changed. Refresh the page before deleting this class." });
+      return;
+    }
+    const nextClasses = classes.filter((_, classIndex) => classIndex !== index);
+    if (db) {
+      const result = await db.collection("classSchedule").updateOne(
+        { weekday, active: { $ne: false }, [period]: classes },
+        { $set: { [period]: nextClasses, updatedAt: new Date() } },
+      );
+      if (result.matchedCount === 0) {
+        sendJson(response, 409, { message: "The schedule has changed. Refresh the page and try again." });
+        return;
+      }
+      clearDbReadCache("classSchedule:active");
+      sendJson(response, 200, await getClassScheduleDocuments(db));
+    } else {
+      schedule[dayIndex] = { ...day, [period]: nextClasses, updatedAt: new Date().toISOString() };
+      writeLocalCollection("classSchedule", schedule);
+      sendJson(response, 200, getLocalClassSchedule());
+    }
+  } catch (error) {
+    logApiError("Delete class schedule API error", error);
+    sendJson(response, 500, { message: "Unable to delete class." });
+  }
+}
+
 async function getSiteSettings(response) {
   try {
     const settings = await getCachedDbRead("siteSettings:site", async () => {
@@ -3910,6 +3965,11 @@ function handleApiRequest(request, response) {
     requestPath === "/api/class-schedule/classes"
   ) {
     updateClassScheduleItem(request, response);
+    return true;
+  }
+
+  if (request.method === "DELETE" && requestPath === "/api/class-schedule/classes") {
+    deleteClassScheduleItem(request, response);
     return true;
   }
 

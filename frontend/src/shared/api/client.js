@@ -249,6 +249,15 @@ export function updateClassScheduleItem(payload) {
   );
 }
 
+export function deleteClassScheduleItem(payload) {
+  return sendJson(
+    '/api/class-schedule/classes',
+    'DELETE',
+    payload,
+    'Unable to delete class.'
+  );
+}
+
 export function getSiteSettings() {
   return getObject('/api/site-settings', 'Unable to load site settings.');
 }

@@ -95,6 +95,50 @@
   margin: 0 28px 20px;
 }
 
+.class-editor .admin-form-actions .class-delete-button {
+  margin-right: auto;
+  color: #b42318;
+  border-color: #fecdca;
+  background: #fef3f2;
+}
+
+.class-delete-confirmation {
+  margin: 0 28px 24px;
+  padding: 16px;
+  border: 1px solid #fecdca;
+  border-radius: 12px;
+  background: #fef3f2;
+}
+
+.class-delete-confirmation p {
+  margin: 8px 0 16px;
+  color: #475467;
+  font-size: 14px;
+}
+
+.class-delete-confirmation > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.class-delete-confirmation button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  background: white;
+  font-weight: 600;
+}
+.class-delete-confirmation .confirm-delete {
+  color: white;
+  background: #b42318;
+  border-color: #b42318;
+}
+.class-delete-confirmation button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 639px) {
   .class-editor .admin-form-header,
   .class-editor .admin-form-grid {
