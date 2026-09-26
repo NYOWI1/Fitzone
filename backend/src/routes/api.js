@@ -221,7 +221,9 @@ function writeLocalCollection(collectionName, value) {
 }
 
 function getLocalMembershipPlans(options = {}) {
-  const plans = readLocalCollection("membershipPlans");
+  const plans = readLocalCollection("membershipPlans").filter(
+    (plan) => options.includeDeleted || plan.deleted !== true,
+  );
 
   return (
     options.includeInactive
@@ -968,7 +970,7 @@ function getPriceValue(plan) {
 }
 
 async function inferPlanFromAmount(amount) {
-  const localPlan = getLocalMembershipPlans({ includeInactive: true }).find(
+  const localPlan = getLocalMembershipPlans({ includeInactive: true, includeDeleted: true }).find(
     (item) => {
       const price = getPriceValue(item);
 
@@ -985,7 +987,7 @@ async function inferPlanFromAmount(amount) {
 
   try {
     const db = await getDb();
-    const plans = await getMembershipPlanDocuments(db);
+    const plans = await getMembershipPlanDocuments(db, { includeInactive: true, includeDeleted: true });
     const plan = plans.find((item) => {
       const price = getPriceValue(item);
 
@@ -2020,7 +2022,10 @@ async function getClassScheduleDocuments(db) {
 }
 
 async function getMembershipPlanDocuments(db, options = {}) {
-  const query = options.includeInactive ? {} : { active: { $ne: false } };
+  const query = {
+    ...(options.includeInactive ? {} : { active: { $ne: false } }),
+    ...(options.includeDeleted ? {} : { deleted: { $ne: true } }),
+  };
 
   return db
     .collection("membershipPlans")
@@ -2254,7 +2259,7 @@ async function addMembershipPlan(request, response) {
       await getMembershipPlanDocuments(db, { includeInactive: true }),
     );
   } catch (error) {
-    const plans = getLocalMembershipPlans({ includeInactive: true });
+    const plans = getLocalMembershipPlans({ includeInactive: true, includeDeleted: true });
 
     if (plan) {
       if (plans.some((existingPlan) => existingPlan.slug === plan.slug)) {
@@ -2313,7 +2318,7 @@ async function updateMembershipPlan(request, response) {
     }
 
     const result = await db.collection("membershipPlans").updateOne(
-      { slug: originalSlug },
+      { slug: originalSlug, deleted: { $ne: true } },
       {
         $set: {
           ...plan,
@@ -2334,7 +2339,7 @@ async function updateMembershipPlan(request, response) {
       await getMembershipPlanDocuments(db, { includeInactive: true }),
     );
   } catch (error) {
-    const plans = getLocalMembershipPlans({ includeInactive: true });
+    const plans = getLocalMembershipPlans({ includeInactive: true, includeDeleted: true });
 
     if (originalSlug && plan) {
       if (
@@ -2348,7 +2353,7 @@ async function updateMembershipPlan(request, response) {
       }
 
       const planIndex = plans.findIndex(
-        (existingPlan) => existingPlan.slug === originalSlug,
+        (existingPlan) => existingPlan.slug === originalSlug && existingPlan.deleted !== true,
       );
 
       if (planIndex === -1) {
@@ -2372,6 +2377,57 @@ async function updateMembershipPlan(request, response) {
 
     console.error("Update membership plan API error:", error);
     sendJson(response, 500, { message: "Unable to update membership plan." });
+  }
+}
+
+async function deleteMembershipPlan(request, response) {
+  let slug;
+  try {
+    const body = await readJsonBody(request);
+    slug = makeSlug(body.slug);
+    if (!slug) {
+      sendJson(response, 400, { message: "A plan slug is required." });
+      return;
+    }
+  } catch {
+    sendJson(response, 400, { message: "Invalid delete plan payload." });
+    return;
+  }
+
+  let db;
+  try {
+    db = await getDb();
+  } catch {
+    const plans = readLocalCollection("membershipPlans");
+    const plan = plans.find((item) => item.slug === slug && item.deleted !== true);
+    if (!plan) {
+      sendJson(response, 404, { message: "Membership plan was not found." });
+      return;
+    }
+    try {
+      Object.assign(plan, { deleted: true, active: false, deletedAt: new Date().toISOString() });
+      writeLocalCollection("membershipPlans", plans);
+      clearDbReadCache("membershipPlans:active", "membershipPlans:admin");
+      sendJson(response, 200, getLocalMembershipPlans({ includeInactive: true }));
+    } catch {
+      sendJson(response, 500, { message: "Unable to delete membership plan." });
+    }
+    return;
+  }
+
+  try {
+    const result = await db.collection("membershipPlans").updateOne(
+      { slug, deleted: { $ne: true } },
+      { $set: { deleted: true, active: false, deletedAt: new Date() } },
+    );
+    if (!result.matchedCount) {
+      sendJson(response, 404, { message: "Membership plan was not found." });
+      return;
+    }
+    clearDbReadCache("membershipPlans:active", "membershipPlans:admin");
+    sendJson(response, 200, await getMembershipPlanDocuments(db, { includeInactive: true }));
+  } catch {
+    sendJson(response, 500, { message: "Unable to delete membership plan." });
   }
 }
 
@@ -3952,6 +4008,11 @@ function handleApiRequest(request, response) {
 
   if (request.method === "PUT" && requestPath === "/api/membership-plans") {
     updateMembershipPlan(request, response);
+    return true;
+  }
+
+  if (request.method === "DELETE" && requestPath === "/api/membership-plans") {
+    deleteMembershipPlan(request, response);
     return true;
   }
 

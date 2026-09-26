@@ -97,6 +97,15 @@ export function updateMembershipPlan(payload) {
   );
 }
 
+export function deleteMembershipPlan(payload) {
+  return sendJson(
+    '/api/membership-plans',
+    'DELETE',
+    payload,
+    'Unable to delete membership plan.'
+  );
+}
+
 export function getPayments() {
   return getJson('/api/stripe/payments', 'Unable to load Stripe payments.');
 }

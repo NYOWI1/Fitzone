@@ -1,8 +1,13 @@
+.fitzone-ui.plan-modal-backdrop {
+  z-index: 1000;
+  min-height: 0;
+  background: rgb(16 24 40 / 56%) !important;
+}
 .plan-editor {
   display: flex;
   flex-direction: column;
   max-width: 740px;
-  max-height: calc(100svh - 32px);
+  max-height: calc(100dvh - 48px);
   padding: 0;
   overflow: hidden;
   border-radius: 16px;
@@ -102,7 +107,29 @@
   padding: 12px 28px;
   background: #fef3f2;
 }
+.plan-delete-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-right: auto;
+}
+.plan-delete-actions span {
+  flex-basis: 100%;
+  color: #475467;
+  font-size: 12px;
+}
+.plan-editor .admin-form-actions .plan-delete-button {
+  color: #b42318;
+  border-color: #fecdca;
+  background: #fef3f2;
+}
+.plan-editor .admin-form-actions {
+  flex-wrap: wrap;
+}
 @media (max-width: 639px) {
+  .plan-editor {
+    max-height: calc(100dvh - 32px);
+  }
   .plan-editor .admin-form-header,
   .plan-editor .admin-form-grid {
     padding: 20px;

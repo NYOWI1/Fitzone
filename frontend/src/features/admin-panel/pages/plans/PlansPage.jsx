@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   addMembershipPlan,
+  deleteMembershipPlan,
   getAdminMembershipPlans,
   updateMembershipPlan
 } from '../../../../shared/api';
@@ -40,6 +42,7 @@ export default function PlansPage() {
   const [planForm, setPlanForm] = useState(null);
   const [planFormStatus, setPlanFormStatus] = useState('idle');
   const [planFormError, setPlanFormError] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const planStats = getPlanStats(plans);
   const visiblePlans = filterPlans(plans, searchTerm).filter(
     (plan) => activeFilter === 'All' || plan.popular === true
@@ -80,6 +83,7 @@ export default function PlansPage() {
   }, []);
 
   const openAddPlanForm = () => {
+    setConfirmDelete(false);
     setPlanFormError('');
     setPlanForm({
       mode: 'add',
@@ -88,6 +92,7 @@ export default function PlansPage() {
   };
 
   const openEditPlanForm = (plan) => {
+    setConfirmDelete(false);
     setPlanFormError('');
     setPlanForm({
       mode: 'edit',
@@ -112,12 +117,31 @@ export default function PlansPage() {
   };
 
   const closePlanForm = () => {
-    if (planFormStatus === 'saving') {
+    if (planFormStatus !== 'idle') {
       return;
     }
 
     setPlanForm(null);
     setPlanFormError('');
+  };
+
+  const deletePlan = async () => {
+    if (planForm?.mode !== 'edit' || planFormStatus !== 'idle') return;
+    setPlanFormStatus('deleting');
+    setPlanFormError('');
+    try {
+      const nextPlans = await deleteMembershipPlan({
+        slug: planForm.originalSlug
+      });
+      setPlans(nextPlans);
+      setSelectedPlanSlug(nextPlans[0]?.slug || '');
+      setPlanForm(null);
+      setConfirmDelete(false);
+    } catch (error) {
+      setPlanFormError(error.message || 'Unable to delete this plan.');
+    } finally {
+      setPlanFormStatus('idle');
+    }
   };
 
   const savePlanForm = async (event) => {
@@ -395,174 +419,221 @@ export default function PlansPage() {
         </>
       )}
 
-      {planForm && (
-        <div className='admin-modal-backdrop' role='presentation'>
-          <form
-            className='admin-class-form admin-plan-form plan-editor'
-            onSubmit={savePlanForm}
-            role='dialog'
-            aria-modal='true'
-            aria-labelledby='plan-editor-title'
+      {planForm &&
+        createPortal(
+          <div
+            className='fitzone-ui admin-modal-backdrop plan-modal-backdrop'
+            role='presentation'
           >
-            <div className='admin-form-header'>
-              <div>
-                <h3 id='plan-editor-title'>
-                  {planForm.mode === 'edit' ? 'Edit Plan' : 'Add Plan'}
-                </h3>
-                <p>
-                  {planForm.mode === 'edit'
-                    ? 'Manage pricing, benefits, and membership availability.'
-                    : 'Create a membership plan for your members.'}
-                </p>
+            <form
+              className='admin-class-form admin-plan-form plan-editor'
+              onSubmit={savePlanForm}
+              role='dialog'
+              aria-modal='true'
+              aria-labelledby='plan-editor-title'
+            >
+              <div className='admin-form-header'>
+                <div>
+                  <h3 id='plan-editor-title'>
+                    {planForm.mode === 'edit' ? 'Edit Plan' : 'Add Plan'}
+                  </h3>
+                  <p>
+                    {planForm.mode === 'edit'
+                      ? 'Manage pricing, benefits, and membership availability.'
+                      : 'Create a membership plan for your members.'}
+                  </p>
+                </div>
+                <button
+                  aria-label='Close plan form'
+                  onClick={closePlanForm}
+                  type='button'
+                >
+                  ×
+                </button>
               </div>
-              <button
-                aria-label='Close plan form'
-                onClick={closePlanForm}
-                type='button'
-              >
-                ×
-              </button>
-            </div>
 
-            <div className='admin-form-grid'>
-              <h4 className='plan-editor-section-title'>Plan details</h4>
-              <label>
-                <span>Name</span>
-                <input
-                  onChange={(event) =>
-                    updatePlanFormValue('name', event.target.value)
-                  }
-                  required
-                  value={planForm.values.name}
-                />
-              </label>
+              <div className='admin-form-grid'>
+                <h4 className='plan-editor-section-title'>Plan details</h4>
+                <label>
+                  <span>Name</span>
+                  <input
+                    onChange={(event) =>
+                      updatePlanFormValue('name', event.target.value)
+                    }
+                    required
+                    value={planForm.values.name}
+                  />
+                </label>
 
-              <label>
-                <span>Slug</span>
-                <input
-                  onChange={(event) =>
-                    updatePlanFormValue('slug', makeSlug(event.target.value))
-                  }
-                  value={planForm.values.slug}
-                />
-                <small>The plan’s identifier in links.</small>
-              </label>
+                <label>
+                  <span>Slug</span>
+                  <input
+                    onChange={(event) =>
+                      updatePlanFormValue('slug', makeSlug(event.target.value))
+                    }
+                    value={planForm.values.slug}
+                  />
+                  <small>The plan’s identifier in links.</small>
+                </label>
 
-              <label>
-                <span>Price</span>
-                <input
-                  onChange={(event) =>
-                    updatePlanFormValue('price', event.target.value)
-                  }
-                  required
-                  value={planForm.values.price}
-                />
-              </label>
+                <label>
+                  <span>Price</span>
+                  <input
+                    onChange={(event) =>
+                      updatePlanFormValue('price', event.target.value)
+                    }
+                    required
+                    value={planForm.values.price}
+                  />
+                </label>
 
-              <label>
-                <span>Section Title</span>
-                <input
-                  onChange={(event) =>
-                    updatePlanFormValue('title', event.target.value)
-                  }
-                  required
-                  value={planForm.values.title}
-                />
-              </label>
+                <label>
+                  <span>Section Title</span>
+                  <input
+                    onChange={(event) =>
+                      updatePlanFormValue('title', event.target.value)
+                    }
+                    required
+                    value={planForm.values.title}
+                  />
+                </label>
 
-              <label className='wide plan-sort-order'>
-                <span>Sort Order</span>
-                <input
-                  min='1'
-                  onChange={(event) =>
-                    updatePlanFormValue('sortOrder', Number(event.target.value))
-                  }
-                  required
-                  type='number'
-                  value={planForm.values.sortOrder}
-                />
-                <small>Lower numbers appear first.</small>
-              </label>
+                <label className='wide plan-sort-order'>
+                  <span>Sort Order</span>
+                  <input
+                    min='1'
+                    onChange={(event) =>
+                      updatePlanFormValue(
+                        'sortOrder',
+                        Number(event.target.value)
+                      )
+                    }
+                    required
+                    type='number'
+                    value={planForm.values.sortOrder}
+                  />
+                  <small>Lower numbers appear first.</small>
+                </label>
 
-              <h4 className='plan-editor-section-title'>
-                Description &amp; benefits
-              </h4>
+                <h4 className='plan-editor-section-title'>
+                  Description &amp; benefits
+                </h4>
 
-              <label className='wide'>
-                <span>Description</span>
-                <textarea
-                  onChange={(event) =>
-                    updatePlanFormValue('desc', event.target.value)
-                  }
-                  required
-                  rows='3'
-                  value={planForm.values.desc}
-                ></textarea>
-              </label>
+                <label className='wide'>
+                  <span>Description</span>
+                  <textarea
+                    onChange={(event) =>
+                      updatePlanFormValue('desc', event.target.value)
+                    }
+                    required
+                    rows='3'
+                    value={planForm.values.desc}
+                  ></textarea>
+                </label>
 
-              <label className='wide'>
-                <span>Features</span>
-                <textarea
-                  onChange={(event) =>
-                    updatePlanFormValue('features', event.target.value)
-                  }
-                  rows='4'
-                  value={planForm.values.features}
-                ></textarea>
-                <small>Separate benefits with commas.</small>
-              </label>
+                <label className='wide'>
+                  <span>Features</span>
+                  <textarea
+                    onChange={(event) =>
+                      updatePlanFormValue('features', event.target.value)
+                    }
+                    rows='4'
+                    value={planForm.values.features}
+                  ></textarea>
+                  <small>Separate benefits with commas.</small>
+                </label>
 
-              <h4 className='plan-editor-section-title'>Visibility</h4>
+                <h4 className='plan-editor-section-title'>Visibility</h4>
 
-              <label className='admin-checkbox-label'>
-                <input
-                  checked={planForm.values.popular}
-                  onChange={(event) =>
-                    updatePlanFormValue('popular', event.target.checked)
-                  }
-                  type='checkbox'
-                />
-                <span className='plan-setting-copy'>
-                  {planForm.values.popular
-                    ? 'Popular badge: MOST POPULAR'
-                    : 'Popular plan'}
-                  <small>Highlight this plan with the popular badge.</small>
-                </span>
-              </label>
+                <label className='admin-checkbox-label'>
+                  <input
+                    checked={planForm.values.popular}
+                    onChange={(event) =>
+                      updatePlanFormValue('popular', event.target.checked)
+                    }
+                    type='checkbox'
+                  />
+                  <span className='plan-setting-copy'>
+                    {planForm.values.popular
+                      ? 'Popular badge: MOST POPULAR'
+                      : 'Popular plan'}
+                    <small>Highlight this plan with the popular badge.</small>
+                  </span>
+                </label>
 
-              <label className='admin-checkbox-label'>
-                <input
-                  checked={planForm.values.active}
-                  onChange={(event) =>
-                    updatePlanFormValue('active', event.target.checked)
-                  }
-                  type='checkbox'
-                />
-                <span className='plan-setting-copy'>
-                  Active plan<small>Make this plan available to members.</small>
-                </span>
-              </label>
-            </div>
+                <label className='admin-checkbox-label'>
+                  <input
+                    checked={planForm.values.active}
+                    onChange={(event) =>
+                      updatePlanFormValue('active', event.target.checked)
+                    }
+                    type='checkbox'
+                  />
+                  <span className='plan-setting-copy'>
+                    Active plan
+                    <small>Make this plan available to members.</small>
+                  </span>
+                </label>
+              </div>
 
-            {planFormError && (
-              <p className='admin-form-error'>{planFormError}</p>
-            )}
+              {planFormError && (
+                <p className='admin-form-error'>{planFormError}</p>
+              )}
 
-            <div className='admin-form-actions'>
-              <button onClick={closePlanForm} type='button'>
-                Cancel
-              </button>
-              <button
-                className='primary'
-                disabled={planFormStatus === 'saving'}
-                type='submit'
-              >
-                {planFormStatus === 'saving' ? 'Saving...' : 'Save Plan'}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+              <div className='admin-form-actions'>
+                {planForm.mode === 'edit' && (
+                  <div className='plan-delete-actions'>
+                    {confirmDelete ? (
+                      <>
+                        <span>
+                          Delete this plan? Existing membership records are
+                          kept.
+                        </span>
+                        <button
+                          className='plan-delete-button'
+                          type='button'
+                          disabled={planFormStatus !== 'idle'}
+                          onClick={deletePlan}
+                        >
+                          {planFormStatus === 'deleting'
+                            ? 'Deleting...'
+                            : 'Confirm delete'}
+                        </button>
+                        <button
+                          type='button'
+                          disabled={planFormStatus !== 'idle'}
+                          onClick={() => setConfirmDelete(false)}
+                        >
+                          Keep plan
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        className='plan-delete-button'
+                        type='button'
+                        disabled={planFormStatus !== 'idle'}
+                        onClick={() => setConfirmDelete(true)}
+                      >
+                        Delete Plan
+                      </button>
+                    )}
+                  </div>
+                )}
+                <button onClick={closePlanForm} type='button'>
+                  Cancel
+                </button>
+                <button
+                  className='primary'
+                  disabled={planFormStatus !== 'idle' || confirmDelete}
+                  type='submit'
+                >
+                  {planFormStatus === 'saving' ? 'Saving...' : 'Save Plan'}
+                </button>
+              </div>
+            </form>
+          </div>,
+          document.body
+        )}
     </section>
   );
 }
