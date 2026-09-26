@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import './ClassesPage.css';
 import {
   getClassBookingCounts,
   getClassBookings,
@@ -291,7 +292,7 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
   }
 
   return (
-    <section className='min-w-0 pb-6'>
+    <section className='member-classes min-w-0 pb-6'>
       <header>
         <h1 className='m-0 mb-2 text-3xl font-black leading-none sm:text-[38px]'>
           Classes
@@ -301,7 +302,7 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
         </p>
       </header>
 
-      <div className='mt-6 grid grid-cols-1 gap-5 sm:max-w-96 sm:grid-cols-2'>
+      <div className='classes-summary mt-6 grid grid-cols-1 gap-5 sm:max-w-96 sm:grid-cols-2'>
         {[
           [classesToday, 'Classes Today', '#e6002e'],
           [bookedThisWeek, 'Booked', '#30ff00']
@@ -343,7 +344,8 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
         </p>
       )}
 
-      <div className='mt-7 max-w-158 space-y-4'>
+      <div className='classes-calendar mt-7 max-w-158 space-y-4'>
+        <h2>Choose your workout day</h2>
         {[0, 1].map((weekIndex) => (
           <section key={weekIndex}>
             <p className='mb-2.5 mt-0 text-xs font-black text-[#bdbdbd]'>
@@ -354,6 +356,10 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
                 .filter((day) => day.weekIndex === weekIndex)
                 .map((day) => (
                   <button
+                    aria-pressed={day.isoDate === activeClassDate}
+                    aria-label={new Intl.DateTimeFormat('en-US', {
+                      dateStyle: 'full'
+                    }).format(new Date(`${day.isoDate}T00:00:00`))}
                     className={
                       day.isoDate === activeClassDate
                         ? 'min-h-14 rounded-full border border-[#e6002e] bg-[#e6002e] px-5 font-black text-white'
@@ -376,9 +382,14 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
         ))}
       </div>
 
-      <div className='mt-5 flex flex-wrap gap-3'>
+      <div
+        className='classes-filters mt-5 flex flex-wrap gap-3'
+        role='group'
+        aria-label='Class category'
+      >
         {filters.map((filter) => (
           <button
+            aria-pressed={filter === activeFilter}
             className={
               filter === activeFilter
                 ? 'min-h-9 rounded-full border border-[#e6002e] bg-transparent px-5 text-xs font-black text-white'
@@ -409,7 +420,7 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
       )}
 
       {status === 'ready' && visibleClasses.length > 0 && (
-        <div className='mt-7 flex flex-wrap items-stretch gap-6'>
+        <div className='classes-grid mt-7 flex flex-wrap items-stretch gap-6'>
           {visibleClasses.map((classItem) => {
             const isBooked = bookedClassIds.has(classItem.id);
             const isFull = classItem.availableSpots === 0;
@@ -466,7 +477,7 @@ export default function ClassesPage({ user = null, membershipAccess = null }) {
                 <strong className='mt-3 block text-xs'>
                   {classItem.trainerName}
                 </strong>
-                <div className='mt-3 grid grid-cols-[86px_minmax(0,1fr)] items-end gap-2.5 max-[680px]:grid-cols-1'>
+                <div className='class-card-actions mt-3 grid grid-cols-[86px_minmax(0,1fr)] items-end gap-2.5 max-[680px]:grid-cols-1'>
                   <span
                     className={`min-w-19.5 justify-self-start rounded-full px-3 py-2 text-center text-[10px] font-black ${isFull ? 'bg-[#e6002e] text-white' : 'bg-[#30ff00] text-[#101010]'}`}
                   >
