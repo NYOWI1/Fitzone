@@ -48,8 +48,19 @@ export default function TrainersPage() {
       confirmationRef.current?.querySelector('button')?.focus();
     }
   }, [confirmDelete]);
-  const visibleTrainers = filterTrainers(trainers, searchTerm);
-  const categoryBreakdown = getTrainerCategoryBreakdown(trainers);
+  const directoryTrainers = trainers.map((trainer) => {
+    const profile = getTrainerProfile(trainer);
+    return {
+      ...trainer,
+      role: profile.role,
+      coach: profile.training,
+      category: profile.category,
+      bio: profile.paragraphs.join('\n\n'),
+      expertise: profile.expertise.join(', ')
+    };
+  });
+  const visibleTrainers = filterTrainers(directoryTrainers, searchTerm);
+  const categoryBreakdown = getTrainerCategoryBreakdown(directoryTrainers);
   const selectedTrainer =
     visibleTrainers.find((trainer) => trainer.slug === selectedTrainerSlug) ||
     visibleTrainers[0] ||
@@ -121,6 +132,7 @@ export default function TrainersPage() {
       values: {
         ...getTrainerFormFromRecord(trainer),
         role: profile.role,
+        category: profile.category,
         coach: profile.training,
         quote: profile.quote,
         bio: profile.paragraphs.join('\n\n'),
@@ -337,7 +349,9 @@ export default function TrainersPage() {
                         </small>
                       </div>
                     </div>
-                    <span className={mutedTrainerCellClass}>
+                    <span
+                      className={`${mutedTrainerCellClass} !whitespace-normal !overflow-visible !text-clip leading-relaxed`}
+                    >
                       {trainer.role}
                     </span>
                     <span className={categoryPillClass}>

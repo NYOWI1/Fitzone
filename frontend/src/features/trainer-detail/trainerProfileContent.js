@@ -9,6 +9,7 @@ const expertise = [
 
 export const trainerProfileContent = {
   'sein-tun-tuck': {
+    category: 'PERFORMANCE',
     quote: 'Health brings happiness and confidence.',
     training: 'Class Training',
     role: 'Lead Trainer · Athletic Performance',
@@ -19,6 +20,7 @@ export const trainerProfileContent = {
     expertise
   },
   'may-myat-bhone-swe': {
+    category: 'PILATES',
     quote: 'First you start fitness to look good, then it becomes a lifestyle.',
     training: 'Private Training',
     role: 'Physique Trainer · Pilates & Mobility',
@@ -29,6 +31,7 @@ export const trainerProfileContent = {
     expertise
   },
   'may-thet-htar-lwin': {
+    category: 'FITNESS',
     quote: 'Fitness isn’t a seasonal hobby. Fitness is a lifestyle.',
     training: 'Private Training',
     role: 'Personal Trainer · Body Transformation',
@@ -39,6 +42,7 @@ export const trainerProfileContent = {
     expertise
   },
   'moe-myint-cho': {
+    category: 'FITNESS',
     quote: 'No pain, no gain.',
     training: 'Private Training',
     role: 'Personal Trainer · Strength & Healthy Habits',
@@ -55,6 +59,7 @@ export function getTrainerProfile(trainer) {
     return trainerProfileContent[trainer.slug];
   }
   return {
+    category: trainerProfileContent[trainer.slug]?.category || trainer.category,
     role: trainer.role,
     training: trainer.coach,
     quote: trainer.quote || '',
