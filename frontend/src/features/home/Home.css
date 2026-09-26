@@ -20,9 +20,19 @@
 }
 .home-page .home-account-button {
   position: relative;
+  padding-left: 48px !important;
   border-color: #d0d5dd;
   background: #fff;
   color: #344054;
+}
+.home-page .home-account-button-compact {
+  padding-right: 10px !important;
+  padding-left: 42px !important;
+}
+.home-page .home-account-button > span {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
 }
 .home-page .home-account-button:hover {
   border-color: #fecdca;
@@ -38,15 +48,17 @@
   height: 100%;
 }
 .home-page .home-account-button .cl-userButtonTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
   width: 100%;
   height: 100%;
   min-height: 100% !important;
-  padding: 0 !important;
+  padding: 0 8px !important;
   border: 0 !important;
   border-radius: inherit !important;
   background: transparent !important;
   box-shadow: none !important;
-  opacity: 0;
 }
 .home-page .home-account-button .cl-userButtonTrigger:focus,
 .home-page .home-account-button .cl-userButtonTrigger:focus-visible {
@@ -54,7 +66,9 @@
   box-shadow: none !important;
 }
 .home-page .home-account-button .cl-avatarBox {
-  display: none;
+  display: block;
+  width: 28px;
+  height: 28px;
 }
 .home-page :is(button, a) {
   transition:
