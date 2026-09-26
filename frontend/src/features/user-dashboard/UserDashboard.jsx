@@ -102,16 +102,14 @@ function DashboardLayout({ activePage, children, membershipAccess, user }) {
         </button>
       </header>
 
-      <button
-        aria-label='Close member navigation'
-        className={
-          isMobileMenuOpen
-            ? 'fixed inset-0 z-14 hidden cursor-pointer border-0 bg-[rgba(0,0,0,0.58)] p-0 max-[980px]:block'
-            : 'hidden'
-        }
-        onClick={() => setIsMobileMenuOpen(false)}
-        type='button'
-      ></button>
+      {isMobileMenuOpen && (
+        <button
+          aria-label='Close member navigation'
+          className='mobile-navigation-backdrop fixed inset-0 z-14 hidden cursor-pointer border-0 p-0 max-[980px]:block'
+          onClick={() => setIsMobileMenuOpen(false)}
+          type='button'
+        ></button>
+      )}
 
       <aside
         aria-label='Member navigation'

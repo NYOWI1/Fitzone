@@ -25,6 +25,8 @@
 
   html {
     scroll-behavior: smooth;
+    background: var(--fz-base-60);
+    color-scheme: light;
   }
 
   body {
@@ -60,6 +62,13 @@
     width: 100%;
     min-height: 100vh;
   }
+}
+
+/* Keep a dark visual scrim without giving Safari a dark fixed-element
+   background color to extend into its browser toolbar. */
+.mobile-navigation-backdrop {
+  background-color: transparent !important;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.58), rgba(0, 0, 0, 0.58));
 }
 
 @layer components {
