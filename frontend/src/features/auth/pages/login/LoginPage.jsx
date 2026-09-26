@@ -24,11 +24,11 @@ const authCard =
 const headingClass =
   'mb-0 mt-0 text-2xl leading-[1.05] tracking-normal sm:text-[32px] lg:text-[clamp(32px,3.2vw,37px)]';
 const headingText =
-  'm-0 max-w-[420px] text-base leading-[1.18] text-[#bdbdbd] max-[640px]:hidden';
+  'm-0 max-w-[420px] text-base leading-[1.45] text-[#475467] max-[640px]:hidden';
 const fieldClass = 'grid gap-2.5 max-[640px]:gap-2';
-const labelClass = 'text-[13px] font-black text-[#dedede]';
+const labelClass = 'text-[13px] font-black text-[#344054]';
 const inputClass =
-  'min-h-11 w-full rounded-xl border border-[#414141] bg-[#2d2d2d] px-3.5 font-[inherit] text-white placeholder:text-[#a8a8a8] focus:border-[#e6002e] focus:outline-none focus:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] disabled:cursor-not-allowed disabled:opacity-65 sm:min-h-[57px] sm:rounded-2xl sm:px-[19px]';
+  'min-h-11 w-full rounded-xl border border-[#414141] bg-[#2d2d2d] px-3.5 font-[inherit] text-white placeholder:text-[#667085] focus:border-[#e6002e] focus:outline-none focus:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] disabled:cursor-not-allowed disabled:opacity-65 sm:min-h-[57px] sm:rounded-2xl sm:px-[19px]';
 const messageClass =
   'mt-[-4px] rounded-[14px] border border-[rgba(230,0,46,0.35)] bg-[rgba(230,0,46,0.12)] px-3.5 py-3 text-[13px] leading-[1.4] text-[#ff8ea2]';
 const successMessageClass =
@@ -38,7 +38,7 @@ const infoMessageClass =
 const primaryButton =
   'min-h-11 w-full cursor-pointer rounded-xl border-0 bg-[#e6002e] text-[15px] font-black text-white shadow-[0_18px_28px_rgba(230,0,46,0.2)] transition hover:-translate-y-px hover:bg-[#ff1744] disabled:cursor-not-allowed disabled:opacity-65 disabled:hover:translate-y-0 sm:min-h-14 sm:rounded-2xl';
 const secondaryButton =
-  'cursor-pointer rounded-[14px] border border-[#414141] bg-[#2d2d2d] text-sm font-black text-[#f0f0f0] transition hover:border-[#e6002e] hover:bg-[#32151b] disabled:cursor-not-allowed disabled:opacity-65 max-[640px]:rounded-xl max-[640px]:text-xs';
+  'cursor-pointer rounded-[14px] border border-[#414141] bg-[#2d2d2d] text-sm font-black text-[#344054] transition hover:border-[#e6002e] hover:bg-[#fef3f2] disabled:cursor-not-allowed disabled:opacity-65 max-[640px]:rounded-xl max-[640px]:text-xs';
 const newMemberPaymentMessage =
   'Complete your membership payment before logging in.';
 const expiredMembershipMessage =
@@ -606,7 +606,7 @@ function LoginForm({ clerkEnabled }) {
             <span className={labelClass}>New password</span>
             <div className='grid min-h-11 grid-cols-[minmax(0,1fr)_auto] items-center overflow-hidden rounded-xl border border-[#414141] bg-[#2d2d2d] focus-within:border-[#e6002e] focus-within:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] sm:min-h-[57px] sm:rounded-2xl'>
               <input
-                className='min-h-[42px] w-full border-0 bg-transparent px-3.5 font-[inherit] text-white placeholder:text-[#a8a8a8] focus:outline-none disabled:cursor-not-allowed disabled:opacity-65 sm:min-h-[55px] sm:px-[19px]'
+                className='min-h-[42px] w-full border-0 bg-transparent px-3.5 font-[inherit] text-white placeholder:text-[#667085] focus:outline-none disabled:cursor-not-allowed disabled:opacity-65 sm:min-h-[55px] sm:px-[19px]'
                 autoComplete='new-password'
                 disabled={isBusy}
                 minLength={8}
@@ -676,7 +676,7 @@ function LoginForm({ clerkEnabled }) {
             <span className={labelClass}>Password</span>
             <div className='grid min-h-11 grid-cols-[minmax(0,1fr)_auto] items-center overflow-hidden rounded-xl border border-[#414141] bg-[#2d2d2d] focus-within:border-[#e6002e] focus-within:shadow-[0_0_0_3px_rgba(230,0,46,0.12)] sm:min-h-[57px] sm:rounded-2xl'>
               <input
-                className='min-h-[42px] w-full border-0 bg-transparent px-3.5 font-[inherit] text-white placeholder:text-[#a8a8a8] focus:outline-none disabled:cursor-not-allowed disabled:opacity-65 sm:min-h-[55px] sm:px-[19px]'
+                className='min-h-[42px] w-full border-0 bg-transparent px-3.5 font-[inherit] text-white placeholder:text-[#667085] focus:outline-none disabled:cursor-not-allowed disabled:opacity-65 sm:min-h-[55px] sm:px-[19px]'
                 autoComplete='current-password'
                 disabled={isBusy}
                 onChange={(event) => setPassword(event.target.value)}
@@ -713,7 +713,7 @@ function LoginForm({ clerkEnabled }) {
 
       {isResetFlow && (
         <button
-          className='w-fit cursor-pointer bg-transparent text-[13px] font-black text-[#bdbdbd] disabled:cursor-not-allowed disabled:opacity-65'
+          className='w-fit cursor-pointer bg-transparent text-[13px] font-black text-[#475467] disabled:cursor-not-allowed disabled:opacity-65'
           disabled={isBusy}
           onClick={closeForgotPassword}
           type='button'
@@ -769,10 +769,10 @@ function LoginForm({ clerkEnabled }) {
 
       {!isResetFlow && (
         <>
-          <div className='my-[13px] mb-1.5 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-[18px] text-[#bdbdbd] max-[640px]:my-0 max-[640px]:gap-3'>
-            <span className='h-px bg-[#424242]'></span>
+          <div className='my-[13px] mb-1.5 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-[18px] text-[#667085] max-[640px]:my-0 max-[640px]:gap-3'>
+            <span className='h-px bg-[#d0d5dd]'></span>
             <p className='m-0 text-sm max-[640px]:text-xs'>or continue with</p>
-            <span className='h-px bg-[#424242]'></span>
+            <span className='h-px bg-[#d0d5dd]'></span>
           </div>
 
           <div className='grid grid-cols-2 gap-7 max-[640px]:gap-2.5'>
@@ -794,7 +794,7 @@ function LoginForm({ clerkEnabled }) {
             </button>
           </div>
 
-          <p className='m-0 text-center text-[13px] text-[#bdbdbd] max-[640px]:text-xs'>
+          <p className='m-0 text-center text-[13px] text-[#667085] max-[640px]:text-xs'>
             Don't have an account?{' '}
             <a
               className='font-black text-[#e6002e] no-underline'
@@ -842,7 +842,7 @@ function LoginPage({ clerkEnabled }) {
             <h1 className='mb-5 mt-0 max-w-[410px] text-[clamp(44px,4vw,50px)] leading-[1.18] tracking-normal max-[640px]:mb-2 max-[640px]:text-2xl'>
               Welcome back, champion.
             </h1>
-            <p className='m-0 max-w-[410px] text-lg leading-[1.22] text-[#bababa] max-[640px]:text-xs max-[640px]:leading-[1.45]'>
+            <p className='m-0 max-w-[410px] text-lg leading-[1.5] text-[#475467] max-[640px]:text-xs max-[640px]:leading-[1.45]'>
               Sign in to manage your membership, book classes, track workouts,
               and continue your fitness journey with FitZone.
             </p>
@@ -861,7 +861,7 @@ function LoginPage({ clerkEnabled }) {
                 <strong className='text-[27px] leading-none text-[#e6002e] max-[640px]:text-lg'>
                   {value}
                 </strong>
-                <span className='mt-2 text-center text-[11px] text-[#bdbdbd] max-[640px]:mt-1 max-[640px]:text-[9px]'>
+                <span className='mt-2 text-center text-[11px] font-semibold text-[#667085] max-[640px]:mt-1 max-[640px]:text-[9px]'>
                   {label}
                 </span>
               </div>
@@ -890,7 +890,7 @@ function LoginPage({ clerkEnabled }) {
             <h1 className='mb-1 mt-0 text-[30px] leading-none max-[640px]:text-2xl'>
               Welcome back
             </h1>
-            <p className='m-0 text-[13px] leading-[1.45] text-[#bdbdbd] max-[640px]:text-xs'>
+            <p className='m-0 text-[13px] leading-[1.45] text-[#475467] max-[640px]:text-xs'>
               Sign in to continue your fitness journey.
             </p>
           </div>
@@ -929,7 +929,7 @@ function LoginPage({ clerkEnabled }) {
                         <strong className='block text-lg leading-none text-[#e6002e]'>
                           {value}
                         </strong>
-                        <span className='mt-1 block text-[10px] font-bold text-[#bdbdbd]'>
+                        <span className='mt-1 block text-[10px] font-bold text-[#667085]'>
                           {label}
                         </span>
                       </div>
