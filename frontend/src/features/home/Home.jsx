@@ -481,7 +481,10 @@ function Home({ clerkEnabled }) {
                   >
                     Dashboard
                   </button>
-                  <UserButton afterSignOutUrl='/' />
+                  <div className='home-account-button home-account-button-compact inline-flex min-h-9 cursor-pointer items-center justify-center rounded-lg border px-3'>
+                    <UserButton afterSignOutUrl='/' />
+                    <span className='text-[10px] font-extrabold'>Account</span>
+                  </div>
                 </SignedIn>
               </>
             ) : (
@@ -631,7 +634,10 @@ function Home({ clerkEnabled }) {
                 >
                   Dashboard
                 </button>
-                <div className='home-account-button inline-flex min-h-[44px] items-center gap-2.5 rounded-xl border py-0 pl-2 pr-[14px]'>
+                <div
+                  aria-label='Open account menu'
+                  className='home-account-button inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-xl border px-[18px]'
+                >
                   <UserButton afterSignOutUrl='/' />
                   <span className='text-[12px] font-extrabold'>Account</span>
                 </div>

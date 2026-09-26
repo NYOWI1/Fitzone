@@ -19,6 +19,7 @@
   font-size: 13px;
 }
 .home-page .home-account-button {
+  position: relative;
   border-color: #d0d5dd;
   background: #fff;
   color: #344054;
@@ -27,32 +28,33 @@
   border-color: #fecdca;
   background: #fef3f2;
 }
-.home-page .cl-userButtonTrigger {
-  box-sizing: border-box;
-  flex: 0 0 36px;
-  width: 36px;
-  height: 36px;
-  min-height: 36px !important;
-  padding: 4px !important;
+.home-page .home-account-button .cl-rootBox {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+}
+.home-page .home-account-button .cl-userButtonBox {
+  width: 100%;
+  height: 100%;
+}
+.home-page .home-account-button .cl-userButtonTrigger {
+  width: 100%;
+  height: 100%;
+  min-height: 100% !important;
+  padding: 0 !important;
   border: 0 !important;
-  border-radius: 50% !important;
+  border-radius: inherit !important;
   background: transparent !important;
   box-shadow: none !important;
+  opacity: 0;
 }
-.home-page .cl-userButtonTrigger:hover {
-  background: #fef3f2 !important;
-}
-.home-page .cl-userButtonTrigger:focus,
-.home-page .cl-userButtonTrigger:focus-visible {
-  border-radius: 50% !important;
-  background: #fef3f2 !important;
-  outline: 2px solid #b42318;
-  outline-offset: 2px;
+.home-page .home-account-button .cl-userButtonTrigger:focus,
+.home-page .home-account-button .cl-userButtonTrigger:focus-visible {
+  outline: none !important;
   box-shadow: none !important;
 }
-.home-page .cl-avatarBox {
-  width: 28px;
-  height: 28px;
+.home-page .home-account-button .cl-avatarBox {
+  display: none;
 }
 .home-page :is(button, a) {
   transition:
