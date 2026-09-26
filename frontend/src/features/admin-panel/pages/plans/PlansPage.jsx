@@ -9,9 +9,11 @@ import {
   getEmptyPlanForm,
   getPlanFormFromRecord,
   getPlanPayload,
-  getPlanStats
+  getPlanStats,
+  makeSlug
 } from '../../adminPanelUtils';
 import AdminLoadingSkeleton from '../../components/AdminLoadingSkeleton';
+import './PlanForm.css';
 
 const planTableGridClass =
   'grid min-w-0 items-center gap-2.5 [grid-template-columns:minmax(190px,1.45fr)_minmax(72px,0.55fr)_minmax(84px,0.65fr)_minmax(70px,0.5fr)_minmax(70px,0.52fr)_minmax(58px,0.44fr)] max-[980px]:[grid-template-columns:minmax(0,1fr)_auto] max-[980px]:items-start max-[980px]:gap-x-3.5 max-[980px]:gap-y-2.5 max-[560px]:[grid-template-columns:minmax(0,1fr)]';
@@ -396,16 +398,21 @@ export default function PlansPage() {
       {planForm && (
         <div className='admin-modal-backdrop' role='presentation'>
           <form
-            className='admin-class-form admin-plan-form'
+            className='admin-class-form admin-plan-form plan-editor'
             onSubmit={savePlanForm}
+            role='dialog'
+            aria-modal='true'
+            aria-labelledby='plan-editor-title'
           >
             <div className='admin-form-header'>
               <div>
-                <h3>{planForm.mode === 'edit' ? 'Edit Plan' : 'Add Plan'}</h3>
+                <h3 id='plan-editor-title'>
+                  {planForm.mode === 'edit' ? 'Edit Plan' : 'Add Plan'}
+                </h3>
                 <p>
                   {planForm.mode === 'edit'
-                    ? 'Update this database membership plan.'
-                    : 'Create a new database membership plan.'}
+                    ? 'Manage pricing, benefits, and membership availability.'
+                    : 'Create a membership plan for your members.'}
                 </p>
               </div>
               <button
@@ -418,6 +425,7 @@ export default function PlansPage() {
             </div>
 
             <div className='admin-form-grid'>
+              <h4 className='plan-editor-section-title'>Plan details</h4>
               <label>
                 <span>Name</span>
                 <input
@@ -437,6 +445,7 @@ export default function PlansPage() {
                   }
                   value={planForm.values.slug}
                 />
+                <small>The plan’s identifier in links.</small>
               </label>
 
               <label>
@@ -461,7 +470,7 @@ export default function PlansPage() {
                 />
               </label>
 
-              <label>
+              <label className='wide plan-sort-order'>
                 <span>Sort Order</span>
                 <input
                   min='1'
@@ -472,7 +481,12 @@ export default function PlansPage() {
                   type='number'
                   value={planForm.values.sortOrder}
                 />
+                <small>Lower numbers appear first.</small>
               </label>
+
+              <h4 className='plan-editor-section-title'>
+                Description &amp; benefits
+              </h4>
 
               <label className='wide'>
                 <span>Description</span>
@@ -495,7 +509,10 @@ export default function PlansPage() {
                   rows='4'
                   value={planForm.values.features}
                 ></textarea>
+                <small>Separate benefits with commas.</small>
               </label>
+
+              <h4 className='plan-editor-section-title'>Visibility</h4>
 
               <label className='admin-checkbox-label'>
                 <input
@@ -505,10 +522,11 @@ export default function PlansPage() {
                   }
                   type='checkbox'
                 />
-                <span>
+                <span className='plan-setting-copy'>
                   {planForm.values.popular
                     ? 'Popular badge: MOST POPULAR'
                     : 'Popular plan'}
+                  <small>Highlight this plan with the popular badge.</small>
                 </span>
               </label>
 
@@ -520,7 +538,9 @@ export default function PlansPage() {
                   }
                   type='checkbox'
                 />
-                <span>Active plan</span>
+                <span className='plan-setting-copy'>
+                  Active plan<small>Make this plan available to members.</small>
+                </span>
               </label>
             </div>
 
