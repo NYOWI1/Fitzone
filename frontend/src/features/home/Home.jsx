@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
 import gymImg from '../../assets/images/gym-hero.png';
+import './Home.css';
 import {
   buildScheduleDays,
   filterClassesByType,
@@ -41,8 +42,7 @@ const buttonBase =
 const outlineButton = `${buttonBase} border border-[#454545] bg-[rgba(255,255,255,0.03)] text-white transition hover:border-[#e6002e] hover:bg-[#1d1114]`;
 const redButton = `${buttonBase} bg-[#e6002e] text-white shadow-[0_12px_26px_rgba(230,0,46,0.2)] transition hover:bg-[#ff123e]`;
 const goldButton = redButton;
-const sectionClass =
-  'flex min-h-screen w-full flex-col justify-center bg-[#f8f9fb] px-[max(36px,5vw)] py-[90px] max-[980px]:min-h-0 max-[980px]:justify-start max-[980px]:px-[22px] max-[980px]:py-[72px] max-[560px]:px-4 max-[560px]:py-14 min-[1200px]:px-[6vw]';
+const sectionClass = 'home-section';
 const sectionTitle =
   'm-0 text-center text-[clamp(36px,5vw,52px)] leading-[1.1] max-[980px]:text-[clamp(31px,9vw,42px)] max-[560px]:text-[clamp(28px,9vw,36px)]';
 const redLine =
@@ -421,7 +421,7 @@ function Home({ clerkEnabled }) {
   }
 
   return (
-    <div className='fitzone-ui min-h-screen w-full overflow-x-hidden bg-[#f8f9fb] font-sans text-[#1d2939]'>
+    <div className='fitzone-ui home-page min-h-screen w-full overflow-x-hidden bg-[#f8f9fb] font-sans text-[#1d2939]'>
       <nav className='fixed inset-x-0 top-0 z-10 flex h-18 items-center justify-between border-b border-[#e4e7ec] bg-[rgba(255,255,255,0.96)] px-[max(24px,5vw)] shadow-[0_1px_2px_rgba(16,24,40,0.05)] backdrop-blur-md max-[980px]:sticky max-[980px]:h-auto max-[980px]:flex-col max-[980px]:gap-3 max-[980px]:p-3 max-[640px]:items-stretch max-[640px]:gap-0 max-[640px]:p-0'>
         <div className='hidden min-h-[64px] grid-cols-[48px_1fr_auto] items-center border-b border-[#e4e7ec] px-3 max-[640px]:grid'>
           <button
@@ -664,17 +664,9 @@ function Home({ clerkEnabled }) {
         )}
       </nav>
 
-      <section
-        id='home'
-        className='relative flex min-h-screen w-full items-center bg-cover bg-[position:18%_center] px-[max(48px,6vw)] pb-[55px] pt-[110px] after:pointer-events-none after:absolute after:inset-0 after:bg-[linear-gradient(90deg,rgba(0,0,0,0.24),transparent_60%)] max-[980px]:min-h-[calc(100svh-132px)] max-[980px]:bg-[position:44%_center] max-[980px]:px-[6%] max-[980px]:pb-12 max-[980px]:pt-[72px] max-[640px]:min-h-[calc(100svh-58px)] max-[560px]:items-end max-[560px]:bg-[position:50%_center] max-[560px]:px-4 max-[560px]:pb-10 max-[560px]:pt-12 max-[560px]:after:bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.84)_68%)]'
-        style={{
-          backgroundImage: `linear-gradient(90deg, rgba(0,0,0,.9) 0%, rgba(0,0,0,.68) 36%, rgba(0,0,0,.24) 64%, rgba(0,0,0,.08) 100%), url(${gymImg})`
-        }}
-      >
-        <div className='relative z-[1] max-w-[640px]'>
-          <div className='mb-5 inline-flex min-h-8 items-center rounded-full border border-[rgba(230,0,46,0.55)] bg-[rgba(230,0,46,0.13)] px-4 text-[10px] font-black uppercase text-white max-[560px]:mb-4'>
-            Training built around your goals
-          </div>
+      <section id='home' className='home-hero'>
+        <div className='home-hero-copy'>
+          <div className='home-eyebrow'>Training built around your goals</div>
           <h1 className='mb-6 mt-0 text-[clamp(43px,6vw,62px)] leading-[1.04] tracking-normal max-[560px]:mb-4 max-[560px]:text-[clamp(34px,11vw,44px)]'>
             Sweat, Strengthen, and Transform Your Body at Our Gym
           </h1>
@@ -701,17 +693,25 @@ function Home({ clerkEnabled }) {
               View Schedule
             </a>
           </div>
-          <div className='mt-8 grid max-w-[520px] grid-cols-3 gap-3 max-[560px]:mt-6'>
+          <div className='home-benefits'>
             {['Expert Coaches', 'Daily Classes', 'Crowd Aware'].map((label) => (
-              <span
-                className='rounded-lg border border-[rgba(255,255,255,0.14)] bg-[rgba(18,18,18,0.72)] px-3 py-2 text-center text-[10px] font-black text-[#e5e5e5] backdrop-blur-sm'
-                key={label}
-              >
+              <span className='home-benefit' key={label}>
                 {label}
               </span>
             ))}
           </div>
         </div>
+        <figure className='home-hero-visual'>
+          <img
+            src={gymImg}
+            alt='Athlete training with battle ropes at the gym'
+            fetchPriority='high'
+          />
+          <figcaption>
+            <span>FITZONE</span>
+            <strong>Training built around your goals</strong>
+          </figcaption>
+        </figure>
       </section>
 
       <section id='membership' className={sectionClass}>
@@ -735,10 +735,10 @@ function Home({ clerkEnabled }) {
         )}
 
         {plansStatus === 'ready' && plans.length > 0 && (
-          <div className='grid w-full grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] items-center gap-[clamp(24px,3vw,42px)]'>
+          <div className='home-plan-grid'>
             {plans.map((plan) => (
               <div
-                className='min-h-0 rounded-[14px] border border-[#373737] border-t-[7px] border-t-[#e6002e] bg-[#202020] px-[22px] pb-[22px] pt-7 shadow-[0_18px_42px_rgba(0,0,0,0.34)] transition hover:-translate-y-1.5 hover:border-[#e6002e] hover:bg-[linear-gradient(180deg,#211014,#161616)] hover:shadow-[0_24px_50px_rgba(0,0,0,0.44)] min-[1200px]:px-7 min-[1200px]:pb-[26px] min-[1200px]:pt-8 max-[980px]:hover:translate-y-0 max-[560px]:rounded-xl max-[560px]:px-4 max-[560px]:pb-5 max-[560px]:pt-6'
+                className={`home-plan-card ${plan.popular ? 'home-plan-popular' : ''}`}
                 key={plan.slug || plan.name}
               >
                 {plan.popular && (
@@ -813,10 +813,10 @@ function Home({ clerkEnabled }) {
         )}
 
         {trainersStatus === 'ready' && trainers.length > 0 && (
-          <div className='grid w-full grid-cols-[repeat(auto-fit,minmax(min(100%,240px),1fr))] gap-[clamp(26px,3vw,46px)] max-[560px]:gap-5'>
+          <div className='home-trainer-grid'>
             {trainers.map((trainer, index) => (
               <div
-                className='group relative h-[clamp(385px,38vw,500px)] cursor-pointer overflow-hidden rounded-[17px] border border-[#282828] bg-[#111] shadow-[0_14px_34px_rgba(0,0,0,0.35)] transition hover:-translate-y-1 hover:border-[#e6002e] hover:shadow-[0_24px_52px_rgba(0,0,0,0.5)] max-[980px]:h-[430px] max-[980px]:w-full max-[560px]:h-[360px] max-[560px]:rounded-xl'
+                className='group home-trainer-card'
                 key={trainer.slug || trainer.name}
                 role='button'
                 tabIndex='0'
@@ -845,7 +845,7 @@ function Home({ clerkEnabled }) {
                     alt={trainer.name}
                   />
                 </div>
-                <div className='absolute bottom-0 min-h-[31%] w-full bg-[linear-gradient(180deg,rgba(18,18,18,0.9),rgba(8,8,8,0.98))] px-[18px] pb-[17px] pt-4 min-[1200px]:px-[22px] min-[1200px]:pb-[22px] min-[1200px]:pt-5 max-[560px]:px-4 max-[560px]:pb-4 max-[560px]:pt-3.5'>
+                <div className='home-trainer-copy'>
                   <div className='mb-2.5 h-1.5 w-[52px] rounded-lg bg-[#e6002e]'></div>
                   <h3 className='mb-1.5 mt-0 text-[15px] min-[1200px]:text-lg'>
                     {trainer.name}
@@ -870,7 +870,7 @@ function Home({ clerkEnabled }) {
         )}
       </section>
 
-      <div className='flex min-h-screen w-full flex-col justify-center bg-[#f8f9fb] py-[90px] max-[980px]:min-h-0 max-[980px]:py-[70px] max-[560px]:py-12'>
+      <div className='home-schedules'>
         {scheduleStatus === 'loading' && (
           <p className='text-center text-[13px] font-extrabold text-[#d5d5d5]'>
             Loading class schedule...
@@ -917,10 +917,7 @@ function Home({ clerkEnabled }) {
         )}
       </div>
 
-      <footer
-        id='contact'
-        className='grid w-full grid-cols-[repeat(auto-fit,minmax(min(100%,190px),1fr))] gap-[54px] border-t-[5px] border-[#e6002e] bg-[linear-gradient(180deg,#101010,#080808)] px-[max(36px,5vw)] pb-[38px] pt-12 max-[980px]:gap-7 max-[980px]:px-[22px] max-[980px]:pb-8 max-[980px]:pt-[38px] max-[560px]:gap-6 max-[560px]:px-4 max-[560px]:pb-7 max-[560px]:pt-8'
-      >
+      <footer id='contact' className='home-footer'>
         {siteSettingsStatus === 'loading' && (
           <p className='col-span-full m-0 text-center text-[13px] font-extrabold text-[#d5d5d5]'>
             Loading contact information...

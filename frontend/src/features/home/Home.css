@@ -1,0 +1,440 @@
+/* Home-only presentation. Shared portals keep their existing theme. */
+.home-page {
+  --home-gutter: max(24px, calc((100vw - 1240px) / 2));
+}
+
+.home-page section[id],
+.home-page footer[id] {
+  scroll-margin-top: 96px;
+}
+.home-page > nav {
+  padding-inline: var(--home-gutter);
+}
+.home-page > nav a {
+  display: inline-flex;
+  align-items: center;
+}
+.home-page > nav button,
+.home-page > nav a {
+  font-size: 13px;
+}
+.home-page :is(button, a) {
+  transition:
+    background-color 150ms,
+    border-color 150ms;
+}
+.home-page button {
+  cursor: pointer;
+}
+.home-page :is(button, a)[class~='bg-[#e6002e]']:hover {
+  background: #8f1d14 !important;
+}
+.home-page :is(button, a)[class~='bg-[#e6002e]'] {
+  box-shadow: none !important;
+}
+.home-page button:not([class~='bg-[#e6002e]']):hover {
+  background-color: #fef3f2;
+}
+.home-page :is(button, a):focus-visible {
+  outline: 3px solid #b42318;
+  outline-offset: 4px;
+}
+
+.home-page #home.home-hero {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  align-items: center;
+  gap: clamp(32px, 5vw, 80px);
+  padding: 136px var(--home-gutter) 72px;
+  background: #fff;
+  color: #1d2939 !important;
+  border-bottom: 1px solid #e4e7ec;
+}
+.fitzone-ui.home-page #home h1 {
+  font-size: clamp(36px, 4vw, 58px);
+  font-weight: 750;
+  letter-spacing: -0.045em;
+  line-height: 1.09;
+  color: #1d2939 !important;
+}
+.fitzone-ui.home-page #home p {
+  color: #475467 !important;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.75;
+}
+.home-page .home-eyebrow {
+  display: inline-flex;
+  margin-bottom: 24px;
+  padding: 8px 12px;
+  border: 1px solid #fecdca;
+  border-radius: 6px;
+  background: #fef3f2;
+  color: #b42318;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+.fitzone-ui.home-page #home a:not([class~='bg-[#e6002e]']) {
+  color: #344054 !important;
+  background: #fff;
+  border: 1px solid #d0d5dd;
+}
+.home-page #home :is(a, button) {
+  font-size: 14px;
+  min-height: 48px;
+}
+.home-benefits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  border-top: 1px solid #e4e7ec;
+  padding-top: 24px;
+  margin-top: 32px;
+}
+.home-benefit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #475467;
+  font-size: 12px;
+  font-weight: 600;
+}
+.home-benefit::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #b42318;
+  border-radius: 50%;
+}
+.home-hero-visual {
+  position: relative;
+  margin: 0;
+  height: 490px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #e4e7ec;
+}
+.home-hero-visual img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 74% center;
+}
+.home-hero-visual figcaption {
+  position: absolute;
+  inset: auto 0 0;
+  display: grid;
+  gap: 10px;
+  padding: 56px 28px 28px;
+  background: linear-gradient(transparent, rgba(16, 24, 40, 0.9));
+  color: #fff;
+}
+.home-hero-visual figcaption span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+}
+.home-hero-visual figcaption strong {
+  font-size: 21px;
+  line-height: 1.35;
+}
+
+.home-page .home-section {
+  padding: 72px var(--home-gutter);
+}
+.home-page .home-section > h2 {
+  color: #1d2939;
+  font-size: clamp(28px, 3vw, 38px);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  text-align: left;
+}
+.home-page .home-section > h2 + div {
+  margin: 18px 0 36px;
+  width: 48px;
+  height: 3px;
+}
+.home-page .home-section > p {
+  color: #667085 !important;
+  font-size: 15px;
+  line-height: 1.65;
+  font-weight: 400;
+}
+.home-page #trainers {
+  background: #fff;
+  border-block: 1px solid #e4e7ec;
+}
+.home-page #trainers > p {
+  text-align: left;
+  margin: -16px 0 32px;
+  max-width: none;
+}
+.home-plan-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+.home-page .home-plan-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e4e7ec;
+  border-radius: 14px;
+  padding: 40px 28px 28px;
+}
+.home-page .home-plan-popular {
+  border: 2px solid #b42318;
+  padding: 39px 27px 27px;
+}
+.home-plan-popular > span:first-child {
+  position: absolute;
+  top: -14px;
+  left: 24px;
+  margin: 0;
+}
+.home-page .home-plan-card > :is(h3, p) {
+  text-align: left;
+}
+.home-page .home-plan-card > h3 {
+  font-size: 22px;
+  font-weight: 700;
+}
+.home-page .home-plan-card > p {
+  color: #667085;
+  font-size: 14px;
+  font-weight: 400;
+  min-height: 44px;
+  line-height: 1.6;
+}
+.home-page .home-plan-card h4 {
+  padding-top: 16px;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+.home-page .home-plan-card h5 {
+  border-top: 1px solid #e4e7ec;
+  padding-top: 24px;
+  font-size: 13px;
+}
+.home-page .home-plan-card li {
+  font-size: 13px;
+  font-weight: 500;
+  gap: 10px;
+  line-height: 1.6;
+}
+.home-page .home-plan-card > button {
+  margin-top: auto;
+  font-size: 14px;
+}
+.home-trainer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+.home-page .home-trainer-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+}
+.home-page .home-trainer-card > div:nth-child(2) {
+  height: 260px;
+}
+.home-page .home-trainer-copy {
+  padding: 20px;
+  color: #1d2939;
+}
+.home-trainer-copy > div:first-child {
+  display: none;
+}
+.home-page .home-trainer-copy h3 {
+  font-size: 17px;
+  font-weight: 700;
+}
+.home-page .home-trainer-copy p {
+  font-size: 13px;
+  min-height: 36px;
+  font-weight: 400;
+}
+.home-page .home-trainer-copy button {
+  color: #b42318 !important;
+  background: #fef3f2 !important;
+  border-color: #fecdca;
+  font-size: 13px;
+}
+.home-page .home-trainer-copy button:hover {
+  background: #fee4e2 !important;
+}
+.home-page .home-schedules {
+  padding: 72px var(--home-gutter);
+}
+.home-page .home-schedules > section {
+  width: 100%;
+  margin-bottom: 32px;
+  padding: 28px;
+  border: 1px solid #e4e7ec;
+  border-radius: 14px;
+  box-shadow: none !important;
+}
+.home-page .home-schedules h2 {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+.home-page .home-schedules h3 {
+  font-weight: 600;
+}
+.home-page .home-schedules button {
+  font-size: 12px;
+  border-radius: 8px;
+  border-color: #e4e7ec;
+}
+.home-page .home-schedules button:not([class~='bg-[#e6002e]']) {
+  color: #475467;
+}
+.home-page .home-schedules button[class~='bg-[#e6002e]'] span {
+  color: #fff !important;
+}
+.home-page .home-schedules [class~='border-t-[5px]'] {
+  border-color: #e4e7ec;
+  border-top: 2px solid #b42318;
+  box-shadow: none !important;
+}
+.home-page .home-schedules [class~='border-t-[5px]'] :is(p, strong) {
+  font-size: 11px;
+  font-weight: 400;
+}
+.home-page .home-footer {
+  display: grid;
+  grid-template-columns: 1.3fr 0.8fr 1fr 1fr;
+  gap: 40px;
+  padding: 48px var(--home-gutter);
+  border-top: 1px solid #e4e7ec;
+  background: #fff;
+  color: #1d2939;
+}
+.home-page .home-footer :is(p, a) {
+  color: #667085 !important;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+.home-page .home-footer h2 {
+  font-size: 24px;
+  font-weight: 750;
+}
+.home-page .home-footer h3 {
+  color: #1d2939 !important;
+  font-size: 13px;
+  font-weight: 700;
+}
+.home-page .home-footer a {
+  min-height: 28px;
+}
+.home-page .home-footer a[aria-label] {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  color: #b42318 !important;
+}
+.home-page > div:last-child {
+  border-color: #e4e7ec;
+  color: #667085;
+}
+
+@media (max-width: 1100px) {
+  .home-trainer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .home-page .home-trainer-card > div:nth-child(2) {
+    height: 320px;
+  }
+  .home-hero-visual {
+    height: 460px;
+  }
+}
+@media (max-width: 980px) {
+  .home-page #home.home-hero {
+    padding-top: 48px;
+    gap: 28px;
+  }
+  .home-page > nav {
+    padding-inline: 16px;
+  }
+  .home-page > nav > div {
+    gap: 8px;
+  }
+  .home-plan-grid {
+    gap: 16px;
+  }
+  .home-page .home-plan-card {
+    padding: 32px 20px 20px;
+  }
+  .home-page .home-footer {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 700px) {
+  .home-page {
+    --home-gutter: 20px;
+  }
+  .home-page #home.home-hero {
+    grid-template-columns: 1fr;
+    padding-block: 36px 40px;
+  }
+  .fitzone-ui.home-page #home h1 {
+    font-size: clamp(34px, 8.5vw, 48px);
+  }
+  .home-hero-visual {
+    height: 340px;
+  }
+  .home-benefits {
+    gap: 14px;
+  }
+  .home-benefit {
+    font-size: 11px;
+  }
+  .home-page :is(.home-section, .home-schedules) {
+    padding-block: 48px;
+  }
+  .home-plan-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .home-page .home-plan-card {
+    padding: 32px 24px 24px;
+  }
+  .home-page .home-plan-card > p {
+    min-height: 0;
+  }
+  .home-page .home-schedules > section {
+    padding: 20px 16px;
+  }
+  .home-page .home-footer {
+    gap: 28px;
+  }
+}
+@media (max-width: 440px) {
+  .home-trainer-grid,
+  .home-page .home-footer {
+    grid-template-columns: 1fr;
+  }
+  .home-page .home-trainer-card > div:nth-child(2) {
+    height: 330px;
+  }
+  .home-page .home-trainer-copy p {
+    min-height: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-page :is(button, a) {
+    transition: none;
+  }
+}
