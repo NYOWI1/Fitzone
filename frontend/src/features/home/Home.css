@@ -18,6 +18,15 @@
 .home-page > nav a {
   font-size: 13px;
 }
+.home-page .home-account-button {
+  border-color: #d0d5dd;
+  background: #fff;
+  color: #344054;
+}
+.home-page .home-account-button:hover {
+  border-color: #fecdca;
+  background: #fef3f2;
+}
 .home-page :is(button, a) {
   transition:
     background-color 150ms,

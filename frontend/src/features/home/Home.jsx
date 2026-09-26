@@ -631,11 +631,9 @@ function Home({ clerkEnabled }) {
                 >
                   Dashboard
                 </button>
-                <div className='inline-flex min-h-[42px] items-center gap-2.5 rounded-xl border border-[#3f3f3f] bg-[#1d1d1d] py-0 pl-2 pr-[13px]'>
+                <div className='home-account-button inline-flex min-h-[44px] items-center gap-2.5 rounded-xl border py-0 pl-2 pr-[14px]'>
                   <UserButton afterSignOutUrl='/' />
-                  <span className='text-[11px] font-extrabold text-white'>
-                    Account
-                  </span>
+                  <span className='text-[12px] font-extrabold'>Account</span>
                 </div>
               </div>
             </SignedIn>
