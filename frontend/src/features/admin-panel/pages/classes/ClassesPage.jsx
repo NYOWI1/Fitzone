@@ -480,7 +480,7 @@ export default function ClassesPage() {
                   <button
                     className={
                       daySchedule.weekday === activeDay
-                        ? 'min-h-[58px] rounded-[14px] border border-[#d90429] bg-[#241216] p-2 text-white'
+                        ? 'min-h-[58px] rounded-[14px] border border-[#d90429] bg-[#d90429] p-2 text-white shadow-[0_4px_12px_rgba(217,4,41,0.18)]'
                         : 'min-h-[58px] rounded-[14px] border border-[#393939] bg-[#2b2b2b] p-2 text-white'
                     }
                     key={daySchedule.weekday}
@@ -490,7 +490,13 @@ export default function ClassesPage() {
                     <strong className='mb-[5px] block text-[13px]'>
                       {daySchedule.dayName.slice(0, 3)}
                     </strong>
-                    <span className='block text-[10px] font-extrabold text-[#b8b8b8]'>
+                    <span
+                      className={`block text-[10px] font-extrabold ${
+                        daySchedule.weekday === activeDay
+                          ? 'text-[#ffffff]'
+                          : 'text-[#b8b8b8]'
+                      }`}
+                    >
                       {getClassCount(daySchedule)} classes
                     </span>
                   </button>
@@ -735,7 +741,6 @@ export default function ClassesPage() {
                   ))}
                 </select>
               </label>
-
             </div>
 
             {formError && <p className='admin-form-error'>{formError}</p>}
