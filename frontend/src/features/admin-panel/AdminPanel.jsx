@@ -136,9 +136,7 @@ function ClerkAdminGate({ brandName, children }) {
   }
 
   if (!isSignedIn) {
-    return isAdminLandingPage()
-      ? <RedirectToHome />
-      : <RedirectToAdminLogin />;
+    return <RedirectToAdminLogin />;
   }
 
   if (!hasAdminAccess(user)) {
@@ -383,7 +381,7 @@ function AdminPanel({ clerkEnabled }) {
 
   if (!clerkEnabled) {
     if (isAdminLandingPage()) {
-      return <RedirectToHome />;
+      return <RedirectToAdminLogin />;
     }
 
     return (
