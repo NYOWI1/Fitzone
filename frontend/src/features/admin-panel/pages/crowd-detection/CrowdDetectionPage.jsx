@@ -405,6 +405,10 @@ export default function CrowdDetectionPage({ isVisible = true }) {
   const [detections, setDetections] = useState([]);
   const [gymCapacity, setGymCapacity] = useState(INITIAL_GYM_CAPACITY);
   const [ranges, setRanges] = useState(INITIAL_RANGES);
+  const [rangeDrafts, setRangeDrafts] = useState({
+    normalMax: null,
+    moderateMax: null
+  });
   const [modelStatus, setModelStatus] = useState('loading');
   const [modelName, setModelName] = useState('YOLO11');
   const [sourceStatus, setSourceStatus] = useState('idle');
@@ -478,7 +482,22 @@ export default function CrowdDetectionPage({ isVisible = true }) {
     });
   };
 
+  const editRange = (key, value) => {
+    if (/^\d*$/.test(value)) {
+      setRangeDrafts((currentDrafts) => ({ ...currentDrafts, [key]: value }));
+    }
+  };
+
+  const commitRange = (key) => {
+    const draft = rangeDrafts[key];
+    setRangeDrafts((currentDrafts) => ({ ...currentDrafts, [key]: null }));
+    if (draft !== null && draft !== '') {
+      updateRange(key, Number(draft));
+    }
+  };
+
   const stepRange = (key, direction) => {
+    setRangeDrafts((currentDrafts) => ({ ...currentDrafts, [key]: null }));
     updateRange(key, ranges[key] + direction);
   };
 
@@ -1118,13 +1137,17 @@ export default function CrowdDetectionPage({ isVisible = true }) {
                   <input
                     aria-label='Normal range maximum'
                     className={rangeInputClass}
+                    inputMode='numeric'
                     max={ranges.moderateMax - 1}
                     min='0'
-                    onChange={(event) =>
-                      updateRange('normalMax', event.target.value)
-                    }
+                    onBlur={() => commitRange('normalMax')}
+                    onChange={(event) => editRange('normalMax', event.target.value)}
+                    onFocus={(event) => event.target.select()}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') event.currentTarget.blur();
+                    }}
                     type='text'
-                    value={ranges.normalMax}
+                    value={rangeDrafts.normalMax ?? ranges.normalMax}
                   />
                   <button
                     aria-label='Increase normal range maximum'
@@ -1154,13 +1177,17 @@ export default function CrowdDetectionPage({ isVisible = true }) {
                   <input
                     aria-label='Moderate range maximum'
                     className={rangeInputClass}
+                    inputMode='numeric'
                     max={gymCapacity - 1}
                     min={moderateMin}
-                    onChange={(event) =>
-                      updateRange('moderateMax', event.target.value)
-                    }
+                    onBlur={() => commitRange('moderateMax')}
+                    onChange={(event) => editRange('moderateMax', event.target.value)}
+                    onFocus={(event) => event.target.select()}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') event.currentTarget.blur();
+                    }}
                     type='text'
-                    value={ranges.moderateMax}
+                    value={rangeDrafts.moderateMax ?? ranges.moderateMax}
                   />
                   <button
                     aria-label='Increase moderate range maximum'
