@@ -27,6 +27,7 @@
 .crowd-page .crowd-layout {
   max-width: 1480px;
   align-items: start;
+  grid-template-columns: minmax(0, 1fr) 350px;
 }
 
 .crowd-page .crowd-layout > div,
@@ -107,7 +108,8 @@
 .crowd-page .crowd-summary-grid p { color: #667085 !important; }
 
 .crowd-page .crowd-status {
-  padding: 20px;
+  max-width: none;
+  padding: 16px;
   box-shadow: 0 1px 3px rgb(16 24 40 / 6%);
 }
 
@@ -115,7 +117,16 @@
   background: #f9fafb !important;
   border-color: #e4e7ec !important;
   border-radius: 10px;
+  padding: 12px;
 }
+
+.crowd-page .crowd-status > div:last-child > div {
+  grid-template-columns: 10px minmax(0, 1fr) 148px;
+  gap: 6px;
+}
+
+.crowd-page .crowd-status > div:last-child label { min-width: 0; }
+.crowd-page .crowd-status > div:last-child label > span { flex: 0 0 auto; }
 
 .crowd-page .crowd-status > div:first-child h3 {
   color: #1d2939;
@@ -149,7 +160,7 @@
 
 @media (max-width: 1359px) {
   .crowd-page .crowd-layout {
-    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-columns: minmax(0, 1fr) 350px;
   }
   .crowd-page .crowd-status { grid-template-columns: 1fr; max-width: none; }
   .crowd-page .crowd-status > div:first-child { grid-column: auto; }
