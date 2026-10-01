@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { updateCrowdStatus } from '../../../../shared/api';
+import './CrowdDetectionPage.css';
 
 const CONFIDENCE_STEP = 0.05;
 const INITIAL_CONFIDENCE = 0.45;
@@ -28,27 +29,27 @@ const TENSORFLOW_SCRIPT_SRC =
 const COCO_SSD_SCRIPT_SRC =
   'https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js';
 const toneTextClasses = {
-  green: 'text-[#39e600]',
-  red: 'text-[#d90429]',
-  yellow: 'text-[#ffd54f]'
+  green: 'text-[#067647]',
+  red: 'text-[#b42318]',
+  yellow: 'text-[#b54708]'
 };
 const toneDotClasses = {
-  green: 'bg-[#39e600]',
-  red: 'bg-[#d90429]',
-  yellow: 'bg-[#ffd54f]'
+  green: 'bg-[#12b76a]',
+  red: 'bg-[#b42318]',
+  yellow: 'bg-[#fdb022]'
 };
 const monitorCardClass =
-  'admin-card flex !h-auto min-h-0 flex-col overflow-hidden rounded-[26px] border-[#424242] bg-[#252525] p-0';
+  'admin-card flex !h-auto min-h-0 flex-col overflow-hidden rounded-xl border-[#e4e7ec] bg-white p-0';
 const sourceButtonClass =
-  'flex h-[30px] min-w-24 cursor-pointer items-center justify-center rounded-full border border-[#3e3e3e] bg-[#1a1a1a] px-[13px] text-[11px] font-black text-white hover:border-[#d90429] disabled:cursor-not-allowed disabled:opacity-55';
+  'flex min-h-11 min-w-28 cursor-pointer items-center justify-center rounded-lg border border-[#d0d5dd] bg-white px-4 text-sm font-bold text-[#344054] hover:border-[#b42318] disabled:cursor-not-allowed disabled:opacity-55';
 const rangeInputClass =
-  'h-8 w-10 border-x border-[#353535] bg-transparent p-0 text-center text-[11px] font-extrabold text-white outline-none';
+  'h-11 w-12 border-x border-[#e4e7ec] bg-white p-0 text-center text-sm font-bold text-[#1d2939] outline-none';
 const rangeStepperButtonClass =
-  'grid h-8 w-8 cursor-pointer place-items-center border-0 bg-transparent p-0 text-sm font-black leading-none text-[#b8b8b8] hover:text-white';
+  'grid h-11 w-11 cursor-pointer place-items-center border-0 bg-white p-0 text-base font-bold leading-none text-[#344054] hover:bg-[#fef3f2]';
 const stepperShellClass =
-  'ml-1 inline-flex overflow-hidden rounded-lg border border-[#424242] bg-[#1a1a1a]';
+  'ml-1 inline-flex overflow-hidden rounded-lg border border-[#d0d5dd] bg-white';
 const summaryCardClass =
-  'admin-card flex min-h-[108px] flex-col justify-center rounded-[20px] border-[#424242] bg-[#252525] px-[18px] py-4';
+  'admin-card flex min-h-[108px] flex-col justify-center rounded-xl border-[#e4e7ec] bg-white px-[18px] py-4';
 
 const hiddenCameraPageStyle = {
   height: 1,
@@ -816,7 +817,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
 
   return (
     <section
-      className='admin-content min-h-[calc(100vh_-_64px)] overflow-visible pb-8 pt-5'
+      className='crowd-page admin-content min-h-[calc(100vh_-_64px)] overflow-visible pb-8 pt-5'
       id='crowd-detection'
       style={isVisible ? undefined : hiddenCameraPageStyle}
     >
@@ -832,7 +833,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
         </div>
 
         <button
-          className='min-h-[46px] min-w-[184px] flex-none cursor-pointer rounded-[14px] border border-[#3b3b3b] bg-[#292929] px-[22px] text-[13px] font-black text-white max-[760px]:w-full'
+          className='crowd-back-button min-h-[46px] min-w-[184px] flex-none cursor-pointer rounded-lg border border-[#d0d5dd] bg-white px-[22px] text-sm font-bold text-[#344054] max-[760px]:w-full'
           onClick={goToOverview}
           type='button'
         >
@@ -840,10 +841,10 @@ export default function CrowdDetectionPage({ isVisible = true }) {
         </button>
       </header>
 
-      <div className='mx-auto grid w-full min-h-0 flex-1 grid-cols-[minmax(0,1fr)_310px] gap-4 min-[1360px]:max-w-[1380px] max-[1359px]:grid-cols-1'>
+      <div className='crowd-layout mx-auto grid w-full min-h-0 flex-1 grid-cols-[minmax(0,1fr)_310px] gap-4 min-[1360px]:max-w-[1380px] max-[1359px]:grid-cols-1'>
         <div className='flex min-h-0 min-w-0 flex-col'>
           <section className={`${monitorCardClass} shrink-0`}>
-            <div className='flex min-h-[52px] flex-none items-center justify-between rounded-[25px] bg-[#151515] px-[25px]'>
+            <div className='crowd-monitor-header flex min-h-[52px] flex-none items-center justify-between bg-white px-[25px]'>
               <h3 className='m-0 text-base leading-none text-white'>
                 {sourceMode === 'image'
                   ? 'AI Model Image Preview'
@@ -855,14 +856,8 @@ export default function CrowdDetectionPage({ isVisible = true }) {
             </div>
 
             <div
-              className='relative mt-3 min-h-0 w-full flex-none overflow-hidden border-y border-[#444] bg-[#2c2c2c] after:absolute after:inset-x-0 after:bottom-0 after:z-0 after:h-[29%] after:rounded-t-2xl after:bg-[#111]'
-              style={{
-                aspectRatio: sourceAspectRatio,
-                backgroundImage:
-                  'linear-gradient(rgba(57, 230, 0, 0.38) 1px, transparent 1px)',
-                backgroundPosition: '0 28px',
-                backgroundSize: '100% 82px'
-              }}
+              className='crowd-preview relative min-h-0 w-full flex-none overflow-hidden bg-[#101828]'
+              style={{ aspectRatio: sourceAspectRatio }}
             >
               <video
                 aria-label='Live gym camera preview'
@@ -939,13 +934,13 @@ export default function CrowdDetectionPage({ isVisible = true }) {
               )}
             </div>
 
-            <footer className='flex min-h-[42px] flex-none items-center justify-between gap-[18px] px-[23px] pb-[13px] pt-3 max-[760px]:items-stretch max-[760px]:flex-col'>
+            <footer className='crowd-source-actions flex min-h-[42px] flex-none items-center justify-between gap-[18px] px-[23px] pb-[13px] pt-3 max-[760px]:items-stretch max-[760px]:flex-col'>
               <div
                 className='flex flex-none gap-2 max-[760px]:flex-wrap'
                 aria-label='Detection source controls'
               >
                 <button
-                  className={`${sourceButtonClass} ${sourceMode === 'camera' ? 'border-[#d90429]' : ''} max-[760px]:flex-[1_1_140px]`}
+                  className={`${sourceButtonClass} ${sourceMode === 'camera' ? 'crowd-source-active' : ''} max-[760px]:flex-[1_1_140px]`}
                   disabled={
                     sourceMode === 'camera' && sourceStatus === 'loading'
                   }
@@ -962,7 +957,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
                   type='file'
                 />
                 <label
-                  className={`${sourceButtonClass} ${sourceMode === 'image' ? 'border-[#d90429]' : ''} max-[760px]:flex-[1_1_140px]`}
+                  className={`${sourceButtonClass} ${sourceMode === 'image' ? 'crowd-source-active' : ''} max-[760px]:flex-[1_1_140px]`}
                   htmlFor='crowd-test-image'
                 >
                   Upload image
@@ -976,7 +971,7 @@ export default function CrowdDetectionPage({ isVisible = true }) {
             </footer>
           </section>
 
-          <div className='mt-4 grid w-full flex-none grid-cols-4 gap-4 max-[900px]:grid-cols-2 max-[760px]:grid-cols-1'>
+          <div className='crowd-summary-grid mt-4 grid w-full flex-none grid-cols-4 gap-4 max-[900px]:grid-cols-2 max-[760px]:grid-cols-1'>
             <article className={summaryCardClass}>
               <strong className='pb-1 text-[clamp(27px,2.7vw,32px)] leading-none text-[#e6002e]'>
                 {people.length}
@@ -1029,13 +1024,14 @@ export default function CrowdDetectionPage({ isVisible = true }) {
           </div>
         </div>
 
-        <aside className='admin-card mx-auto grid h-fit min-h-0 w-full max-w-[310px] content-start gap-3 rounded-[22px] border-[#424242] bg-[#252525] p-4 max-[1359px]:max-w-none max-[1359px]:grid-cols-3 max-[900px]:grid-cols-1'>
+        <aside className='crowd-status admin-card mx-auto grid h-fit min-h-0 w-full max-w-[310px] content-start gap-3 rounded-xl border-[#e4e7ec] bg-white p-4 max-[1359px]:max-w-none max-[1359px]:grid-cols-3 max-[900px]:grid-cols-1'>
           <div className='flex min-w-0 flex-wrap items-center justify-between gap-2 max-[1359px]:col-span-full'>
             <h3 className='m-0 whitespace-nowrap text-lg leading-none'>
               {sourceMode === 'image' ? 'Image Status' : 'Live Status'}
             </h3>
             <span
-              className={`inline-flex min-h-8 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-current px-2.5 text-[11px] font-black uppercase ${toneTextClasses[crowdStatus.tone]}`}
+              data-tone={crowdStatus.tone}
+              className={`crowd-status-badge inline-flex min-h-8 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-current px-2.5 text-[11px] font-black uppercase ${toneTextClasses[crowdStatus.tone]}`}
             >
               <span
                 className={`h-2.5 w-2.5 rounded-full ${toneDotClasses[crowdStatus.tone]}`}
