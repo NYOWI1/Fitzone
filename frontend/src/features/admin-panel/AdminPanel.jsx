@@ -109,6 +109,18 @@ function RedirectToAdminLogin() {
   return null;
 }
 
+function RedirectToHome() {
+  useEffect(() => {
+    window.location.replace('/');
+  }, []);
+
+  return null;
+}
+
+function isAdminLandingPage() {
+  return ['/admin', '/admin/'].includes(window.location.pathname);
+}
+
 function ClerkAdminGate({ brandName, children }) {
   const { signOut } = useClerk();
   const { isLoaded, isSignedIn, user } = useUser();
@@ -124,10 +136,16 @@ function ClerkAdminGate({ brandName, children }) {
   }
 
   if (!isSignedIn) {
-    return <RedirectToAdminLogin />;
+    return isAdminLandingPage()
+      ? <RedirectToHome />
+      : <RedirectToAdminLogin />;
   }
 
   if (!hasAdminAccess(user)) {
+    if (isAdminLandingPage()) {
+      return <RedirectToHome />;
+    }
+
     return (
       <AdminAccessMessage
         action={
@@ -364,6 +382,10 @@ function AdminPanel({ clerkEnabled }) {
   }, []);
 
   if (!clerkEnabled) {
+    if (isAdminLandingPage()) {
+      return <RedirectToHome />;
+    }
+
     return (
       <AdminAccessMessage
         action={
