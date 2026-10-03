@@ -88,6 +88,62 @@
   background: transparent;
 }
 
+.reports-page .reports-monthly-amounts { margin-top: 22px; }
+.reports-page .reports-monthly-amounts h4 {
+  margin: 0 0 12px;
+  color: #1d2939;
+  font-size: 15px;
+  font-weight: 700;
+}
+.reports-page .reports-monthly-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e4e7ec;
+  border-radius: 10px;
+}
+.reports-page .reports-monthly-table-scroll table {
+  width: 100%;
+  min-width: 940px;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: #344054;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.reports-page .reports-monthly-table-scroll th,
+.reports-page .reports-monthly-table-scroll td {
+  min-width: 72px;
+  padding: 12px 10px;
+  border-bottom: 1px solid #e4e7ec;
+  text-align: right;
+  white-space: nowrap;
+}
+.reports-page .reports-monthly-table-scroll thead th {
+  background: #f9fafb;
+  color: #667085;
+  font-weight: 700;
+}
+.reports-page .reports-monthly-table-scroll tbody tr:last-child > * { border-bottom: 0; }
+.reports-page .reports-monthly-table-scroll tr > :first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 80px;
+  text-align: left;
+  background: #fff;
+  font-weight: 700;
+}
+.reports-page .reports-monthly-table-scroll thead tr > :first-child {
+  background: #f9fafb;
+}
+.reports-page .reports-monthly-year-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 8px;
+  border-radius: 50%;
+}
+
 .reports-page .reports-attendance-panel {
   min-width: 0;
   padding: 20px;

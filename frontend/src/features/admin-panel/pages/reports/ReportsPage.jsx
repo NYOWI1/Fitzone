@@ -453,7 +453,11 @@ export default function ReportsPage() {
                         r='6'
                         stroke={series.color}
                         strokeWidth='3'
-                      />
+                      >
+                        <title>
+                          {point.month} {series.year}: {formatPaymentAmount({ amount: point.total })}
+                        </title>
+                      </circle>
                     ))}
                   </g>
                 ))}
@@ -477,6 +481,38 @@ export default function ReportsPage() {
                   </text>
                 ))}
               </svg>
+              </div>
+
+              <div className='reports-monthly-amounts'>
+                <h4>Monthly amounts</h4>
+                <div className='reports-monthly-table-scroll'>
+                  <table>
+                    <caption className='sr-only'>Revenue amount for each month of the selected years</caption>
+                    <thead>
+                      <tr>
+                        <th scope='col'>Year</th>
+                        {reportChart.monthLabels.map((month) => (
+                          <th key={month.month} scope='col'>{month.month}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {reportChart.series.map((series) => (
+                        <tr key={series.year}>
+                          <th scope='row'>
+                            <span className='reports-monthly-year-dot' style={{ backgroundColor: series.color }} aria-hidden='true'></span>
+                            {series.year}
+                          </th>
+                          {series.points.map((point) => (
+                            <td key={`${series.year}-${point.month}`}>
+                              {formatPaymentAmount({ amount: point.total })}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </section>
