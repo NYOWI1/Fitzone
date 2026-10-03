@@ -15,6 +15,7 @@ import {
 } from '../../adminPanelUtils';
 import AdminLoadingSkeleton from '../../components/AdminLoadingSkeleton';
 import DefaultProfileAvatar from '../../../../shared/ui/DefaultProfileAvatar';
+import './OverviewPage.css';
 
 const overviewMemberGridClass =
   'grid min-h-8 items-center gap-3.5 [grid-template-columns:32px_minmax(0,1fr)_minmax(230px,280px)] max-[560px]:gap-2.5 max-[560px]:[grid-template-columns:32px_minmax(0,1fr)_auto]';
@@ -116,7 +117,7 @@ export default function OverviewPage() {
 
   return (
     <section
-      className='admin-content min-h-[calc(100vh_-_64px)] overflow-visible pb-5'
+      className='overview-page admin-content min-h-[calc(100vh_-_64px)] overflow-visible pb-5'
       id='overview'
     >
       <header className='admin-header mb-[clamp(18px,2.4vh,28px)] flex-none'>
@@ -140,7 +141,7 @@ export default function OverviewPage() {
 
       {status === 'ready' && (
         <>
-          <div className='admin-kpi-grid mb-[clamp(16px,2vh,22px)] flex-none gap-4'>
+          <div className='overview-kpis admin-kpi-grid mb-[clamp(16px,2vh,22px)] flex-none gap-4'>
             {kpis.map((kpi) => (
               <article className='admin-kpi-card' key={kpi.label}>
                 <div className='admin-kpi-copy'>
@@ -152,18 +153,18 @@ export default function OverviewPage() {
             ))}
           </div>
 
-          <div className='grid min-h-0 min-w-0 flex-1 items-start gap-x-7 gap-y-4 [grid-template-columns:minmax(520px,1.55fr)_minmax(280px,0.85fr)] max-[1360px]:[grid-template-columns:minmax(0,1fr)_minmax(260px,0.65fr)] max-[980px]:grid-cols-1'>
+          <div className='overview-panels grid min-h-0 min-w-0 flex-1 items-start gap-x-7 gap-y-4 [grid-template-columns:minmax(520px,1.55fr)_minmax(280px,0.85fr)] max-[1360px]:[grid-template-columns:minmax(0,1fr)_minmax(260px,0.65fr)] max-[980px]:grid-cols-1'>
             <section
-              className={`${overviewCardClass} !h-[360px] max-[1360px]:col-span-full max-[980px]:col-auto`}
+              className={`${overviewCardClass} overview-members max-[1360px]:col-span-full max-[980px]:col-auto`}
             >
               <div className='admin-card-header'>
                 <h3>Recent Members</h3>
                 <button type='button'>View all</button>
               </div>
 
-              <div className='grid max-h-[274px] gap-4 overflow-y-auto pr-1 min-[1440px]:gap-5'>
+              <div className='overview-member-list grid max-h-[274px] gap-4 overflow-y-auto pr-1 min-[1440px]:gap-5'>
                 {recentMembers.map((member) => (
-                  <div className={overviewMemberGridClass} key={member.id}>
+                  <div className={`overview-member-row ${overviewMemberGridClass}`} key={member.id}>
                     <DefaultProfileAvatar
                       className='h-8 w-8'
                       imageUrl={member.imageUrl}
@@ -202,11 +203,11 @@ export default function OverviewPage() {
             </section>
 
             <section
-              className={`${overviewCardClass} !h-[360px] flex flex-col max-[1360px]:col-span-full max-[980px]:col-auto`}
+              className={`${overviewCardClass} overview-classes flex flex-col max-[1360px]:col-span-full max-[980px]:col-auto`}
             >
               <div className='flex items-center justify-between gap-3'>
                 <h3>Today Classes</h3>
-                <span className='rounded-full border border-[#393939] bg-[#202020] px-3 py-1 text-[11px] font-black text-[#b8b8b8]'>
+                <span className='overview-class-count rounded-full border border-[#e4e7ec] bg-[#f9fafb] px-3 py-1 text-[11px] font-black text-[#475467]'>
                   {todayClasses.length}
                 </span>
               </div>
@@ -214,7 +215,7 @@ export default function OverviewPage() {
               <div className='mt-[18px] grid min-h-0 flex-1 content-start gap-2.5 overflow-y-auto pr-1'>
                 {todayClasses.map((item) => (
                   <div
-                    className='grid min-h-[70px] grid-cols-[minmax(0,1fr)_54px] items-center gap-2.5 rounded-[14px] border border-[#343434] bg-[#202020] px-3 py-2.5 max-[560px]:grid-cols-[minmax(0,1fr)_auto]'
+                    className='overview-class-row grid min-h-[70px] grid-cols-[minmax(0,1fr)_54px] items-center gap-2.5 rounded-lg border border-[#e4e7ec] bg-[#f9fafb] px-3 py-2.5 max-[560px]:grid-cols-[minmax(0,1fr)_auto]'
                     key={item.id}
                   >
                     <div className='min-w-0 self-center'>
@@ -229,11 +230,11 @@ export default function OverviewPage() {
                       </small>
                     </div>
                     <b
-                      className={
+                      className={`text-right text-xs ${
                         item.status === 'full'
-                          ? 'text-right text-xs text-[#d90429]'
-                          : 'text-right text-xs text-[#39e600]'
-                      }
+                          ? 'overview-class-duration-full'
+                          : 'overview-class-duration'
+                      }`}
                     >
                       {item.duration}
                     </b>
@@ -248,7 +249,7 @@ export default function OverviewPage() {
               </div>
             </section>
 
-            <section className={`${overviewCardClass} col-span-full`}>
+            <section className={`${overviewCardClass} overview-revenue col-span-full`}>
               <div className='mb-3 flex items-start justify-between gap-4 max-[560px]:flex-col'>
                 <div>
                   <h3 className='text-xl'>Revenue Overview</h3>
@@ -263,10 +264,11 @@ export default function OverviewPage() {
                 </strong>
               </div>
 
-              <div className='overflow-x-auto rounded-[18px] border border-[#393939] bg-[#1b1b1b] px-4 py-4'>
+              <div className='overview-revenue-layout'>
+              <div className='overview-chart-shell overflow-x-auto rounded-lg border border-[#e4e7ec] bg-[#f9fafb] px-4 py-4'>
                 <svg
                   aria-label='Revenue overview line chart by month'
-                  className='block h-[220px] min-w-[680px] max-w-full'
+                  className='overview-chart block h-[220px] min-w-[680px] max-w-full'
                   role='img'
                   viewBox={`0 0 ${revenueChartWidth} ${revenueChartHeight}`}
                 >
@@ -282,7 +284,7 @@ export default function OverviewPage() {
                         x2={revenueChartWidth - revenueChartRight}
                         y1={y}
                         y2={y}
-                        stroke='#303030'
+                        stroke='#d0d5dd'
                         strokeWidth='1'
                       />
                     );
@@ -290,12 +292,12 @@ export default function OverviewPage() {
 
                   <path
                     d={revenueChart.areaPath}
-                    fill='rgba(77,163,255,0.16)'
+                    fill='rgba(180,35,24,0.08)'
                   />
                   <path
                     d={revenueChart.linePath}
                     fill='none'
-                    stroke='#4da3ff'
+                    stroke='#b42318'
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     strokeWidth='4'
@@ -306,13 +308,13 @@ export default function OverviewPage() {
                       <circle
                         cx={point.x}
                         cy={point.y}
-                        fill='#1b1b1b'
+                        fill='#ffffff'
                         r='6'
-                        stroke='#4da3ff'
+                        stroke='#b42318'
                         strokeWidth='3'
                       />
                       <text
-                        fill='#ffffff'
+                        fill='#1d2939'
                         fontSize='11'
                         fontWeight='800'
                         textAnchor='middle'
@@ -322,7 +324,7 @@ export default function OverviewPage() {
                         {point.label}
                       </text>
                       <text
-                        fill='#b8b8b8'
+                        fill='#667085'
                         fontSize='11'
                         fontWeight='700'
                         textAnchor='middle'
@@ -336,7 +338,7 @@ export default function OverviewPage() {
                 </svg>
               </div>
 
-              <div className='mt-4 grid gap-2 border-t border-[#393939] pt-3.5'>
+              <div className='overview-revenue-summary mt-4 grid gap-2 border-t border-[#e4e7ec] pt-3.5'>
                 {revenueSummary.map(([label, value]) => (
                   <div
                     className='flex items-center justify-between'
@@ -346,6 +348,7 @@ export default function OverviewPage() {
                     <strong className='text-[13px] text-white'>{value}</strong>
                   </div>
                 ))}
+              </div>
               </div>
             </section>
           </div>
