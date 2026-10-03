@@ -3,7 +3,7 @@ import {
   addClassScheduleItem,
   deleteClassScheduleItem,
   getClassSchedule,
-  getTrainers,
+  getAdminTrainers,
   updateClassScheduleItem
 } from '../../../../shared/api';
 import {
@@ -241,7 +241,7 @@ export default function ClassesPage() {
       try {
         const [nextSchedule, nextTrainers] = await Promise.all([
           getClassSchedule(),
-          getTrainers({ includeDeleted: true })
+          getAdminTrainers({ includeDeleted: true })
         ]);
 
         if (isCurrent) {

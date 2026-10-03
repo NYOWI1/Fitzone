@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
+    "test": "node --test",
     "start": "node src/index.js",
     "dev": "node src/index.js",
     "smoke": "node scripts/smokeApi.js",

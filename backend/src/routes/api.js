@@ -658,19 +658,6 @@ function sanitizeStripePaymentIntent(payload) {
   };
 }
 
-function sanitizeStripeSubscription(payload) {
-  const subscription = sanitizeStripePaymentIntent({
-    ...payload,
-    paymentMethodType: "card",
-  });
-
-  if (!subscription) {
-    return null;
-  }
-
-  return subscription;
-}
-
 function sanitizeEmail(value) {
   const email = String(value || "")
     .trim()
@@ -718,6 +705,25 @@ function sanitizeClassBooking(payload) {
     trainerName,
     category,
     capacity,
+  };
+}
+
+function canonicalizeClassBooking(booking, schedule) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(booking.classDate)) return null;
+  const date = new Date(`${booking.classDate}T00:00:00Z`);
+  if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== booking.classDate) return null;
+  const day = schedule.find((item) => item.weekday === date.getUTCDay());
+  const classes = [...(day?.morning || []), ...(day?.evening || [])];
+  const item = classes.find((entry, index) =>
+    `${booking.classDate}-${entry.name}-${entry.time}-${index}` === booking.classId,
+  );
+  if (!item) return null;
+  return {
+    ...booking,
+    className: item.name,
+    classTime: item.time.replaceAll('am', ' AM').replaceAll('pm', ' PM').toUpperCase(),
+    category: item.category,
+    capacity: Number(item.capacity) || 10,
   };
 }
 
@@ -821,13 +827,6 @@ function sanitizeTrainerBooking(payload) {
       ? { originalSessionDate, originalSessionTime }
       : {}),
   };
-}
-
-function normalizeComparableText(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, " ");
 }
 
 function mapStripePaymentIntent(paymentIntent) {
@@ -954,19 +953,39 @@ function paymentIntentMatchesEmail(paymentIntent, memberEmail) {
   return getPaymentIntentEmail(paymentIntent) === memberEmail;
 }
 
-function paymentIntentMatchesMemberName(paymentIntent, memberName) {
-  const metadataMember = normalizeComparableText(
-    paymentIntent?.metadata?.member,
-  );
-  const comparableName = normalizeComparableText(memberName);
-
-  return Boolean(
-    comparableName && metadataMember && metadataMember === comparableName,
-  );
-}
-
 function getPriceValue(plan) {
   return Number(String(plan?.price || "").replace(/[^\d.]/g, "")) || 0;
+}
+
+async function getAuthorizedPayment(body, auth) {
+  const slug = makeSlug(body?.planSlug || body?.plan);
+  if (!slug || !auth?.email) return null;
+  const db = await getDbWithTimeout();
+  const plans = await getMembershipPlanDocuments(db);
+  const plan = plans.find((item) => item.slug === slug && item.active !== false);
+  const amount = Math.round(getPriceValue(plan) * 100);
+  if (!plan || amount < 1) return null;
+  return sanitizeStripePaymentIntent({
+    ...body,
+    amount,
+    currency: 'thb',
+    plan: plan.name,
+    planSlug: plan.slug,
+    member: auth.name,
+    memberEmail: auth.email,
+    description: `FitZone ${plan.name} Membership`,
+  });
+}
+
+async function hasValidPlanAmount(planSlug, amount, recordedAmount = 0) {
+  if (!planSlug || !Number.isFinite(Number(amount))) return false;
+  if (Number.isInteger(recordedAmount) && recordedAmount > 0) {
+    return Number(amount) >= recordedAmount;
+  }
+  const db = await getDbWithTimeout();
+  const plans = await getMembershipPlanDocuments(db, { includeInactive: true, includeDeleted: true });
+  const plan = plans.find((item) => item.slug === makeSlug(planSlug));
+  return Boolean(plan && Number(amount) >= Math.round(getPriceValue(plan) * 100));
 }
 
 async function inferPlanFromAmount(amount) {
@@ -1034,6 +1053,9 @@ async function getPlanFromStripePrice(price) {
     product?.metadata?.plan_name;
   const namedPlan =
     metadataPlan || price.nickname || product?.name || price.lookup_key || "";
+  if (metadataPlan) {
+    return { planName: String(metadataPlan).trim(), planSlug: makeSlug(metadataPlan) };
+  }
   const inferredPlan = await inferPlanFromAmount(
     Number(price.unit_amount || price.unit_amount_decimal || 0),
   );
@@ -1072,10 +1094,15 @@ async function mapStripePaymentAccess(paymentIntent, memberEmail) {
     }
   }
 
+  const amountValid = await hasValidPlanAmount(
+    access.planSlug,
+    access.amount,
+    Number(paymentIntent?.metadata?.expected_amount || 0),
+  );
   return {
     ...access,
     hasPaymentHistory: true,
-    paid: access.paid && isCurrentPeriodActive,
+    paid: access.paid && isCurrentPeriodActive && amountValid,
     memberEmail: access.memberEmail || memberEmail,
     currentPeriodStart: access.created || null,
     currentPeriodEnd,
@@ -1121,7 +1148,7 @@ function chooseBestStripePaymentIntent(paymentIntents) {
   );
 }
 
-async function findRecentStripePaymentByMember(memberEmail, memberName = "") {
+async function findRecentStripePaymentByMember(memberEmail) {
   const params = new URLSearchParams({ limit: "100" });
   const paymentIntents = await fetchStripeJson(
     `/v1/payment_intents?${params.toString()}`,
@@ -1133,10 +1160,7 @@ async function findRecentStripePaymentByMember(memberEmail, memberName = "") {
       continue;
     }
 
-    if (
-      paymentIntentMatchesEmail(paymentIntent, memberEmail) ||
-      paymentIntentMatchesMemberName(paymentIntent, memberName)
-    ) {
+    if (paymentIntentMatchesEmail(paymentIntent, memberEmail)) {
       matches.push(paymentIntent);
       continue;
     }
@@ -1272,10 +1296,15 @@ async function mapStripeSubscriptionAccess(subscription, memberEmail) {
     (subscription?.collection_method || "charge_automatically") ===
       "charge_automatically";
 
+  const amountValid = await hasValidPlanAmount(
+    plan?.planSlug,
+    Number(price?.unit_amount || price?.unit_amount_decimal || 0),
+    Number(subscription?.metadata?.expected_amount || 0),
+  );
   return {
     id: subscription?.id || "",
     hasPaymentHistory: true,
-    paid: renewalPaymentConfirmed,
+    paid: renewalPaymentConfirmed && amountValid,
     status: subscriptionStatus,
     renewalPaymentConfirmed,
     autoRenew,
@@ -1447,7 +1476,7 @@ async function getStripePaymentAccessForEmail(memberEmail, memberName = "") {
   }
 
   const paymentIntent =
-    (await findRecentStripePaymentByMember(memberEmail, memberName)) ||
+    (await findRecentStripePaymentByMember(memberEmail)) ||
     (await findStripePaymentByMetadata(memberEmail));
 
   if (!paymentIntent) {
@@ -1743,7 +1772,7 @@ async function createStripePaymentIntent(request, response) {
     }
 
     const body = await readJsonBody(request);
-    const paymentIntent = sanitizeStripePaymentIntent(body || {});
+    const paymentIntent = await getAuthorizedPayment(body, request.auth);
 
     if (!paymentIntent) {
       sendJson(response, 400, {
@@ -1762,6 +1791,7 @@ async function createStripePaymentIntent(request, response) {
       "metadata[plan_slug]": paymentIntent.planSlug,
       "metadata[member]": paymentIntent.member,
       "metadata[member_email]": paymentIntent.memberEmail,
+      "metadata[expected_amount]": String(paymentIntent.amount),
     });
 
     const stripeResponse = await fetch(
@@ -1828,7 +1858,10 @@ async function createStripeSubscription(request, response) {
     }
 
     const body = await readJsonBody(request);
-    const subscription = sanitizeStripeSubscription(body || {});
+    const subscription = await getAuthorizedPayment(
+      { ...body, paymentMethodType: 'card' },
+      request.auth,
+    );
 
     if (!subscription) {
       sendJson(response, 400, {
@@ -1858,6 +1891,7 @@ async function createStripeSubscription(request, response) {
       "metadata[plan_slug]": subscription.planSlug,
       "metadata[member]": subscription.member,
       "metadata[member_email]": subscription.memberEmail,
+      "metadata[expected_amount]": String(subscription.amount),
       "expand[0]": "latest_invoice.payment_intent",
       "expand[1]": "latest_invoice.confirmation_secret",
       "expand[2]": "pending_setup_intent",
@@ -1910,10 +1944,12 @@ async function createStripeSubscription(request, response) {
 async function getStripePaymentAccess(request, response) {
   try {
     const requestUrl = new URL(request.url, "http://localhost");
-    const memberEmail = sanitizeEmail(requestUrl.searchParams.get("email"));
-    const memberName = String(
-      requestUrl.searchParams.get("memberName") || "",
-    ).trim();
+    const memberEmail = request.auth.isAdmin
+      ? sanitizeEmail(requestUrl.searchParams.get("email"))
+      : request.auth.email;
+    const memberName = request.auth.isAdmin
+      ? String(requestUrl.searchParams.get("memberName") || "").trim()
+      : request.auth.name;
 
     if (!memberEmail) {
       sendJson(response, 400, { message: "A valid member email is required." });
@@ -2139,7 +2175,9 @@ async function getStripePayments(response) {
 
 async function getMemberStripePayments(request, response) {
   const requestUrl = new URL(request.url, "http://localhost");
-  const memberEmail = sanitizeEmail(requestUrl.searchParams.get("email"));
+  const memberEmail = request.auth.isAdmin
+    ? sanitizeEmail(requestUrl.searchParams.get("email"))
+    : request.auth.email;
 
   if (!memberEmail) {
     sendJson(response, 400, { message: "A valid member email is required." });
@@ -2186,7 +2224,9 @@ async function getMemberStripePayments(request, response) {
 async function createStripeBillingPortalSession(request, response) {
   try {
     const body = await readJsonBody(request);
-    const memberEmail = sanitizeEmail(body?.email);
+    const memberEmail = request.auth.isAdmin
+      ? sanitizeEmail(body?.email)
+      : request.auth.email;
 
     if (!memberEmail) {
       sendJson(response, 400, { message: "A valid member email is required." });
@@ -2202,11 +2242,13 @@ async function createStripeBillingPortalSession(request, response) {
       return;
     }
 
-    const host = request.headers.host || "localhost:5173";
-    const protocol = request.headers["x-forwarded-proto"] || "http";
+    const frontendOrigins = String(process.env.CORS_ORIGINS || 'https://fitzone-frontend-wheat.vercel.app')
+      .split(',').map((value) => value.trim().replace(/\/$/, '')).filter((value) => /^https?:\/\/[^/]+$/.test(value));
+    const frontendOrigin = frontendOrigins.find((value) => value.startsWith('https://')) || frontendOrigins[0];
+    if (!frontendOrigin) throw new Error('A frontend origin must be configured.');
     const params = new URLSearchParams({
       customer: customer.id,
-      return_url: `${protocol}://${host}/dashboard#Payments`,
+      return_url: `${frontendOrigin}/dashboard#Payments`,
     });
     const session = await fetchStripeJson("/v1/billing_portal/sessions", {
       method: "POST",
@@ -2707,10 +2749,12 @@ function buildMemberProgress(
 
 async function getMemberProgress(request, response) {
   const requestUrl = new URL(request.url, "http://localhost");
-  const memberEmail = sanitizeEmail(requestUrl.searchParams.get("email"));
-  const requestedMemberId = String(
-    requestUrl.searchParams.get("memberId") || "",
-  ).trim();
+  const memberEmail = request.auth.isAdmin
+    ? sanitizeEmail(requestUrl.searchParams.get("email"))
+    : request.auth.email;
+  const requestedMemberId = request.auth.isAdmin
+    ? String(requestUrl.searchParams.get("memberId") || "").trim()
+    : request.auth.userId;
   const localMember = readLocalCollection("members").find(
     (member) => sanitizeEmail(member.email) === memberEmail,
   );
@@ -2808,7 +2852,9 @@ function getTrainerBookingRuleError(access, booking, periodBookingCount) {
 
 async function getTrainerBookings(request, response) {
   const requestUrl = new URL(request.url, "http://localhost");
-  const memberEmail = sanitizeEmail(requestUrl.searchParams.get("email"));
+  const memberEmail = request.auth.isAdmin
+    ? sanitizeEmail(requestUrl.searchParams.get("email"))
+    : request.auth.email;
 
   if (!memberEmail) {
     sendJson(response, 400, { message: "A valid member email is required." });
@@ -2880,6 +2926,12 @@ function updateLocalTrainerBooking(booking, membershipAccess) {
       : -1;
 
   if (booking.action === "cancel") {
+    if (existingIndex === -1) {
+      return { statusCode: 404, payload: { message: "The trainer session was not found." } };
+    }
+    if (isTrainerReschedulingClosed(bookings[existingIndex])) {
+      return { statusCode: 403, payload: { message: "PT sessions cannot be cancelled within 30 minutes of their start time or after they have started." } };
+    }
     if (existingIndex !== -1) {
       bookings[existingIndex] = {
         ...bookings[existingIndex],
@@ -2985,7 +3037,11 @@ async function updateTrainerBooking(request, response) {
   let membershipAccess = null;
 
   try {
-    booking = sanitizeTrainerBooking(await readJsonBody(request));
+    booking = sanitizeTrainerBooking({
+      ...await readJsonBody(request),
+      memberEmail: request.auth.email,
+      memberName: request.auth.name,
+    });
 
     if (!booking) {
       sendJson(response, 400, { message: "Invalid trainer booking payload." });
@@ -3010,7 +3066,16 @@ async function updateTrainerBooking(request, response) {
     };
 
     if (booking.action === "cancel") {
-      await collection.updateOne(bookingKey, {
+      const existingBooking = await collection.findOne({ ...bookingKey, active: { $ne: false } });
+      if (!existingBooking) {
+        sendJson(response, 404, { message: "The trainer session was not found." });
+        return;
+      }
+      if (isTrainerReschedulingClosed(existingBooking)) {
+        sendJson(response, 403, { message: "PT sessions cannot be cancelled within 30 minutes of their start time or after they have started." });
+        return;
+      }
+      await collection.updateOne({ ...bookingKey, active: { $ne: false } }, {
         $set: {
           active: false,
           cancelledAt: new Date(),
@@ -3151,7 +3216,9 @@ async function updateTrainerBooking(request, response) {
 async function getClassBookings(request, response) {
   try {
     const requestUrl = new URL(request.url, "http://localhost");
-    const memberEmail = sanitizeEmail(requestUrl.searchParams.get("email"));
+    const memberEmail = request.auth.isAdmin
+      ? sanitizeEmail(requestUrl.searchParams.get("email"))
+      : request.auth.email;
 
     if (!memberEmail) {
       sendJson(response, 400, { message: "A valid member email is required." });
@@ -3170,7 +3237,9 @@ async function getClassBookings(request, response) {
   } catch (error) {
     logApiError("Class bookings API error", error);
     const requestUrl = new URL(request.url, "http://localhost");
-    const memberEmail = sanitizeEmail(requestUrl.searchParams.get("email"));
+    const memberEmail = request.auth.isAdmin
+      ? sanitizeEmail(requestUrl.searchParams.get("email"))
+      : request.auth.email;
 
     sendJson(
       response,
@@ -3297,7 +3366,11 @@ async function toggleClassBooking(request, response) {
 
   try {
     const body = await readJsonBody(request);
-    booking = sanitizeClassBooking(body.booking || body);
+    booking = sanitizeClassBooking({
+      ...(body.booking || body),
+      memberEmail: request.auth.email,
+      memberName: request.auth.name,
+    });
 
     if (!booking) {
       sendJson(response, 400, { message: "Invalid class booking payload." });
@@ -3331,6 +3404,12 @@ async function toggleClassBooking(request, response) {
         },
       );
     } else {
+      const schedule = await getClassScheduleDocuments(db);
+      booking = canonicalizeClassBooking(booking, schedule);
+      if (!booking) {
+        sendJson(response, 404, { message: "This class is no longer available." });
+        return;
+      }
       const timingError = getClassTimingRuleError(booking, false);
 
       if (timingError) {
@@ -3411,6 +3490,17 @@ async function toggleClassBooking(request, response) {
   } catch (error) {
     if (booking) {
       logApiError("Toggle class booking API error", error);
+      const alreadyBooked = readLocalClassBookings().some((item) =>
+        item.memberEmail === booking.memberEmail &&
+        item.classId === booking.classId && item.active !== false,
+      );
+      if (!alreadyBooked) {
+        booking = canonicalizeClassBooking(booking, getLocalClassSchedule());
+        if (!booking) {
+          sendJson(response, 404, { message: "This class is no longer available." });
+          return;
+        }
+      }
       membershipAccess =
         membershipAccess ||
         (await getClassBookingMembershipAccess(

@@ -307,7 +307,7 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
       {bookings.length > 0 && (
         <section className='trainer-sessions mt-8'>
           <h2 className='m-0 text-xl font-black'>Your sessions</h2>
-          <p className='reschedule-policy'>Rescheduling closes 30 minutes before the session starts.</p>
+          <p className='reschedule-policy'>Rescheduling and cancellation close 30 minutes before the session starts.</p>
           <div className='mt-4 grid grid-cols-1 gap-3 lg:grid-cols-2'>
             {bookings.map((booking) => (
               <article
@@ -322,7 +322,7 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
                     {formatSessionDate(booking.sessionDate)} ·{' '}
                     {booking.sessionTime}
                   </span>
-                  {isTrainerReschedulingClosed(booking, now) && <small className='reschedule-closed'>Rescheduling closed</small>}
+                  {isTrainerReschedulingClosed(booking, now) && <small className='reschedule-closed'>Changes closed</small>}
                 </div>
                 <div className='flex flex-col gap-2 sm:flex-row'>
                   <button
@@ -335,7 +335,7 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
                   </button>
                   <button
                     className='min-h-10 rounded-[12px] border border-[#414141] bg-[#2d2d2d] px-5 text-sm font-black text-white hover:border-[#e6002e] disabled:opacity-60'
-                    disabled={saving}
+                    disabled={saving || isTrainerReschedulingClosed(booking, now)}
                     onClick={() => cancelBooking(booking)}
                     type='button'
                   >

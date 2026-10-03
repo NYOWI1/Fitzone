@@ -2,9 +2,26 @@ const apiBaseUrl = String(import.meta.env.VITE_API_URL || '').replace(
   /\/$/,
   ''
 );
+let apiTokenProvider = null;
+
+export function setApiTokenProvider(provider) {
+  apiTokenProvider = provider;
+}
 
 function getApiUrl(path) {
   return `${apiBaseUrl}${path}`;
+}
+
+const publicGetPaths = new Set([
+  '/api/membership-plans', '/api/trainers', '/api/class-schedule',
+  '/api/class-booking-counts', '/api/site-settings', '/api/crowd-status'
+]);
+
+async function getAuthHeaders(path, method = 'GET') {
+  if (method === 'GET' && publicGetPaths.has(path)) return {};
+  const token = await apiTokenProvider?.();
+  if (!token) throw new Error('Please sign in to continue.');
+  return { Authorization: `Bearer ${token}` };
 }
 
 async function getErrorMessage(response, fallbackMessage) {
@@ -17,7 +34,9 @@ async function getErrorMessage(response, fallbackMessage) {
 }
 
 async function getJson(path, message) {
-  const response = await fetch(getApiUrl(path));
+  const response = await fetch(getApiUrl(path), {
+    headers: await getAuthHeaders(path)
+  });
 
   if (!response.ok) {
     throw new Error(await getErrorMessage(response, message));
@@ -28,7 +47,9 @@ async function getJson(path, message) {
 }
 
 async function getObject(path, message) {
-  const response = await fetch(getApiUrl(path));
+  const response = await fetch(getApiUrl(path), {
+    headers: await getAuthHeaders(path)
+  });
 
   if (!response.ok) {
     throw new Error(await getErrorMessage(response, message));
@@ -42,7 +63,8 @@ async function sendJson(path, method, payload, message) {
   const response = await fetch(getApiUrl(path), {
     method,
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      ...await getAuthHeaders(path, method)
     },
     body: JSON.stringify(payload)
   });
@@ -167,7 +189,7 @@ export function getStripeRevenueOverview() {
 
 export async function getTrainers({ includeDeleted = false } = {}) {
   const trainers = await getJson(
-    includeDeleted ? '/api/admin/trainers' : '/api/trainers',
+    '/api/trainers',
     'Unable to load trainers.'
   );
   return includeDeleted
