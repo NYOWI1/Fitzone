@@ -12,6 +12,7 @@ import {
   getReportsYearRevenue
 } from '../../adminPanelUtils';
 import AdminLoadingSkeleton from '../../components/AdminLoadingSkeleton';
+import './ReportsPage.css';
 
 const reportToneClasses = {
   blue: 'text-[#e6002e]',
@@ -25,8 +26,8 @@ const reportChartBaseline = 184;
 const reportChartTop = 30;
 const reportChartLeft = 46;
 const reportChartRight = 26;
-const reportLineColors = ['#e6002e', '#ffffff', '#8f8f8f', '#9f001f'];
-const attendanceLineColors = ['#e6002e', '#ffffff', '#8f8f8f', '#9f001f'];
+const reportLineColors = ['#b42318', '#175cd3', '#067647', '#b54708'];
+const attendanceLineColors = ['#b42318', '#175cd3', '#067647', '#b54708'];
 const monthOptions = Array.from({ length: 12 }, (_, index) => ({
   label: new Date(new Date().getFullYear(), index, 1).toLocaleString('en-US', {
     month: 'long'
@@ -317,7 +318,7 @@ export default function ReportsPage() {
 
   return (
     <section
-      className='admin-content min-h-[calc(100vh_-_64px)] overflow-visible pb-5'
+      className='reports-page admin-content min-h-[calc(100vh_-_64px)] overflow-visible pb-5'
       id='reports'
     >
       <header className='admin-header mb-[clamp(28px,5vh,44px)] flex-none'>
@@ -338,10 +339,10 @@ export default function ReportsPage() {
 
       {status === 'ready' && (
         <>
-          <div className='mb-[clamp(34px,5.5vh,50px)] grid flex-none grid-cols-4 gap-x-8 gap-y-7 max-[1360px]:grid-cols-2 max-[680px]:grid-cols-1'>
+          <div className='reports-kpis mb-[clamp(34px,5.5vh,50px)] grid flex-none grid-cols-4 gap-x-8 gap-y-7 max-[1360px]:grid-cols-2 max-[680px]:grid-cols-1'>
             {reportKpis.map((kpi) => (
               <article
-                className='grid min-h-[116px] gap-3 rounded-[22px] border border-[#393939] bg-[#242424] px-6 py-7 shadow-[0_16px_32px_rgba(0,0,0,0.28)]'
+                className='reports-kpi grid min-h-[116px] gap-3 rounded-xl border border-[#e4e7ec] bg-white px-6 py-7 shadow-[0_1px_3px_rgba(16,24,40,0.06)]'
                 key={kpi.label}
               >
                 <strong
@@ -356,8 +357,8 @@ export default function ReportsPage() {
             ))}
           </div>
 
-          <section className='admin-card mb-6 flex min-h-0 flex-col p-0'>
-            <div className='flex items-center justify-between gap-5 border-b border-[#393939] px-7 pb-3 pt-[26px] max-[680px]:items-stretch max-[680px]:flex-col'>
+          <section className='reports-section admin-card mb-6 flex min-h-0 flex-col p-0'>
+            <div className='reports-section-header flex items-center justify-between gap-5 border-b border-[#e4e7ec] px-7 pb-3 pt-[26px] max-[680px]:items-stretch max-[680px]:flex-col'>
               <div>
                 <h3 className='mb-2 text-3xl leading-none'>Revenue Overview</h3>
                 <p className='m-0 text-[13px] text-[#b8b8b8]'>
@@ -372,10 +373,11 @@ export default function ReportsPage() {
                 <div className='flex max-w-[420px] flex-wrap gap-2'>
                   {yearOptions.map((year) => (
                     <button
+                      aria-pressed={selectedYears.includes(year)}
                       className={
                         selectedYears.includes(year)
-                          ? 'min-h-[34px] rounded-[11px] border border-[#4da3ff] bg-[rgba(77,163,255,0.14)] px-3 text-xs font-black text-white'
-                          : 'min-h-[34px] rounded-[11px] border border-[#393939] bg-[#2b2b2b] px-3 text-xs font-black text-[#b8b8b8]'
+                          ? 'reports-year-button reports-year-active min-h-11 rounded-lg border px-3 text-xs font-bold'
+                          : 'reports-year-button min-h-11 rounded-lg border px-3 text-xs font-bold'
                       }
                       key={year}
                       onClick={() => toggleSelectedYear(year)}
@@ -388,8 +390,8 @@ export default function ReportsPage() {
               </div>
             </div>
 
-            <div className='min-h-0 overflow-x-auto px-7 pb-6 pt-5 max-[680px]:px-5'>
-              <div className='mb-4 flex flex-wrap gap-3'>
+            <div className='reports-section-body min-h-0 px-7 pb-6 pt-5 max-[680px]:px-5'>
+              <div className='reports-legend mb-4 flex flex-wrap gap-3'>
                 {reportChart.series.map((series) => (
                   <span
                     className='inline-flex items-center gap-2 rounded-full border border-[#393939] bg-[#202020] px-3 py-1.5 text-xs font-black text-white'
@@ -407,9 +409,10 @@ export default function ReportsPage() {
                 ))}
               </div>
 
+              <div className='reports-chart-frame'>
               <svg
                 aria-label='Monthly revenue comparison by selected years'
-                className='block h-[240px] w-full min-w-[680px] rounded-[18px] border border-[#393939] bg-[#1b1b1b] px-2'
+                className='reports-chart block h-[240px] w-full min-w-[680px] px-2'
                 role='img'
                 viewBox={`0 0 ${reportChartWidth} ${reportChartHeight}`}
               >
@@ -425,7 +428,7 @@ export default function ReportsPage() {
                       x2={reportChartWidth - reportChartRight}
                       y1={y}
                       y2={y}
-                      stroke='#303030'
+                      stroke='#d0d5dd'
                       strokeWidth='1'
                     />
                   );
@@ -445,7 +448,7 @@ export default function ReportsPage() {
                       <circle
                         cx={point.x}
                         cy={point.y}
-                        fill='#1b1b1b'
+                        fill='#ffffff'
                         key={`${series.year}-${point.month}`}
                         r='6'
                         stroke={series.color}
@@ -457,7 +460,7 @@ export default function ReportsPage() {
 
                 {reportChart.monthLabels.map((bar, index) => (
                   <text
-                    fill='#b8b8b8'
+                    fill='#667085'
                     fontSize='12'
                     fontWeight='700'
                     key={bar.month}
@@ -474,11 +477,12 @@ export default function ReportsPage() {
                   </text>
                 ))}
               </svg>
+              </div>
             </div>
           </section>
 
-          <section className='admin-card flex min-h-0 flex-col p-0'>
-            <div className='flex items-center justify-between gap-5 border-b border-[#393939] px-7 pb-3 pt-[26px] max-[680px]:items-stretch max-[680px]:flex-col'>
+          <section className='reports-section admin-card flex min-h-0 flex-col p-0'>
+            <div className='reports-section-header flex items-center justify-between gap-5 border-b border-[#e4e7ec] px-7 pb-3 pt-[26px] max-[680px]:items-stretch max-[680px]:flex-col'>
               <div>
                 <h3 className='mb-2 text-3xl leading-none'>
                   Monthly Attendance
@@ -492,8 +496,8 @@ export default function ReportsPage() {
               </span>
             </div>
 
-            <div className='min-h-0 overflow-x-auto px-7 pb-[34px] pt-5 max-[680px]:px-5'>
-              <div className='mb-4 flex flex-wrap gap-3'>
+            <div className='reports-section-body min-h-0 px-7 pb-[34px] pt-5 max-[680px]:px-5'>
+              <div className='reports-legend mb-4 flex flex-wrap gap-3'>
                 {attendanceChart.series.map((series) => (
                   <span
                     className='inline-flex items-center gap-2 rounded-full border border-[#393939] bg-[#202020] px-3 py-1.5 text-xs font-black text-white'
@@ -511,7 +515,7 @@ export default function ReportsPage() {
                 ))}
               </div>
 
-              <div className='rounded-[18px] border border-[#393939] bg-[#1b1b1b] p-4'>
+              <div className='reports-attendance-panel rounded-xl border border-[#e4e7ec] bg-[#f9fafb] p-4'>
                 <div className='mb-4 flex items-center justify-between gap-4 max-[680px]:items-stretch max-[680px]:flex-col'>
                   <div>
                     <h4 className='m-0 text-xl leading-none'>
@@ -553,8 +557,8 @@ export default function ReportsPage() {
                   </div>
                 </div>
 
-                <div className='grid gap-4 [grid-template-columns:minmax(0,1fr)_minmax(220px,0.38fr)] max-[980px]:grid-cols-1'>
-                  <div>
+                <div className='reports-attendance-layout grid gap-4 [grid-template-columns:minmax(0,1fr)_minmax(220px,0.38fr)] max-[980px]:grid-cols-1'>
+                  <div className='reports-calendar'>
                     <div className='grid grid-cols-7 gap-2 text-center text-[11px] font-black uppercase text-[#b8b8b8] max-[680px]:gap-1.5'>
                       {weekdayLabels.map((weekday) => (
                         <span key={weekday}>{weekday}</span>
@@ -570,6 +574,7 @@ export default function ReportsPage() {
                           ></div>
                         ) : (
                           <button
+                            aria-pressed={selectedAttendanceDate?.day === day.day}
                             className={
                               selectedAttendanceDate?.day === day.day
                                 ? 'min-h-[78px] cursor-pointer rounded-[14px] border border-[#39e600] bg-[rgba(57,230,0,0.16)] p-2.5 text-left outline-none ring-1 ring-[rgba(57,230,0,0.2)] max-[680px]:min-h-[58px] max-[680px]:p-2'
@@ -602,7 +607,7 @@ export default function ReportsPage() {
                     </div>
                   </div>
 
-                  <aside className='min-h-[300px] rounded-[16px] border border-[#303030] bg-[#202020] p-4'>
+                  <aside className='reports-day-detail min-h-[300px] rounded-xl border border-[#e4e7ec] bg-white p-4'>
                     <div className='mb-3 flex items-start justify-between gap-3'>
                       <div>
                         <h5 className='m-0 text-base leading-none text-white'>
