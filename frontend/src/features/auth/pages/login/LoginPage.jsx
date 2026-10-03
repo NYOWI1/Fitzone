@@ -36,34 +36,6 @@ const primaryButton =
   'min-h-11 w-full cursor-pointer rounded-xl border-0 bg-[#e6002e] text-[15px] font-black text-white shadow-[0_18px_28px_rgba(230,0,46,0.2)] transition hover:-translate-y-px hover:bg-[#ff1744] disabled:cursor-not-allowed disabled:opacity-65 disabled:hover:translate-y-0 sm:min-h-14 sm:rounded-2xl';
 const secondaryButton =
   'cursor-pointer rounded-[14px] border border-[#414141] bg-[#2d2d2d] text-sm font-black text-[#344054] transition hover:border-[#e6002e] hover:bg-[#fef3f2] disabled:cursor-not-allowed disabled:opacity-65 max-[640px]:rounded-xl max-[640px]:text-xs';
-const newMemberPaymentMessage =
-  'Complete your membership payment before logging in.';
-const expiredMembershipMessage =
-  'Your membership has expired. Please renew your plan to continue.';
-const newMemberPaymentAction = 'Choose a plan and complete payment';
-const expiredMembershipAction = 'Renew membership';
-
-function hasPreviousPayment(paymentAccess) {
-  return Boolean(
-    paymentAccess?.hasPaymentHistory ||
-    paymentAccess?.id ||
-    paymentAccess?.created ||
-    paymentAccess?.currentPeriodEnd ||
-    paymentAccess?.planName ||
-    paymentAccess?.planSlug
-  );
-}
-
-function savePendingPaymentEmail(email) {
-  const trimmedEmail = email.trim();
-
-  if (!trimmedEmail) {
-    return;
-  }
-
-  window.sessionStorage.setItem('fitzonePendingMemberEmail', trimmedEmail);
-}
-
 function getSecondFactor(resource) {
   const factors = resource?.supportedSecondFactors || [];
   const priority = ['totp', 'phone_code', 'email_code', 'backup_code'];
@@ -108,20 +80,15 @@ function getSecondFactorPreparePayload(factor) {
   };
 }
 
-function getSignInMemberName(resource) {
-  return [resource?.userData?.firstName, resource?.userData?.lastName]
-    .filter(Boolean)
-    .join(' ')
-    .trim();
-}
-
-async function activateSessionAndOpenDashboard(setActive, sessionId) {
+async function activateSessionAndCheckMembership(setActive, sessionId) {
   if (!sessionId) {
     throw new Error('Clerk did not return a session after verification.');
   }
 
   await setActive({ session: sessionId });
-  window.location.assign(AUTH_REDIRECT_AFTER_LOGIN);
+  // The payment-access API requires the active Clerk session's token.
+  // Reload the login route so its signed-in branch can check membership.
+  window.location.replace('/login');
 }
 
 function SignedInLoginRedirect() {
@@ -192,7 +159,6 @@ function LoginForm({ clerkEnabled }) {
   const [formStatus, setFormStatus] = useState('idle');
   const [formMessage, setFormMessage] = useState('');
   const [formMessageKind, setFormMessageKind] = useState('error');
-  const [paymentRequired, setPaymentRequired] = useState(false);
   const [secondFactor, setSecondFactor] = useState(null);
   const [secondFactorCode, setSecondFactorCode] = useState('');
   const [resetMode, setResetMode] = useState('idle');
@@ -200,37 +166,14 @@ function LoginForm({ clerkEnabled }) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [resetResource, setResetResource] = useState(null);
-  const [paymentActionLabel, setPaymentActionLabel] = useState(
-    newMemberPaymentAction
-  );
 
   const isBusy = formStatus === 'submitting' || formStatus === 'redirecting';
   const isSecondFactorStep = Boolean(secondFactor);
   const isResetFlow = resetMode !== 'idle';
 
-  const finishAuthenticatedSignIn = async (sessionId, resource) => {
-    const memberName = getSignInMemberName(resource);
-    const savedAccess = getSavedPaidMembershipAccess(email);
-    const recentlyPaid = hasRecentPaymentConfirmation(savedAccess, email);
-    const paymentAccess = await getStripePaymentAccess(email, memberName);
-
-    if (!paymentAccess.paid && !recentlyPaid) {
-      const isExpiredMembership = hasPreviousPayment(paymentAccess);
-
-      clearPaidMembershipAccess(email);
-      savePendingPaymentEmail(email);
-      setPaymentRequired(true);
-      setPaymentActionLabel(
-        isExpiredMembership ? expiredMembershipAction : newMemberPaymentAction
-      );
-      setFormMessage(
-        isExpiredMembership ? expiredMembershipMessage : newMemberPaymentMessage
-      );
-      return;
-    }
-
+  const finishAuthenticatedSignIn = async (sessionId) => {
     setFormStatus('redirecting');
-    await activateSessionAndOpenDashboard(setActive, sessionId);
+    await activateSessionAndCheckMembership(setActive, sessionId);
   };
 
   const handlePasswordSignIn = async (event) => {
@@ -251,10 +194,8 @@ function LoginForm({ clerkEnabled }) {
       setFormStatus('submitting');
       setFormMessage('');
       setFormMessageKind('error');
-      setPaymentRequired(false);
       setSecondFactor(null);
       setSecondFactorCode('');
-      setPaymentActionLabel(newMemberPaymentAction);
 
       const signInAttempt = await signIn.create({
         identifier: email
@@ -269,8 +210,7 @@ function LoginForm({ clerkEnabled }) {
 
       if (passwordAttempt.status === 'complete') {
         await finishAuthenticatedSignIn(
-          passwordAttempt.createdSessionId || signInAttempt.createdSessionId,
-          passwordAttempt
+          passwordAttempt.createdSessionId || signInAttempt.createdSessionId
         );
         return;
       }
@@ -331,8 +271,7 @@ function LoginForm({ clerkEnabled }) {
       if (secondFactorAttempt.status === 'complete') {
         await finishAuthenticatedSignIn(
           secondFactorAttempt.createdSessionId ||
-            secondFactor.resource?.createdSessionId,
-          secondFactorAttempt
+            secondFactor.resource?.createdSessionId
         );
         return;
       }
@@ -364,8 +303,6 @@ function LoginForm({ clerkEnabled }) {
       setFormStatus('redirecting');
       setFormMessage('');
       setFormMessageKind('error');
-      setPaymentRequired(false);
-      setPaymentActionLabel(newMemberPaymentAction);
       await signIn.authenticateWithRedirect({
         strategy,
         redirectUrl: '/login/sso-callback',
@@ -390,7 +327,6 @@ function LoginForm({ clerkEnabled }) {
     setConfirmNewPassword('');
     setResetResource(null);
     setSecondFactor(null);
-    setPaymentRequired(false);
     setFormMessage('');
     setFormMessageKind('error');
   };
@@ -736,15 +672,6 @@ function LoginForm({ clerkEnabled }) {
         >
           {formMessage}
         </p>
-      )}
-
-      {!isResetFlow && paymentRequired && (
-        <a
-          className='inline-flex min-h-11 items-center justify-center rounded-[13px] border border-[#414141] bg-[#2d2d2d] text-[13px] font-black text-white no-underline transition hover:border-[#e6002e]'
-          href='/choose-plan'
-        >
-          {paymentActionLabel}
-        </a>
       )}
 
       <button className={primaryButton} disabled={isBusy} type='submit'>
