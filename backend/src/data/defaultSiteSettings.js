@@ -16,6 +16,12 @@ const defaultSiteSettings = {
     "Sat - Sun: 8:00 AM - 9:00 PM",
   ],
   socials: ["FB", "IG", "TT", "YT"],
+  socialLinks: {
+    FB: "",
+    IG: "",
+    TT: "",
+    YT: "",
+  },
   copyright: "© 2026 FITZONE. All Rights Reserved.",
   active: true,
 };

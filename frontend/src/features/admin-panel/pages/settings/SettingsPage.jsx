@@ -2,9 +2,32 @@ import { useEffect, useState } from 'react';
 import { getSiteSettings, updateSiteSettings } from '../../../../shared/api';
 import {
   applyAdminSettingsValue,
-  getAdminSettingsRows
+  getAdminSettingsRows,
+  getAdminSocialRows
 } from '../../adminPanelUtils';
 import AdminLoadingSkeleton from '../../components/AdminLoadingSkeleton';
+import './SettingsPage.css';
+
+function SettingsField({ row, onEdit }) {
+  return (
+    <article className='site-setting-row'>
+      <div className='site-setting-copy'>
+        <h4>{row.label}</h4>
+        <p>{row.description}</p>
+      </div>
+      <div className='site-setting-value' title={row.displayValue}>
+        {row.displayValue}
+      </div>
+      <button
+        className='site-setting-edit'
+        onClick={() => onEdit(row)}
+        type='button'
+      >
+        Edit <span className='sr-only'>{row.label}</span>
+      </button>
+    </article>
+  );
+}
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({});
@@ -13,6 +36,7 @@ export default function SettingsPage() {
   const [formStatus, setFormStatus] = useState('idle');
   const [formError, setFormError] = useState('');
   const rows = getAdminSettingsRows(settings);
+  const socialRows = getAdminSocialRows(settings);
 
   function openSettingsForm(row) {
     setSettingsForm({
@@ -20,7 +44,9 @@ export default function SettingsPage() {
       label: row.label,
       value: row.value,
       multiline: row.multiline,
-      inputType: row.inputType || 'text'
+      inputType: row.inputType || 'text',
+      optional: row.optional || false,
+      domain: row.domain || ''
     });
     setFormStatus('idle');
     setFormError('');
@@ -50,9 +76,34 @@ export default function SettingsPage() {
 
     const value = settingsForm.value.trim();
 
-    if (!value) {
+    if (!value && !settingsForm.optional) {
       setFormError(`${settingsForm.label} is required.`);
       return;
+    }
+
+    if (value && settingsForm.domain) {
+      try {
+        const url = new URL(value);
+        const hostname = url.hostname.toLowerCase();
+        const allowedDomains =
+          settingsForm.key === 'social:FB'
+            ? ['facebook.com', 'fb.com']
+            : settingsForm.key === 'social:YT'
+              ? ['youtube.com', 'youtu.be']
+              : [settingsForm.domain];
+
+        if (
+          url.protocol !== 'https:' ||
+          !allowedDomains.some(
+            (domain) => hostname === domain || hostname.endsWith(`.${domain}`)
+          )
+        ) {
+          throw new Error('Invalid social link');
+        }
+      } catch {
+        setFormError(`Enter a secure ${settingsForm.label} URL, or leave it blank.`);
+        return;
+      }
     }
 
     try {
@@ -62,7 +113,7 @@ export default function SettingsPage() {
       const nextSettings = applyAdminSettingsValue(
         settings,
         settingsForm.key,
-        settingsForm.value
+        value
       );
       const savedSettings = await updateSiteSettings(nextSettings);
 
@@ -103,19 +154,14 @@ export default function SettingsPage() {
   }, []);
 
   return (
-    <section className='admin-content min-h-[calc(100vh_-_64px)]' id='settings'>
-      <header className='admin-header mb-[clamp(36px,5.5vh,56px)]'>
+    <section className='admin-content admin-settings-page min-h-[calc(100vh_-_64px)]' id='settings'>
+      <header className='admin-header admin-settings-header'>
         <div>
-          <h2 className='text-[clamp(34px,3.3vw,44px)]'>Admin Settings</h2>
+          <span className='admin-settings-eyebrow'>GYM CONFIGURATION</span>
+          <h2>Settings</h2>
           <p>
-            Control admin accounts, gym information, system settings, and
-            security.
+            Keep your public gym information and social channels up to date.
           </p>
-        </div>
-        <div className='admin-header-actions'>
-          <label className='admin-search' aria-label='Search settings'>
-            <input placeholder='Search...' type='search' />
-          </label>
         </div>
       </header>
 
@@ -128,41 +174,64 @@ export default function SettingsPage() {
       {status === 'loading' && <AdminLoadingSkeleton variant='settings' />}
 
       {status === 'ready' && (
-        <section
-          className='grid gap-[clamp(24px,4vh,34px)]'
-          aria-busy={false}
-        >
-          {rows.map((row) => (
-            <article
-              className='grid min-h-[86px] grid-cols-[minmax(140px,0.35fr)_minmax(0,1fr)_100px] items-center gap-[26px] rounded-[22px] border border-[#393939] bg-[#242424] py-5 pl-7 pr-[42px] shadow-[0_18px_34px_rgba(0,0,0,0.26)] max-[680px]:grid-cols-1 max-[680px]:gap-3 max-[680px]:p-5'
-              key={row.label}
-            >
-              <span className='text-sm font-extrabold text-[#b8b8b8]'>
-                {row.label}
-              </span>
-              <strong className='whitespace-pre-line text-[clamp(18px,1.5vw,20px)] leading-tight text-white'>
-                {row.displayValue}
-              </strong>
-              <button
-                className='h-10 min-w-[100px] rounded-[13px] border border-[rgba(69,69,69,0.95)] bg-[rgba(47,47,47,0.9)] text-[13px] font-extrabold text-white max-[680px]:justify-self-start'
-                onClick={() => openSettingsForm(row)}
-                type='button'
-              >
-                Edit
-              </button>
-            </article>
-          ))}
+        <section className='admin-settings-layout' aria-busy={false}>
+          <div className='admin-settings-stack'>
+            <section className='admin-settings-card'>
+              <div className='admin-settings-card-header'>
+                <div>
+                  <h3>Gym identity</h3>
+                  <p>The name visitors see throughout FitZone.</p>
+                </div>
+              </div>
+              <SettingsField row={rows[0]} onEdit={openSettingsForm} />
+            </section>
+
+            <section className='admin-settings-card'>
+              <div className='admin-settings-card-header'>
+                <div>
+                  <h3>Contact &amp; location</h3>
+                  <p>Details displayed in the public website footer.</p>
+                </div>
+              </div>
+              {[rows[1], rows[3], rows[4]].map((row) => (
+                <SettingsField key={row.key} row={row} onEdit={openSettingsForm} />
+              ))}
+            </section>
+
+            <section className='admin-settings-card'>
+              <div className='admin-settings-card-header'>
+                <div>
+                  <h3>Opening hours</h3>
+                  <p>Help visitors know when the gym is open.</p>
+                </div>
+              </div>
+              <SettingsField row={rows[2]} onEdit={openSettingsForm} />
+            </section>
+          </div>
+
+          <section className='admin-settings-card admin-settings-social'>
+            <div className='admin-settings-card-header'>
+              <div>
+                <h3>Social media</h3>
+                <p>Add your profile URL for each platform. Only configured links appear on the home page.</p>
+              </div>
+            </div>
+            {socialRows.map((row) => (
+              <SettingsField key={row.key} row={row} onEdit={openSettingsForm} />
+            ))}
+            <p className='admin-settings-hint'>Use the full https:// link to your FitZone profile. Clear a field to remove its footer icon.</p>
+          </section>
         </section>
       )}
 
       {settingsForm && (
         <div className='admin-modal-backdrop' role='presentation'>
-          <form className='admin-class-form' onSubmit={saveSettingsForm}>
+          <form className='admin-class-form admin-settings-form' onSubmit={saveSettingsForm} role='dialog' aria-modal='true' aria-labelledby='settings-form-title'>
             <div className='admin-form-header'>
               <div>
-                <h3>Edit {settingsForm.label}</h3>
+                <h3 id='settings-form-title'>Edit {settingsForm.label}</h3>
                 <p>
-                  This updates the contact information shown on the home page.
+                  Changes to public details appear on the home page after saving.
                 </p>
               </div>
               <button
@@ -190,10 +259,12 @@ export default function SettingsPage() {
                     onChange={(event) =>
                       updateSettingsFormValue(event.target.value)
                     }
+                    placeholder={settingsForm.domain ? `https://www.${settingsForm.domain}/your-profile` : undefined}
                     type={settingsForm.inputType}
                     value={settingsForm.value}
                   />
                 )}
+                {settingsForm.optional && <small>Leave blank to hide this social link.</small>}
               </label>
             </div>
 

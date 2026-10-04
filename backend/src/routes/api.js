@@ -3869,6 +3869,45 @@ function sanitizeSiteSettings(payload, existing = {}) {
   const socials = sanitizeStringArray(
     payload.socials ?? existing.socials ?? defaultSiteSettings.socials,
   );
+  const socialDomains = {
+    FB: ["facebook.com", "fb.com"],
+    IG: ["instagram.com"],
+    TT: ["tiktok.com"],
+    YT: ["youtube.com", "youtu.be"],
+  };
+  const socialLinksInput = {
+    ...defaultSiteSettings.socialLinks,
+    ...(existing.socialLinks || {}),
+    ...(payload.socialLinks || {}),
+  };
+  const socialLinks = {};
+
+  for (const [platform, domains] of Object.entries(socialDomains)) {
+    const rawValue = String(socialLinksInput[platform] || "").trim();
+
+    if (!rawValue) {
+      socialLinks[platform] = "";
+      continue;
+    }
+
+    try {
+      const url = new URL(rawValue);
+      const hostname = url.hostname.toLowerCase();
+
+      if (
+        url.protocol !== "https:" ||
+        !domains.some(
+          (domain) => hostname === domain || hostname.endsWith(`.${domain}`),
+        )
+      ) {
+        return null;
+      }
+
+      socialLinks[platform] = url.toString();
+    } catch {
+      return null;
+    }
+  }
   const brandName = String(merged.brand.name || "").trim();
   const brandDescription = String(merged.brand.description || "").trim();
   const location = String(merged.contact.location || "").trim();
@@ -3901,6 +3940,7 @@ function sanitizeSiteSettings(payload, existing = {}) {
     },
     openingHours,
     socials,
+    socialLinks,
     copyright,
     active: true,
   };

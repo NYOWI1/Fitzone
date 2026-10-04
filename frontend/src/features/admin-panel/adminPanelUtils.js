@@ -987,12 +987,14 @@ export function getAdminSettingsRows(settings) {
     {
       key: 'gymName',
       label: 'Gym Name',
+      description: 'The name displayed across FitZone.',
       value: settings.brand?.name || '',
       displayValue: settings.brand?.name || 'Not set'
     },
     {
       key: 'adminEmail',
-      label: 'Admin Email',
+      label: 'Contact Email',
+      description: 'Public contact email shown on the home page.',
       value: settings.contact?.email || '',
       displayValue: settings.contact?.email || 'Not set',
       inputType: 'email'
@@ -1000,6 +1002,7 @@ export function getAdminSettingsRows(settings) {
     {
       key: 'openingHours',
       label: 'Opening Hours',
+      description: 'One line per schedule displayed in the footer.',
       value: openingHours,
       displayValue: openingHours || 'Not set',
       multiline: true
@@ -1007,17 +1010,37 @@ export function getAdminSettingsRows(settings) {
     {
       key: 'location',
       label: 'Location',
+      description: 'Gym address shown to visitors.',
       value: settings.contact?.location || '',
       displayValue: settings.contact?.location || 'Not set'
     },
     {
       key: 'phone',
-      label: 'Phone No.',
+      label: 'Phone Number',
+      description: 'Public contact number shown on the home page.',
       value: settings.contact?.phone || '',
       displayValue: settings.contact?.phone || 'Not set',
       inputType: 'tel'
     }
   ];
+}
+
+export function getAdminSocialRows(settings) {
+  return [
+    ['FB', 'Facebook', 'facebook.com'],
+    ['IG', 'Instagram', 'instagram.com'],
+    ['TT', 'TikTok', 'tiktok.com'],
+    ['YT', 'YouTube', 'youtube.com']
+  ].map(([key, label, domain]) => ({
+    key: `social:${key}`,
+    label,
+    description: `Link to your ${label} profile (${domain}).`,
+    value: settings.socialLinks?.[key] || '',
+    displayValue: settings.socialLinks?.[key] || 'Not connected',
+    inputType: 'url',
+    optional: true,
+    domain
+  }));
 }
 
 export function applyAdminSettingsValue(settings, key, value) {
@@ -1028,8 +1051,15 @@ export function applyAdminSettingsValue(settings, key, value) {
     },
     contact: {
       ...(settings.contact || {})
+    },
+    socialLinks: {
+      ...(settings.socialLinks || {})
     }
   };
+
+  if (key.startsWith('social:')) {
+    nextSettings.socialLinks[key.slice(7)] = value;
+  }
 
   if (key === 'gymName') {
     nextSettings.brand.name = value;

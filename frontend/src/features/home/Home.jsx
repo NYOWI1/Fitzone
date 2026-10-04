@@ -1011,14 +1011,15 @@ function Home({ clerkEnabled }) {
               <div className='flex gap-2.5'>
                 {(siteSettings.socials || []).map((social) => {
                   const platform = getSocialPlatform(social);
+                  const socialUrl = siteSettings.socialLinks?.[social];
 
-                  if (!platform) return null;
+                  if (!platform || !socialUrl) return null;
 
                   return (
                     <a
                       aria-label={`Visit FitZone on ${platform.label}`}
                       className='grid h-8 w-8 place-items-center rounded-full border border-[#e6002e] text-white no-underline transition hover:-translate-y-0.5 hover:bg-[#e6002e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e6002e]'
-                      href={platform.url}
+                      href={socialUrl}
                       key={social}
                       rel='noopener noreferrer'
                       target='_blank'
