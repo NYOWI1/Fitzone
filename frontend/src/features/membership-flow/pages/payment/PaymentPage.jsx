@@ -171,12 +171,12 @@ function PaymentPageContent({ clerkEmail = '' }) {
           hidePostalCode: true,
           style: {
             base: {
-              color: '#ffffff',
+              color: '#1d2939',
               fontFamily: 'Inter, Arial, sans-serif',
               fontSize: '16px',
-              '::placeholder': { color: '#a8a8a8' }
+              '::placeholder': { color: '#667085' }
             },
-            invalid: { color: '#ff8ea2' }
+            invalid: { color: '#b42318' }
           }
         });
 
@@ -494,10 +494,11 @@ function PaymentPageContent({ clerkEmail = '' }) {
                 ['promptpay', 'PromptPay']
               ].map(([method, label]) => (
                 <button
-                  className={`min-h-13 cursor-pointer rounded-2xl border px-4 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-65 ${
+                  aria-pressed={paymentMethod === method}
+                  className={`min-h-13 cursor-pointer rounded-2xl border px-4 text-sm font-black transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b42318] disabled:cursor-not-allowed disabled:opacity-65 ${
                     paymentMethod === method
-                      ? 'border-[#e6002e] bg-[#241216] text-white'
-                      : 'border-[#414141] bg-[#2d2d2d] text-[#bdbdbd]'
+                      ? 'border-[#e6002e] bg-[#e6002e] text-white'
+                      : 'border-[#d0d5dd] bg-white text-[#344054] hover:border-[#b42318] hover:bg-[#fef3f2]'
                   }`}
                   disabled={isBusy || isPromptPayPending}
                   key={method}
