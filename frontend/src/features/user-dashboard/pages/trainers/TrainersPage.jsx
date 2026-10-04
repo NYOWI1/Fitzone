@@ -7,7 +7,10 @@ import {
 import DefaultProfileAvatar from '../../../../shared/ui/DefaultProfileAvatar';
 import { attachTrainerImage } from '../../../../shared/trainers';
 import { getTrainerProfile } from '../../../trainer-detail/trainerProfileContent';
-import { isTrainerReschedulingClosed } from '../../../../shared/trainers/rescheduling';
+import {
+  isTrainerReschedulingClosed,
+  isTrainerSessionPast
+} from '../../../../shared/trainers/rescheduling';
 import './TrainersPage.css';
 
 const sessionTimes = [
@@ -322,7 +325,11 @@ export default function TrainersPage({ user = null, membershipAccess = null }) {
                     {formatSessionDate(booking.sessionDate)} ·{' '}
                     {booking.sessionTime}
                   </span>
-                  {isTrainerReschedulingClosed(booking, now) && <small className='reschedule-closed'>Changes closed</small>}
+                  {isTrainerSessionPast(booking, now) ? (
+                    <small className='session-past'>Past session</small>
+                  ) : isTrainerReschedulingClosed(booking, now) ? (
+                    <small className='reschedule-closed'>Changes closed</small>
+                  ) : null}
                 </div>
                 <div className='flex flex-col gap-2 sm:flex-row'>
                   <button
